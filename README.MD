@@ -4,9 +4,11 @@ Asset Sync is a peer to peer networking utility that gives your web applications
 
 ## Features
 
-- Peer to peer communication using Libp2p.
-- Decentralised data stores using Kademlia DHT or Orbit DB.
-- Decentralised immediately consistent data storage using local disk, memory & messaging
+- Network and database interfaces
+- Peer to peer messaging & data streams
 - A database / application architecture instead of client / server
 - Nodejs application to offload from browser (connected via local WebSockets)
 - ILP Libp2p transport support to enable secure streamed payments
+- Decentralised databases built on a key/value store, such as a DHT
+- Decentralised immediately consistent storage using local disk, memory & pubsub messaging
+- A file system wrapper for databases
