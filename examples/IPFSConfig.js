@@ -4,13 +4,13 @@ const TCP = require('libp2p-websockets')
 const WS = require('libp2p-tcp')
 const wrtc = require('wrtc')
 
-async function loadIPFS(circutRelays) {
+async function loadIPFS(rendezvousServers) {
     
     const ipfs = await IPFS.create({
         repo: '.ipfs',
         config: {
             Addresses: { 
-                Swarm: [ ...circutRelays, ],
+                Swarm: [ ...rendezvousServers, ],
                 API: '',
                 Gateway: '',
                 Delegates: []
