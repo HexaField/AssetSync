@@ -1,6 +1,4 @@
 import Room from './ipfs-pubsub-room'
-// import Room from 'ipfs-pubsub-room'
-
 export default class Network
 {  
     constructor(ipfs, peerID, topic, onMessage, onPeerJoin, onPeerLeave, params = {})
@@ -9,12 +7,6 @@ export default class Network
         this.room = new Room(ipfs, this.topic)
         this.myPeerID = peerID
         this.userData = params
-        this.roomStats = {}
-
-        this.room.on('subscribed', () => {
-            console.log('Now connected!')
-            // TODO
-        })
 
         this.room.on('peer joined', (peer) => {
             onPeerJoin(peer)
@@ -45,10 +37,6 @@ export default class Network
                 return;
             }
 
-            // this is a hack for this.sendTo while pubsubroom is broken --- see this.sendTo below
-            if(data.intendedRecipient !== undefined && data.intendedRecipient !== this.myPeerID) 
-                return
-            
             onMessage(data, message.from);
         })
 
@@ -66,11 +54,8 @@ export default class Network
         if(!peerID) return;
         if(!content) content = '';
 
-        let data = JSON.stringify({ protocol: protocol, content: content, intendedRecipient: peerID });
-        await this.room.broadcast(Buffer.from(data));
-
-        // let data = JSON.stringify({ protocol:protocol, content:content });
-        // await this.room.sendTo(peerID, Buffer(data)); // sendTo is broken with new version of IPFS
+        let data = JSON.stringify({ protocol:protocol, content:content });
+        await this.room.sendTo(peerID, Buffer(data)); // sendTo is broken with new version of IPFS
     }
 
     async sendData(protocol, content)
@@ -79,16 +64,5 @@ export default class Network
 
         let data = JSON.stringify({ protocol: protocol, content: content });
         await this.room.broadcast(Buffer.from(data));
-    }
-
-    showStatsRoom()
-    {
-        setInterval(async () => {
-            try {
-                console.log(await this.room.getPeers())
-            } catch (err) {
-                console.log('An error occurred trying to check our peers:', err)
-            }
-        }, 5000)
     }
 }
