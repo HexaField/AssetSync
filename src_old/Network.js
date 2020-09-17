@@ -1,12 +1,12 @@
-import Room from './ipfs-pubsub-room'
-export default class Network
+const Room = require('./ipfs-pubsub-room')
+
+class Network
 {  
-    constructor(ipfs, peerID, topic, onMessage, onPeerJoin, onPeerLeave, params = {})
+    constructor(ipfs, peerID, topic, onMessage, onPeerJoin, onPeerLeave)
     {
-        this.topic = (global.isDevelopment ? '/conjure-dev/' : '/conjure/') + topic
+        this.topic = topic
         this.room = new Room(ipfs, this.topic)
         this.myPeerID = peerID
-        this.userData = params
 
         this.room.on('peer joined', (peer) => {
             onPeerJoin(peer)
@@ -25,7 +25,7 @@ export default class Network
                 return
             }
 
-            let data = Buffer.from(message.data).toString()
+            let data = message.data
 
             try
             {
@@ -39,9 +39,6 @@ export default class Network
 
             onMessage(data, message.from);
         })
-
-        if(params.showStats)
-            this.showStatsRoom();
     }
     
     async leave()
@@ -55,7 +52,7 @@ export default class Network
         if(!content) content = '';
 
         let data = JSON.stringify({ protocol:protocol, content:content });
-        await this.room.sendTo(peerID, Buffer(data)); // sendTo is broken with new version of IPFS
+        await this.room.sendTo(peerID, data); // sendTo is broken with new version of IPFS
     }
 
     async sendData(protocol, content)
@@ -63,6 +60,9 @@ export default class Network
         if(!content) content = '';
 
         let data = JSON.stringify({ protocol: protocol, content: content });
-        await this.room.broadcast(Buffer.from(data));
+        await this.room.broadcast(data);
     }
 }
+
+
+module.exports = Network
