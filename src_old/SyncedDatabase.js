@@ -223,7 +223,7 @@ export default class SyncedDatabase extends NetworkInterface
             neededKeys.push(entry.key)
         })
         differences.removed.forEach((entry) => {
-            this.removeEntry(key)
+            this.removeEntry(entry.key, true)
         })
         differences.common.forEach((entry) => {
             if(entry.timestamp > this.data[entry.key].timestamp)
