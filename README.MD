@@ -18,5 +18,7 @@ Asset Sync is a peer to peer networking utility that gives your web applications
 ### rewrite a better ipfs-pubsub-room
 
 it's more complicated than it needs to be
+
 needs to emit messages on join, leave, messages using pubsub
+
 same for a private connection using dialProtocol of sendTo
