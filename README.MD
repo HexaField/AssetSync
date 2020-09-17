@@ -12,3 +12,11 @@ Asset Sync is a peer to peer networking utility that gives your web applications
 - Decentralised databases built on a key/value store, such as a DHT
 - Decentralised immediately consistent storage using local disk, memory & pubsub messaging
 - A file system wrapper for databases
+
+## To Do
+
+### rewrite a better ipfs-pubsub-room
+
+it's more complicated than it needs to be
+needs to emit messages on join, leave, messages using pubsub
+same for a private connection using dialProtocol of sendTo
