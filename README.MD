@@ -2,7 +2,7 @@
 
 Asset Sync is a peer to peer networking utility that gives your web applications all the necessary data communication and storage features for a truly decentralised Web 3.0
 
-## Required Features
+## API Features
 
 - Network and database interfaces
 - Peer to peer messaging & data streams
@@ -12,3 +12,7 @@ Asset Sync is a peer to peer networking utility that gives your web applications
 - Decentralised databases built on a key/value store, such as a DHT
 - Decentralised immediately consistent storage using local disk, memory & pubsub messaging
 - A file system wrapper for databases
+
+## Side projects
+
+- ILP STREAM data transport for IPFS/libp2p
