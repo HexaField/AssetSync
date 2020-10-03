@@ -47,13 +47,8 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 ## Run
 
 ```
-
 git clone https://github.com/HexaField/AssetSync.git
-
 cd AssetSync
-
 yarn install
-
 yarn example
-
 ```
