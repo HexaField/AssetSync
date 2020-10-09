@@ -5,8 +5,8 @@ export default class WebSocketServer extends EventEmitter {
     constructor(args = {}) {
         super()
         this.onConnect = this.onConnect.bind(this)
-        this.webSocket = new WebSocket.Server({ 
-            port: args.port || 19843 
+        this.webSocket = new WebSocket.Server({
+            port: args.port || 19843
         })
 
         this.webSocket.on('connection', (ws) => { this.onConnect(ws); })
@@ -15,16 +15,16 @@ export default class WebSocketServer extends EventEmitter {
     }
 
     onDisconnect(error) {
-        if (!this.connection) return
-        this.connection = undefined
         if (this.heartbeat !== undefined) {
             clearInterval(this.heartbeat);
         }
+        if (!this.connection) return
+        this.connection = undefined
         this.emit('disconnect', error)
     }
 
     onConnect(ws) {
-        
+
         ws.on('message', (data) => this.emit('message', JSON.parse(data)))
         this.connection = ws
         console.log('WebSocketServer: Successfully connected to client!')
@@ -37,7 +37,7 @@ export default class WebSocketServer extends EventEmitter {
 
         this.heartbeat = setInterval(() => {
             if (!this.webSocket.clients.has(ws))
-                this.onDisconnect(ws)
+                this.onDisconnect()
             this.webSocket.clients.forEach((ws) => {
                 if (ws.isAlive === false) {
                     return ws.terminate();
