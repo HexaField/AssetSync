@@ -1,25 +1,21 @@
-import IPFS from 'ipfs'
-import { PluginBase } from '../../PluginBase'
-import { homedir, number } from '../../utils'
+import { PluginBase } from '../../PluginBase.js'
+import { number } from '@AssetSync/common'
 
-export class IPFSPlugin extends PluginBase {
+export class Libp2pPlugin extends PluginBase {
 
     constructor(options = {}) {
         super(options)
+        this._libp2p = options.libp2p
         this._pluginName = 'CORE_IPFSPlugin'
     }
 
     async start(args = {}) {
         await super.start(args)
 
-        if (args.isSlave) 
-            return true
+        this._peerID = this._libp2p.peerId.toB58String()
 
-        this._ipfs = await this.loadIPFS()
-        this._peerID = await (await this._ipfs.id()).id
-
-        this.ipfsInfo = {}
-        this.ipfsInfo.peersCount = 0;
+        this.peerInfo = {}
+        this.peerInfo.peersCount = 0;
         this.showStats();
 
         await this.waitForIPFSPeers(number(this._options.minPeersCount))
@@ -30,7 +26,7 @@ export class IPFSPlugin extends PluginBase {
         await super.stop(args)
         if (this.peerInterval)
             clearInterval(this.peerInterval);
-        await this._ipfs.stop()
+        await this._libp2p.stop()
         return true
     }
 
@@ -38,20 +34,14 @@ export class IPFSPlugin extends PluginBase {
         return this._peerID
     }
 
-    getIPFS() {
-        return this._ipfs
-    }
-
-    async loadIPFS() {
-        this.log('Connecting to IPFS and making repo at' + homedir())
-        return await IPFS.create(this._options.ipfsConfig)
+    getLibp2p() {
+        return this._libp2p
     }
 
     showStats() {
         this.peerInterval = setInterval(async () => {
             try {
-                const peers = await this._ipfs.swarm.peers()
-                this.ipfsInfo.peersCount = peers.length
+                this.peerInfo.peersCount = await this._libp2p.connections.size
             } catch (err) {
                 this.warn('An error occurred trying to check our peers:', err)
             }
@@ -63,7 +53,7 @@ export class IPFSPlugin extends PluginBase {
         this.log('Connecting to the network...', minPeersCount || '')
         return await new Promise((resolve, reject) => {
             const interval = setInterval(() => {
-                if (this.ipfsInfo.peersCount >= minPeersCount) {
+                if (this.peerInfo.peersCount >= minPeersCount) {
                     resolve(true)
                     clearInterval(interval);
                 }

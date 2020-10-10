@@ -1,42 +1,18 @@
-import Room from './ipfs-pubsub-room'
-import { PluginBase } from '../../PluginBase'
+import Room from './ipfs-pubsub-room/index.js'
+import { PluginBase } from '../../PluginBase.js'
 
-const ASSETSYNC_PLUGIN_PROTOCOLS_NETWORK = {
-    NETWORK_JOIN: 'joinNetwork',
-    NETWORK_SEND_DATA: 'sendDataNetwork',
-    NETWORK_SEND_TO: 'sendToNetwork',
-    NETWORK_LEAVE: 'networkLeave',
-}
 
 export class NetworkPlugin extends PluginBase {
 
     constructor(options) {
         super(options)
-        this._ipfsPlugin = options.ipfsPlugin
+        this._libp2pPlugin = options.libp2pPlugin
         this._pluginName = 'CORE_NetworkPlugin'
 
         this.networks = {}
     }
 
     async register(args = {}) {
-        this._assetSync.addProtocolFunction({
-            protocol: ASSETSYNC_PLUGIN_PROTOCOLS_NETWORK.NETWORK_JOIN,
-            callbacks: (data) => {
-                return {
-                    id: data.network,
-                    funcs: {
-                        onMessage: data.onMessage,
-                        onPeerJoin: data.onPeerJoin,
-                        onPeerLeave: data.onPeerLeave,
-                    }
-                }
-            },
-            handler: async (data) => {
-                return Boolean(await this.joinNetwork(data.network, data.onMessage, data.onPeerJoin, data.onPeerLeave))
-                    ? 'Successfully joined network ' + data.network
-                    : 'ERROR: failed to join network' + data.network
-            }
-        })
     }
 
     async start(args = {}) {
@@ -52,33 +28,34 @@ export class NetworkPlugin extends PluginBase {
     }
 
     async leaveAllNetworks() {
-        for (let network of Object.keys(this.networks)) {
-            await this.networks[network].leave()
+        for (let networkID of Object.keys(this.networks)) {
+            await this.networks[networkID].leave()
         }
     }
 
     async leaveAllClientNetworks() {
-        for (let network of Object.keys(this.networks)) {
-            if (!this.networks[network].userData.isGlobalNetwork)
-                await this.networks[network].leave()
+        for (let networkID of Object.keys(this.networks)) {
+            if (!this.networks[networkID].userData.isGlobalNetwork)
+                await this.networks[networkID].leave()
         }
     }
 
-    async joinNetwork(network, onMessage, onPeerJoin, onPeerLeave) {
-        if (!network || !this._ipfsPlugin.getIPFS()) return false
+    // todo: change callbacks to events
 
-        if (this.networks[network])
-            await this.leaveNetwork(network)
+    async joinNetwork(networkID, onMessage, onPeerJoin, onPeerLeave) {
+        if (!networkID || !this._libp2pPlugin.getLibp2p()) return false
 
+        if (this.networks[networkID])
+            await this.leaveNetwork(networkID)
 
         // todo: make this a plugin
-        this.networks[network] = new Room(this._ipfsPlugin.getIPFS(), network)
+        this.networks[networkID] = new Room(this._libp2pPlugin.getLibp2p(), networkID)
 
-        this.networks[network].on('peer joined', onPeerJoin)
-        this.networks[network].on('peer leave', onPeerLeave)
-        this.networks[network].on('message', (message) => {
+        this.networks[networkID].on('peer joined', onPeerJoin)
+        this.networks[networkID].on('peer leave', onPeerLeave)
+        this.networks[networkID].on('message', (message) => {
 
-            if (message.from === this._ipfsPlugin.getPeerID()) return
+            if (message.from === this._libp2pPlugin.getPeerID()) return
 
             if (message.data === undefined || message.data === null) {
                 this.warn('Received bad buffer data', message.data, 'from peer', message.from)
@@ -98,38 +75,36 @@ export class NetworkPlugin extends PluginBase {
             onMessage(data, message.from);
         })
 
-        return this.networks[network]
+        return this.networks[networkID]
     }
 
-    async leaveNetwork(network) {
-        if (!this.networks[network]) return
+    async leaveNetwork(networkID) {
+        if (!this.networks[networkID]) return
         try {
-            await this.networks[network].leave()
-            delete this.networks[network]
+            await this.networks[networkID].leave()
+            delete this.networks[networkID]
             return true
         } catch (error) {
             return false
         }
     }
 
-    async sendTo(network, protocol, content, peerID) {
-        if (!this.networks[network]) return
+    async sendTo(networkID, protocol, content, peerID) {
+        if (!this.networks[networkID]) return
         if (!peerID) return;
         if (!content) content = '';
 
-        await this.networks[network].sendTo(peerID, JSON.stringify({ protocol, content }));
+        await this.networks[networkID].sendTo(peerID, JSON.stringify({ protocol, content }));
     }
 
-    async sendData(network, protocol, content) {
-        if (!this.networks[network]) return
+    async sendData(networkID, protocol, content) {
+        if (!this.networks[networkID]) return
         if (!content) content = '';
 
-        await this.networks[network].broadcast(JSON.stringify({ protocol: protocol, content: content }));
+        await this.networks[networkID].broadcast(JSON.stringify({ protocol: protocol, content: content }));
     }
 
-    getPeers(network) {
-        return this.networks[network].getPeers()
+    getPeers(networkID) {
+        return this.networks[networkID].getPeers()
     }
 }
-
-NetworkPlugin.ASSETSYNC_PLUGIN_PROTOCOLS_NETWORK = ASSETSYNC_PLUGIN_PROTOCOLS_NETWORK

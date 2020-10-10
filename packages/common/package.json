@@ -1,5 +1,5 @@
 {
-    "name": "@AssetSync/WorldSync",
+    "name": "@AssetSync/common",
     "version": "0.0.0",
     "main": "src/index.js",
     "author": "HexaField <joshfield999@gmail.com>",
@@ -9,11 +9,6 @@
         "setup": "yarn install",
         "update": "yarn upgrade",
         "fix": "yarn audit fix",
-      "test": "node test/index.js"
-    },
-    "dependencies": {
-        "@AssetSync/AssetSync": "^0.0.0",
-        "@AssetSync/common": "^0.0.0"
+        "test": "exit 0"
     }
-
 }

@@ -1,4 +1,4 @@
-import { isNode } from './index'
+import { isNode } from './index.js'
 
 function homedir () {
     if(isNode) {

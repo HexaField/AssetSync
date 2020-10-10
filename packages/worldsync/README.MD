@@ -23,6 +23,9 @@ World Sync is split into your traditional server & client architecture, except t
 - Asset Sync
   - Controls the flow of data between the server and other users
 
+- Peer Sync
+  - Allows you to run your server as a background process and your client in the browser 
+
 - World Controller
   - Where all update logic occurs
   - Manages the scene graphs
@@ -55,6 +58,10 @@ World Sync is split into your traditional server & client architecture, except t
 - Audio renderer
   - Unfortunately if running in the browser, audio must originate from the main thread. This will be achieved by replicating the audio components of the compiled scene
   - Audio worklets may allow for improvements, but for now is out of the scope of this project
+
+## API
+
+*to do*
 
 ## Resources
 *todo*

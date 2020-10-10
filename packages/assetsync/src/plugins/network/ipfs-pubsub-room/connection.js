@@ -1,12 +1,10 @@
-'use strict'
+import EventEmitter from 'events'
+import pipe from 'it-pipe'
+import PeerId from 'peer-id'
 
-const EventEmitter = require('events')
-const pipe = require('it-pipe')
-const PeerId = require('peer-id')
+import PROTOCOL from './protocol.js'
 
-const PROTOCOL = require('./protocol')
-
-module.exports = class Connection extends EventEmitter {
+export default class Connection extends EventEmitter {
   constructor (remoteId, libp2p, room) {
     super()
     this._remoteId = remoteId

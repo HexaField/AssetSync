@@ -1,5 +1,5 @@
-import { PluginBase } from '../../PluginBase'
-import { isBrowser } from '../../utils'
+import { PluginBase } from '../../PluginBase.js'
+import { isBrowser } from '@AssetSync/common'
 
 export class StoragePlugin extends PluginBase {
 

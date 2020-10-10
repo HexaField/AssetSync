@@ -1,8 +1,6 @@
-'use strict'
+import uint8ArrayFromString from 'uint8arrays/from-string.js'
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
-
-module.exports = (_message) => {
+export default function (_message) {
   let message = _message
   if (message.constructor !== Uint8Array) {
     message = uint8ArrayFromString(String(message))

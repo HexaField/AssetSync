@@ -1,7 +1,7 @@
 import EventEmitter from "events"
-const clone = require('lodash.clonedeep')
+import clone from "lodash.clonedeep"
 
-const DEFAULT_OPTIONS = {
+const BASE_OPTIONS = {
     enableLogging: true
 }
 
@@ -12,7 +12,7 @@ export class PluginBase extends EventEmitter {
 
         this._pluginName = 'Unnamed Plugin - ' + Date.now()
         this._running = false
-        this._options = Object.assign({}, clone(DEFAULT_OPTIONS), clone(options))
+        this._options = Object.assign({}, clone(BASE_OPTIONS), clone(options))
     }
 
     setAssetSync(assetSync) {
@@ -38,10 +38,6 @@ export class PluginBase extends EventEmitter {
     async start(args = {}) {
         this._running = true
         return true
-    }
-
-    async loseSlave(args = {}) { 
-
     }
 
     async stop(args = {}) { 

@@ -1,8 +1,5 @@
-'use strict'
-
-const EventEmitter = require('events')
-const pipe = require('it-pipe')
-const decoding = require('./decoding')
+import EventEmitter from 'events'
+import pipe from 'it-pipe'
 
 const emitter = new EventEmitter()
 
@@ -41,7 +38,7 @@ function handler ({ connection, stream }) {
   )
 }
 
-exports = module.exports = {
-  handler: handler,
-  emitter: emitter
+export default {
+  handler,
+  emitter
 }

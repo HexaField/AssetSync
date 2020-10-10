@@ -1,19 +1,13 @@
 {
-  "name": "AssetSync",
-  "private": true,
-  "version": "1.0.0",
-  "repository": "https://github.com/hexafield/AssetSync.git",
-  "author": "Josh Field",
-  "license": "GNU GPLv3",
-  "scripts": {
-    "test": "lerna run test",
-    "update-and-fix": "lerna run update && lerna run fix",
-    "postinstall": "lerna bootstrap --no-ci"
-  },
-  "devDependencies": {
-    "lerna": "^3.22.1",
-    "nodemon": "^2.0.4",
-    "npm-run-all": "^4.1.5",
-    "rimraf": "^3.0.2"
-  }
+    "name": "AssetSync",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+        "setup": "yarn install && lerna clean --yes && lerna bootstrap",
+        "test": "lerna run test"
+    },
+    "devDependencies": {
+        "lerna": "^3.22.1",
+        "npm-run-all": "^4.1.5"
+    }
 }

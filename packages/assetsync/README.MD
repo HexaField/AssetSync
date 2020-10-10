@@ -9,13 +9,13 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 ## Current Features
 
 - Network and database interfaces
-- Peer to peer messaging, payment & data streams
-- NodeJS server to offload workload from browser (connected via local WebSockets) and act as headless application node
+- Peer to peer messaging
 - A file system wrapper for databases
 
 ## Planned Features
 
-- ILP STREAM p2p network support to enable secure streamed payments
+- ILP & PayID payments
+- ILP STREAM p2p network support to enable secure streamed payments & data
 - Decentralised databases built on a key/value store, such as a DHT
 - Decentralised immediately consistent storage using local disk, memory & pubsub messaging
 
@@ -48,12 +48,3 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 *TODO*
 
 - 
-
-## Run
-
-```
-git clone https://github.com/HexaField/AssetSync.git
-cd AssetSync
-yarn install
-yarn example
-```

@@ -1,14 +1,12 @@
-'use strict'
+import diff from 'hyperdiff'
+import EventEmitter from 'events'
+import clone from 'lodash.clonedeep'
 
-const diff = require('hyperdiff')
-const EventEmitter = require('events')
-const clone = require('lodash.clonedeep')
-
-const PROTOCOL = require('./protocol')
-const Connection = require('./connection')
-const encoding = require('./encoding')
-const decoding = require('./decoding')
-const directConnection = require('./direct-connection-handler')
+import PROTOCOL from './protocol.js'
+import Connection from './connection.js'
+import encoding from './encoding.js'
+import decoding from './decoding.js'
+import directConnection from './direct-connection-handler.js'
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -16,7 +14,7 @@ const DEFAULT_OPTIONS = {
 
 let index = 0
 
-class PubSubRoom extends EventEmitter {
+export default class PubSubRoom extends EventEmitter {
   constructor (libp2p, topic, options) {
     super()
     this._libp2p = libp2p.libp2p || libp2p
@@ -140,5 +138,3 @@ class PubSubRoom extends EventEmitter {
     }
   }
 }
-
-module.exports = PubSubRoom
