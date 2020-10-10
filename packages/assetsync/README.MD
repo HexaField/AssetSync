@@ -2,17 +2,22 @@
 
 Asset Sync is a peer to peer data utility that gives your web applications all the necessary communication and storage features for a truly decentralised Web 3.0
 
+*Disclaimer:* this is a work in progress - ideas, context and implementation details may and will change
+
 ---
 
-## API Features
+## Current Features
 
 - Network and database interfaces
 - Peer to peer messaging, payment & data streams
 - NodeJS server to offload workload from browser (connected via local WebSockets) and act as headless application node
+- A file system wrapper for databases
+
+## Planned Features
+
 - ILP STREAM p2p network support to enable secure streamed payments
 - Decentralised databases built on a key/value store, such as a DHT
 - Decentralised immediately consistent storage using local disk, memory & pubsub messaging
-- A file system wrapper for databases
 
 ---
 
