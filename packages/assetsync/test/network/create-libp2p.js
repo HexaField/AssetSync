@@ -13,7 +13,7 @@ const RELAY_PEER_ID_JSON = {
   pubKey: 'CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDVCnVIHt/xx3LlS0bHUlS6A1oxuqfwrzCSNrr0T68RM1i/2zc1Pl6dMLdhpzIrMHrt6J4nMA2nzC71vHNvymQeLWvKmAWTEcKbGR8lQGHibBMP/1vwOwFlKxy3JzaqDS8hP6qTnMgGpMJosiroitTNHAJg2PCQM0zX+Q8ehsiwhoJ5IaIoCzutyo7S5X7uubOjUMj+tAVuX34/lz8ynQfnfFeS6GuCddsljg/RZ3c+wS+EPwsNd0VJjm3L5M9b+Ofh8IW5FI/MMmHg2+dpHJnZv9QCtclvCZJj0xUKpxtluM5NHd64h+fBQsmpB75b2eUkB3RUNLy/ngC50NbAIRN1AgMBAAE='
 }
 
-const config = async (isRelay) => {
+export async function config (isRelay) {
   return {
     peerId: isRelay ? await PeerId.createFromJSON(RELAY_PEER_ID_JSON) : await PeerId.create(),
     dialer: {

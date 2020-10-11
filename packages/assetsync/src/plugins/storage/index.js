@@ -12,7 +12,7 @@ export class StoragePlugin extends PluginBase {
 
     async start(args = {}) {
         await super.start(args)
-        this.storage = new (await (isBrowser ? (await import('./FileStorageBrowser')) : (await import('./FileStorageNode'))).default)()
+        this.storage = new (await (isBrowser ? (await import('./FileStorageBrowser.js')) : (await import('./FileStorageNode.js'))).default)()
         await this.storage.initialise()
         return true
     }

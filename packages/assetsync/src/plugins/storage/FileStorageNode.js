@@ -1,12 +1,13 @@
 // import fs from 'fs-extra'
 import os from 'os'
+import fs from 'fs-extra'
 
 export default class FileStorageNode
 {  
     constructor()   
     {
         this.rootDirectory = os.homedir() + (global.isDevelopment ? '/.conjure-dev/' : '/.conjure/')
-        this.files = require('fs-extra')
+        this.files = fs
     }   
 
     // Internal

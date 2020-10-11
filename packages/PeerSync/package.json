@@ -9,10 +9,13 @@
         "setup": "yarn install",
         "update": "yarn upgrade",
         "fix": "yarn audit fix",
-        "test": "node test/index.js"
+        "test": "exit 0"
     },
     "dependencies": {
         "@AssetSync/common": "^0.0.0",
         "ws": "^7.3.1"
+    },
+    "devDependencies": {
+        "ava": "^3.13.0"
     }
 }

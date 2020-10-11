@@ -1,10 +1,9 @@
-import createLibp2p from './utils/create-libp2p.js'
+import { config } from './create-libp2p.js'
 import Libp2p from 'libp2p'
-import { Peer } from './peer.js'
 
-async function runTest() {
+export async function relay() {
 
-    const defaultConfig = await createLibp2p.config(true)
+    const defaultConfig = await config(true)
 
     const relay = new Libp2p({
       ...defaultConfig,
@@ -24,10 +23,4 @@ async function runTest() {
 
     await relay.start()
 
-    const node1 = await createLibp2p()
-    const node2 = await createLibp2p(node1)
-
-    const peer1 = await Peer(node1)
-    const peer2 = await Peer(node2)
 }
-runTest()
