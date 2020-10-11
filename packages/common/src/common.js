@@ -1,8 +1,12 @@
 import { isNode } from './index.js'
+let os
+
+if(isNode)
+    os = await import('os')
 
 function homedir () {
     if(isNode) {
-        return require('os').homedir()
+        return os.homedir()
     }
     return '/'
 }

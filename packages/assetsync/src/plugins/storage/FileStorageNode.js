@@ -1,106 +1,101 @@
-// import fs from 'fs-extra'
-import os from 'os'
+import { homedir } from '@AssetSync/common'
 import fs from 'fs-extra'
 
-export default class FileStorageNode
-{  
-    constructor()   
-    {
-        this.rootDirectory = os.homedir() + (global.isDevelopment ? '/.conjure-dev/' : '/.conjure/')
+export default class FileStorageNode {
+    constructor(rootDirectory) {
+        this.setRootDirectory(rootDirectory)
         this.files = fs
-    }   
+    }
+
+    setRootDirectory(rootDirectory) {
+        this.rootDirectory = rootDirectory || homedir()
+    }
 
     // Internal
 
-    async initialise()
-    {
-        
-    }
-
-    async makeDirectory(directory)
-    {
+    async makeDirectory(directory) {
         try {
-            // global.log('makeDirectory', directory)
-            if(!await this.exists(this.rootDirectory + directory))
-                return Boolean(await this.files.mkdir(this.rootDirectory + directory, { recursive: true }))
+            await this.files.mkdir(this.rootDirectory + directory, { recursive: true })
+            return true
         } catch (err) {
-            // global.log('Error making directory at location', directory, err)
+            console.log('Error making directory at location', directory, err)
         }
         return false
     }
 
-    async exists(directory)
-    {
+    async exists(directory) {
         try {
-            // global.log('exists', directory)
-            let stat = await this.files.stat(directory)
+            let stat = await this.files.stat(this.rootDirectory + directory)
             return Boolean(stat)
         } catch (err) {
-            // global.log('Error finding status of file at location', directory, err)
+            console.log('Error finding status of file at location', directory, err)
         }
         return false
     }
 
-    // API
-
-    async readFile(filename)
-    {
+    async readFile(filename) {
         try {
-            // global.log('readFile', this.rootDirectory + filename)
-            if(await this.exists(this.rootDirectory + filename))
+            if (await this.exists(filename))
                 return await this.files.readFile(this.rootDirectory + filename)
             return false
         } catch (err) {
-            global.log('Error reading file at location', filename, err)
+            console.log('Error reading file at location', filename, err)
         }
         return false
     }
 
-    async writeFile(filename, data)
-    {
-       try {
-            // global.log('writeFile', this.rootDirectory + filename)
-            return await this.files.outputFile(this.rootDirectory + filename, data)
-        } catch (err) {
-            global.log('Error writing file at location', filename, err)
-        }
-        return false
-    }
-
-    async removeFile(filename)
-    {
-       try {
-            if(await this.exists(this.rootDirectory + filename))
-                if(await this.files.unlink(this.rootDirectory + filename))
-                    return true
-        } catch (err) {
-            global.log('Error removing file at location', filename, err)
-        }
-        return false
-    }
-
-    async getFiles(directory)
-    {
+    async writeFile(filename, data) {
         try {
-            return await this.getAllFilesIn(this.rootDirectory + directory)
+            await this.files.outputFile(this.rootDirectory + filename, data)
+            return true
         } catch (err) {
-            global.log('Error getting files at location', directory, err)
+            console.log('Error writing file at location', filename, err)
+        }
+        return false
+    }
+
+    async removeFile(filename) {
+        try {
+            if (await this.exists(filename)) {
+                await this.files.unlink(this.rootDirectory + filename)
+                return true
+            }
+        } catch (err) {
+            console.log('Error removing file at location', filename, err)
+        }
+        return false
+    }
+
+
+    async removeDirectory(filename) {
+        try {
+            if (await this.exists(filename)) {
+                await this.files.rmdir(this.rootDirectory + filename)
+                return true
+            }
+        } catch (err) {
+            console.log('Error removing file at location', filename, err)
+        }
+        return false
+    }
+
+    async getFiles(directory) {
+        try {
+            return await this._getAllFilesIn(this.rootDirectory + directory)
+        } catch (err) {
+            console.log('Error getting files at location', directory, err)
         }
         return []
     }
 
-    async getAllFilesIn(directory)
-    {
+    async _getAllFilesIn(directory) {
         let files = [];
-        if(!await this.exists(directory))
-        {
+        if (!await this.exists(directory)) {
             return [];
         }
         let objects = await this.files.ls(directory)
-        for(let object of objects)
-        {
-            if(object.isFile())
-            {
+        for (let object of objects) {
+            if (object.isFile()) {
                 let blob = await this.files.readFile(object.path);
                 files.push(await blob.text())
             }
@@ -108,15 +103,25 @@ export default class FileStorageNode
         return files;
     }
 
-    async getRecursively(dir) {
+    async getRecursively(directory) {
+        try {
+            return await this._getRecursively(this.rootDirectory + directory)
+        } catch (err) {
+            console.log('Error getting files at location', directory, err)
+        }
+        return []
+    }
+
+    async _getRecursively(dir) {
         let files = await this.files.readdir(dir);
         return Promise.all(files
-          .map(f => path.join(dir, f))
-          .map(async f => {
-            let stats = await this.files.lstat(f);
-            return stats.isDirectory() ? this.getRecursivelygetFiles(f) : f;
-          }));
-      }
+            .map(f => path.join(dir, f))
+            .map(async f => {
+                let stats = await this.files.lstat(f);
+                return stats.isDirectory() ? this.getRecursivelygetFiles(f) : f;
+            })
+        );
+    }
     // async getRecursively(directory)
     // {
     //     let files = [];

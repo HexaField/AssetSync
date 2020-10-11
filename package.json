@@ -3,6 +3,7 @@
     "private": true,
     "version": "0.0.0",
     "scripts": {
+        "addtoall": "lerna add $PACKAGE packages/*Sync --dev",
         "setup": "yarn install && lerna clean --yes && lerna bootstrap",
         "test": "lerna run test"
     },

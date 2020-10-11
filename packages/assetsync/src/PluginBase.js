@@ -15,11 +15,9 @@ export class PluginBase extends EventEmitter {
         this._options = Object.assign({}, clone(BASE_OPTIONS), clone(options))
     }
 
-    setAssetSync(assetSync) {
+    register(assetSync) {
         this._assetSync = assetSync
     }
-
-    async register(args = {}) { }
 
     log(...message) {
         if (this._options.enableLogging)

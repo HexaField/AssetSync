@@ -8,13 +8,14 @@ export class WebsocketPlugin extends PluginBase {
         this._pluginName = 'CORE_WebsocketPlugin'
 
         this.networks = {}
-    }
 
-    async register(args = {}) {
+        this._peerSync = new PeerSync()
+
     }
 
     async start(args = {}) {
         await super.start(args)
+        await this._peerSync.initialise()
         return true
     }
 
@@ -23,4 +24,11 @@ export class WebsocketPlugin extends PluginBase {
         return true
     }
 
+    addProtocolFunction(args = {}) {
+        this._peerSync.addProtocolFunction(args)
+    }
+
+    async callProtocolFunction(protocol, data) {
+        return await this._peerSync.callProtocolFunction(protocol, data)
+    }
 }

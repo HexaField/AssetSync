@@ -4,17 +4,14 @@ import { PluginBase } from '../../PluginBase.js'
 
 export class NetworkPlugin extends PluginBase {
 
-    constructor(options) {
+    constructor(options = {}) {
         super(options)
-        this._libp2pPlugin = options.libp2pPlugin
         this._pluginName = 'CORE_NetworkPlugin'
+        this._libp2pPlugin = options.libp2pPlugin
 
         this.networks = {}
     }
-
-    async register(args = {}) {
-    }
-
+    
     async start(args = {}) {
         await super.start(args)
         return true
@@ -35,7 +32,7 @@ export class NetworkPlugin extends PluginBase {
 
     async leaveAllClientNetworks() {
         for (let networkID of Object.keys(this.networks)) {
-            if (!this.networks[networkID].userData.isGlobalNetwork)
+            if (!this.networks[networkID]._options.isGlobalNetwork)
                 await this.networks[networkID].leave()
         }
     }

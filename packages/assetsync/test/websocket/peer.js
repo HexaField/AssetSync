@@ -6,18 +6,15 @@ export default class Peer extends EventEmitter {
 
     constructor() {
         super()
+        this.assetSync = new DataHandler()
+        this.websocketPlugin = new WebsocketPlugin()
     }
 
     async start() {
-        const dataHandler = new DataHandler()
-
-        const websocketPlugin = new WebsocketPlugin()
-
-        await dataHandler.registerPlugin(websocketPlugin)
-
-        await dataHandler.initialise()
+        await this.assetSync.registerPlugin(this.websocketPlugin)
+        await this.assetSync.initialise()
 
         // ------- //
-        
+
     }
 }

@@ -1,15 +1,42 @@
-import test from 'ava'
 import Peer from './storage/peer.js'
+import test from 'ava'
 
-doTest()
+const peer = new Peer({ rootDirectory: process.cwd() })
+await peer.start()
 
-async function doTest() {
+test.serial('can make directory', async t => {
+    const success = await peer.storagePlugin.makeDirectory('/testdir/')
+    t.true(success)
+})
 
-    let peer1, peer2
+const fileData = Math.random().toString(36)
 
-    peer1 = new Peer()
-    await peer1.start()
+test.serial('can write file', async t => {
+    const success = await peer.storagePlugin.writeFile('/testdir/test.txt', fileData)
+    t.true(success)
+})
 
-    peer2 = new Peer()
-    await peer2.start()
-}
+test.serial('can read file', async t => {
+    const data = await peer.storagePlugin.readFile('/testdir/test.txt')
+    t.assert(data, fileData)
+})
+
+
+test.serial('can remove file', async t => {
+    const data = await peer.storagePlugin.removeFile('/testdir/test.txt')
+    t.true(data)
+})
+
+test.serial('can remove directory', async t => {
+    const data = await peer.storagePlugin.removeDirectory('/testdir')
+    t.true(data)
+})
+
+
+// test('can bulk write', async t => {
+
+// })
+
+// test('can read folder', async t => {
+
+// })

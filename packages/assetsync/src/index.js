@@ -1,4 +1,4 @@
-export default class DataHandler {
+export default class AssetSync {
 
     constructor() {
         this._plugins = {}
@@ -7,9 +7,8 @@ export default class DataHandler {
     // PRE-INIT & UTIL
 
     async registerPlugin(plugin) {
-        plugin.setAssetSync(this)
+        await plugin.register(this)
         this._plugins[plugin.getName()] = plugin
-        await plugin.register({ isSlave: this._isSlave })
     }
 
     getPlugin(pluginName) {
@@ -25,7 +24,7 @@ export default class DataHandler {
     async cleanupPlugins() {
         console.log('Stopping plugins...')
         for (let plugin of this.getPlugins())
-            await plugin.stop({ isSlave: this._isSlave })
+            await plugin.stop()
         this._callbacks = {}
     } */
 

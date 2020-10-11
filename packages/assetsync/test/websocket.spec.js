@@ -1,15 +1,15 @@
 import test from 'ava'
-import Peer from './websocket/peer.js'
+// import Peer from './websocket/peer.js'
 
-doTest()
+// doTest()
 
-async function doTest() {
+// async function doTest() {
 
-    let peer1, peer2
+//     let peer1, peer2
 
-    peer1 = new Peer()
-    await peer1.start()
+//     peer1 = new Peer()
+//     await peer1.start()
 
-    peer2 = new Peer()
-    await peer2.start()
-}
+//     peer2 = new Peer()
+//     await peer2.start()
+// }
