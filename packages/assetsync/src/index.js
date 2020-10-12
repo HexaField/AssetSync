@@ -1,3 +1,8 @@
+export { Libp2pPlugin } from './plugins/libp2p/index.js'
+export { NetworkPlugin } from './plugins/network/index.js'
+export { StoragePlugin } from './plugins/storage/index.js'
+export { WebsocketPlugin } from './plugins/websocket/index.js'
+
 export default class AssetSync {
 
     constructor() {

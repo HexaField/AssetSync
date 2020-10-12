@@ -6,11 +6,14 @@ export class Libp2pPlugin extends PluginBase {
     constructor(options = {}) {
         super(options)
         this._libp2p = options.libp2p
-        this._pluginName = 'CORE_IPFSPlugin'
+        this._pluginName = 'CORE_Libp2pPlugin'
     }
 
     async start(args = {}) {
         await super.start(args)
+
+        if(typeof this._libp2p === 'function')
+            this._libp2p = await this._libp2p()
 
         this._peerID = this._libp2p.peerId.toB58String()
 
@@ -18,7 +21,7 @@ export class Libp2pPlugin extends PluginBase {
         this.peerInfo.peersCount = 0;
         this.showStats();
 
-        await this.waitForIPFSPeers(number(this._options.minPeersCount))
+        await this.waitForLibp2pPeers(number(this._options.minPeersCount))
         return true
     }
 
@@ -49,7 +52,7 @@ export class Libp2pPlugin extends PluginBase {
     }
 
 
-    async waitForIPFSPeers(minPeersCount) {
+    async waitForLibp2pPeers(minPeersCount) {
         this.log('Connecting to the network...', minPeersCount || '')
         return await new Promise((resolve, reject) => {
             const interval = setInterval(() => {

@@ -13,9 +13,4 @@ Make sure all tests pass
 sudo yarn test
 ```
 
-### TO DO
-
-* comprehensive testing
-  * aegir
-  * jest
-* lint
+All pull requests must pass all tests, and new features must include comprehensive tests.

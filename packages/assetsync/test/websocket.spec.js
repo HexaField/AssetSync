@@ -1,15 +1,23 @@
 import test from 'ava'
 // import Peer from './websocket/peer.js'
+// import browser from './browser/browser.js'
 
-// doTest()
+// const nodePeer = new Peer()
+// await nodePeer.start()
 
-// async function doTest() {
+// test('Browser: slave process finds master process', browser, t => {
+//     return new Promise((resolve) => {
+//         const browserPeer = new Peer()
+//         browserPeer.start()
 
-//     let peer1, peer2
+//         browserPeer.on('start', (isMaster) => {
+//             resolve(isMaster)
+//         })
+//     }).then((result) => {
+//         t.false(result)
+//     })
+// })
 
-//     peer1 = new Peer()
-//     await peer1.start()
 
-//     peer2 = new Peer()
-//     await peer2.start()
-// }
+
+// https://github.com/entrptaher/puppeteer-web

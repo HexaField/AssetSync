@@ -10,50 +10,61 @@ export default class PeerSync extends EventEmitter {
         super()
         this._protocolFunctions = {}
         this._callbacks = {}
-        this._isSlave = false // if browser is connected to node
+        this._isMaster = false
     }
 
     // INITIALISE
 
-    async initialise() {
-
-        // set up web sockets
-        if (isBrowser) {
-
-            await new Promise((resolve, reject) => {
-
-                this.receiveWebsocketData = this.receiveWebsocketData.bind(this)
-
-                this._websocket = new WebSocketClient()
-
-                this._websocket.on('connect', () => {
-
-                    console.log('Data Module: Successfully connected to local node!')
-                    this._isSlave = true
-                    resolve()
-                })
-
-                this._websocket.on('disconnect', async (error) => {
-
-                    // Still need to figure out what to do here
-
-                    this._isSlave = false
-                    resolve()
-                })
-
-                this._websocket.on('message', this.receiveWebsocketData)
-            })
+    async initialise(forceSlave) {
+        if (forceSlave) {
+            await this.initialiseClient()
+        } else if (isBrowser) {
+            if (!await this.initialiseClient())
+                this._isMaster = true // no need to initialise a websocket
         } else {
-
-            this.parseWebsocketData = this.parseWebsocketData.bind(this)
-            this._websocket = new WebSocketServer()
-            this._websocket.on('message', this.parseWebsocketData)
-            this._websocket.on('disconnect', (error) => {
-                console.log('Lost connection with client' + (error ? ' with error ' + error : ''))
-                this.loseSlave()
-            })
+            await this.initialiseServer()
         }
-        this.emit(this._isSlave ? 'startSlave' : 'startMaster')
+        this.emit('start', this._isMaster)
+    }
+
+    async initialiseServer() {
+
+        this._isMaster = true
+
+        this.parseWebsocketData = this.parseWebsocketData.bind(this)
+        this._websocket = new WebSocketServer()
+        this._websocket.on('message', this.parseWebsocketData)
+        this._websocket.on('disconnect', (error) => {
+            console.log('Lost connection with client' + (error ? ' with error ' + error : ''))
+            this.loseSlave()
+        })
+    }
+
+    async initialiseClient() {
+
+        await new Promise((resolve, reject) => {
+            this.receiveWebsocketData = this.receiveWebsocketData.bind(this)
+            this._websocket = new WebSocketClient()
+            this._websocket.on('connect', () => {
+
+                console.log('Data Module: Successfully connected to local node!')
+                this._isMaster = true
+                resolve()
+            })
+            this._websocket.on('disconnect', async (error) => {
+
+                // Still need to figure out what to do here
+
+                this._isMaster = false
+                resolve()
+            })
+            this._websocket.on('message', this.receiveWebsocketData)
+        })
+    }
+
+    loseSlave() {
+        // TODO: figure out how to properly initialise master
+        // this.initialiseMaster()
     }
 
     // =========== //
@@ -78,7 +89,7 @@ export default class PeerSync extends EventEmitter {
             this._callbacks[protocol][callbackData.id] = callbackData.funcs
         }
 
-        if (this._isSlave)
+        if (this._isMaster)
             return await this.awaitMasterResponse(protocol, data) // calls the handler on the node server
         else
             return await this._protocolFunctions[protocol].handler(data)

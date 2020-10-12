@@ -9,10 +9,12 @@
         "setup": "yarn install",
         "update": "yarn upgrade",
         "fix": "yarn audit fix",
-        "test": "exit 0"
-    },
-    "dependencies": {
+        "test": "exit 0",
+        "clean:build": "rm -rf dist",
+        "build": "rollup src/index.js --format umd --name '@AssetSync/common' --file dist/index.js --inlineDynamicImports"
     },
     "devDependencies": {
+    },
+    "dependencies": {
     }
 }

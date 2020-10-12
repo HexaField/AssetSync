@@ -10,25 +10,17 @@ export class WebsocketPlugin extends PluginBase {
         this.networks = {}
 
         this._peerSync = new PeerSync()
-
     }
 
     async start(args = {}) {
         await super.start(args)
-        await this._peerSync.initialise()
+        await this._peerSync.initialise(this._options.forceSlave)
+        this._peerSync.on('start', (isMaster) => { this.emit('start', isMaster) })
         return true
     }
 
     async stop(args = {}) {
         await super.stop(args)
         return true
-    }
-
-    addProtocolFunction(args = {}) {
-        this._peerSync.addProtocolFunction(args)
-    }
-
-    async callProtocolFunction(protocol, data) {
-        return await this._peerSync.callProtocolFunction(protocol, data)
     }
 }

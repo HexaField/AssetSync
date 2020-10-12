@@ -43,4 +43,5 @@ export class PluginBase extends EventEmitter {
         return true
     }
 
+    getProtocols() { return [] }
 }

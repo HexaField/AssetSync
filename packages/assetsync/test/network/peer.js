@@ -12,18 +12,16 @@ export default class Peer extends EventEmitter {
         this.networkPlugin = new NetworkPlugin({ libp2pPlugin: this.libp2pPlugin })
     }
 
-    async start() {
+    async start(networkID) {
         await this.assetSync.registerPlugin(this.libp2pPlugin)
         await this.assetSync.registerPlugin(this.networkPlugin)
         await this.assetSync.initialise()
 
         // ------- //
 
-        await this.networkPlugin.joinNetwork(
-            '/conjure/global', // take a peer under the hood of conjure.world
-            (message, peerID) => this.emit('onMessage', message, peerID),
-            (peerID) => this.emit('onPeerJoin', peerID),
-            (peerID) => this.emit('onPeerLeave', peerID)
-        )
+        await this.networkPlugin.joinNetwork(networkID)
+        this.networkPlugin.on('onMessage', (message, peerID) => this.emit('onMessage', message, peerID))
+        this.networkPlugin.on('onPeerJoin', (peerID) => this.emit('onPeerJoin', peerID))
+        this.networkPlugin.on('onPeerLeave', (peerID) => this.emit('onPeerLeave', peerID))
     }
 }

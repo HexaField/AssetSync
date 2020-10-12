@@ -24,7 +24,20 @@ For your virtual worlds
 
 Please read the [contributing document](CONTRIBUTING.MD) if you would like to contribute!
 
-## To Do
+## Progress
+
+General
+
+- [x] Unit tests
+- [ ] Integration tests
+- [ ] Lint
+- [ ] Migrate to typescript
+
+PeerSync
+
+- [x] Messaging
+- [x] Callbacks
+- [ ] Array Buffers
 
 AssetSync
 
@@ -38,8 +51,8 @@ AssetSync
 
 WorldSync
 
-- [x] PeerSync
 - [ ] Basic client & server structure
+- [ ] Websocket messages and buffers with PeerSync
 - [ ] AssetSync integration
 - [ ] WebWorkers
 - [ ] Example project running threejs, ammojs with networking

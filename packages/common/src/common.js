@@ -1,8 +1,5 @@
 import { isNode } from './index.js'
-let os
-
-if(isNode)
-    os = await import('os')
+import os from 'os'
 
 function homedir () {
     if(isNode) {

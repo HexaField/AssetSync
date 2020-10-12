@@ -1,0 +1,10 @@
+{
+  "mount": {
+    "public": "/",
+    "src": "/_dist_"
+  },
+  "plugins": [],
+  "installOptions": {
+    "polyfillNode": true
+  }
+}

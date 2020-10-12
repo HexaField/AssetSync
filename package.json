@@ -1,11 +1,12 @@
 {
     "name": "AssetSync",
     "private": true,
-    "version": "0.0.0",
+    "workspaces": ["packages/*"],
     "scripts": {
         "addtoall": "lerna add $PACKAGE packages/*Sync --dev",
-        "setup": "yarn install && lerna clean --yes && lerna bootstrap",
-        "test": "lerna run test"
+        "setup": "yarn install && lerna bootstrap",
+        "test": "lerna run test",
+        "build": "lerna run clean:build && lerna run build"
     },
     "devDependencies": {
         "lerna": "^3.22.1",

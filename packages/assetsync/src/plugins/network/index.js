@@ -1,7 +1,6 @@
 import Room from './ipfs-pubsub-room/index.js'
 import { PluginBase } from '../../PluginBase.js'
 
-
 export class NetworkPlugin extends PluginBase {
 
     constructor(options = {}) {
@@ -11,7 +10,7 @@ export class NetworkPlugin extends PluginBase {
 
         this.networks = {}
     }
-    
+
     async start(args = {}) {
         await super.start(args)
         return true
@@ -39,7 +38,7 @@ export class NetworkPlugin extends PluginBase {
 
     // todo: change callbacks to events
 
-    async joinNetwork(networkID, onMessage, onPeerJoin, onPeerLeave) {
+    async joinNetwork(networkID) {
         if (!networkID || !this._libp2pPlugin.getLibp2p()) return false
 
         if (this.networks[networkID])
@@ -48,8 +47,8 @@ export class NetworkPlugin extends PluginBase {
         // todo: make this a plugin
         this.networks[networkID] = new Room(this._libp2pPlugin.getLibp2p(), networkID)
 
-        this.networks[networkID].on('peer joined', onPeerJoin)
-        this.networks[networkID].on('peer leave', onPeerLeave)
+        this.networks[networkID].on('peer joined', (peerID) => { this.emit('onPeerJoin', peerID) })
+        this.networks[networkID].on('peer leave', (peerID) => { this.emit('onPeerLeave', peerID) })
         this.networks[networkID].on('message', (message) => {
 
             if (message.from === this._libp2pPlugin.getPeerID()) return
@@ -69,10 +68,10 @@ export class NetworkPlugin extends PluginBase {
                 return;
             }
 
-            onMessage(data, message.from);
+            this.emit('onMessage', data, message.from);
         })
 
-        return this.networks[networkID]
+        return true
     }
 
     async leaveNetwork(networkID) {
