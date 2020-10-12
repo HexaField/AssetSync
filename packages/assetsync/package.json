@@ -9,7 +9,7 @@
         "setup": "yarn install",
         "update": "yarn upgrade",
         "fix": "yarn audit fix",
-        "test": "ava",
+        "test": "ava --watch",
         "clean:build": "rm -rf dist",
         "build": "rollup src/index.js --format umd --name '@AssetSync/AssetSync' --file dist/index.js --inlineDynamicImports"
     },
