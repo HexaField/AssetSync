@@ -12,7 +12,7 @@ export class PluginBase extends EventEmitter {
 
         this._pluginName = 'Unnamed Plugin - ' + Date.now()
         this._running = false
-        this._options = Object.assign({}, clone(BASE_OPTIONS), clone(options))
+        this._options = Object.assign({}, BASE_OPTIONS, options)
     }
 
     register(assetSync) {
