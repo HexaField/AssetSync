@@ -1,5 +1,5 @@
 import { PluginBase } from '../../PluginBase.js'
-import { isBrowser } from '@AssetSync/common'
+import { isBrowser, isNode, isWebWorker } from '@AssetSync/common'
 
 export class StoragePlugin extends PluginBase {
 
@@ -13,7 +13,13 @@ export class StoragePlugin extends PluginBase {
 
     async start(args = {}) {
         await super.start(args)
-        this.storage = new (await (isBrowser ? (await import('./FileStorageBrowser.js')) : (await import('./FileStorageNode.js'))).default)()
+
+        this.storage = new (await (
+            isNode
+            ? (await import('./FileStorageNode.js'))
+            : (await import('./FileStorageBrowser.js')))
+        .default)()
+
         this.storage.setRootDirectory(this._rootDirectory)
         if(this._initialiseDirectory)
             await this.makeDirectory(this._rootDirectory)

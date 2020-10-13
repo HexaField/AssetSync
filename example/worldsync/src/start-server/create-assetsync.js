@@ -23,22 +23,8 @@ export async function startAssetSync() {
         libp2p = await Libp2p()
     
     }
-
-    console.log('Started libp2p with ID', libp2p.peerId.toB58String())
-
     
-    // libp2p.on('peer:discovery', (peerId) => {
-    //   console.log(`Found peer ${peerId.toB58String()}`)
-    // })
-  
-    // libp2p.connectionManager.on('peer:connect', (connection) => {
-    //     console.log(`Connected to ${connection.remotePeer.toB58String()}`)
-    // })
-  
-    // libp2p.connectionManager.on('peer:disconnect', (connection) => {
-    //     console.log(`Disconnected from ${connection.remotePeer.toB58String()}`)
-    // })
-  
+    console.log('Started libp2p with ID', libp2p.peerId.toB58String())
 
     // ------- //
 
@@ -57,7 +43,7 @@ export async function startAssetSync() {
     // ------- //
   
     
-    await networkPlugin.joinNetwork('test-network')
+    await networkPlugin.joinNetwork('test-network-assetsync')
     networkPlugin.on('onMessage', (message, peerID) => {
         console.log(peerID, 'says', message)
     })
@@ -67,4 +53,6 @@ export async function startAssetSync() {
     networkPlugin.on('onPeerLeave', (peerID) => {
         console.log(peerID, 'has left')
     })
+
+    return assetSync
 }

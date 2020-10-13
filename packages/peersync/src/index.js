@@ -15,24 +15,23 @@ export default class PeerSync extends EventEmitter {
 
     // INITIALISE
 
-    async initialise(forceSlave) {
+    async initialise(forceSlave, websocketPort) {
         if (forceSlave) {
-            await this.initialiseClient()
+            await this.initialiseClient(websocketPort)
         } else if (isBrowser) {
-            if (!await this.initialiseClient())
+            if (!await this.initialiseClient(websocketPort))
                 this._isMaster = true // no need to initialise a websocket
         } else {
-            await this.initialiseServer()
+            await this.initialiseServer(websocketPort)
+            this._isMaster = true
         }
         return this._isMaster
     }
 
-    async initialiseServer() {
-
-        this._isMaster = true
+    async initialiseServer(websocketPort) {
 
         this.parseWebsocketData = this.parseWebsocketData.bind(this)
-        this._websocket = new WebSocketServer()
+        this._websocket = new WebSocketServer({ port: websocketPort })
         this._websocket.on('message', this.parseWebsocketData)
         this._websocket.on('disconnect', (error) => {
             console.log('Lost connection with client' + (error ? ' with error ' + error : ''))
@@ -40,23 +39,22 @@ export default class PeerSync extends EventEmitter {
         })
     }
 
-    async initialiseClient() {
+    async initialiseClient(websocketPort) {
 
         await new Promise((resolve, reject) => {
             this.receiveWebsocketData = this.receiveWebsocketData.bind(this)
-            this._websocket = new WebSocketClient()
+            this._websocket = new WebSocketClient({ port: websocketPort })
             this._websocket.on('connect', () => {
 
                 console.log('Data Module: Successfully connected to local node!')
-                this._isMaster = true
+                this._isMaster = false
                 resolve()
             })
             this._websocket.on('disconnect', async (error) => {
 
                 // Still need to figure out what to do here
 
-                this._isMaster = false
-                resolve()
+                throw new Error('ERROR! Lost connection to server!')
             })
             this._websocket.on('message', this.receiveWebsocketData)
         })

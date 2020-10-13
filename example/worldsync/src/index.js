@@ -1,8 +1,11 @@
-import { startAssetSync } from './create-assetsync'
+import worldSync from '@AssetSync/WorldSync'
 
-const AssetSync = await startAssetSync()
+async function startApp() {
 
-
-import peerSync from '@AssetSync/PeerSync'
-
-const PeerSync = new peerSync()
+    const WorldSync = await worldSync({ 
+        serverFile: '_dist_/start-server/index.js', 
+        serverFunc: await(await import('./start-server/index.js')).default 
+    })
+    // console.log(WorldSync)
+}
+startApp()
