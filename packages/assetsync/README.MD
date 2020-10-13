@@ -14,27 +14,24 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 
 ## Planned Features
 
+- Decentralised immediately consistent storage using local disk, memory & pubsub messaging
+- Decentralised databases built on a key/value store, such as a DHT
+- Ring signature plugin
+- Zero knowledge proof plugin
 - ILP & PayID payments
 - ILP STREAM p2p network support to enable secure streamed payments & data
-- Decentralised databases built on a key/value store, such as a DHT
-- Decentralised immediately consistent storage using local disk, memory & pubsub messaging
 
 ---
 
 ## Plugins
 
-### IPFS
+### Libp2p
 
 - if you are just using the networking plugin
 
-*TODO*
-
-- add option to use just libp2p
-
 ### Network
 
-- requires IPFS plugin
-- provides NetworkInterface class with basic networking protocol functionality
+- requires Libp2p plugin
 
 *TODO*
 
@@ -44,7 +41,3 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 
 - node storage on file system
 - browser storage in IndexedDB
-
-*TODO*
-
-- 

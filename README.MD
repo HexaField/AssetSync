@@ -45,7 +45,6 @@ AssetSync
 - [x] IPFS plugin
 - [x] Network Plugin
 - [x] File system plugin
-- [ ] PeerSync plugin
 - [ ] DHT plugin
 - [ ] Synchronised database plugin
 

@@ -24,7 +24,7 @@ export default class PeerSync extends EventEmitter {
         } else {
             await this.initialiseServer()
         }
-        this.emit('start', this._isMaster)
+        return this._isMaster
     }
 
     async initialiseServer() {

@@ -39,6 +39,7 @@ export class NetworkPlugin extends PluginBase {
     // todo: change callbacks to events
 
     async joinNetwork(networkID) {
+        
         if (!networkID || !this._libp2pPlugin.getLibp2p()) return false
 
         if (this.networks[networkID])

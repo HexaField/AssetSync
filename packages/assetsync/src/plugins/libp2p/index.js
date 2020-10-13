@@ -13,7 +13,11 @@ export class Libp2pPlugin extends PluginBase {
         await super.start(args)
 
         if(typeof this._libp2p === 'function')
+        {
+            this.log('Starting libp2p...')
             this._libp2p = await this._libp2p()
+            this.log('Started libp2p with ID', this._libp2p.peerId.toB58String())
+        }
 
         this._peerID = this._libp2p.peerId.toB58String()
 
@@ -51,11 +55,11 @@ export class Libp2pPlugin extends PluginBase {
         }, 1000)
     }
 
-
     async waitForLibp2pPeers(minPeersCount) {
         this.log('Connecting to the network...', minPeersCount || '')
         return await new Promise((resolve, reject) => {
             const interval = setInterval(() => {
+                this.log(' - Found', this.peerInfo.peersCount, 'peers...')
                 if (this.peerInfo.peersCount >= minPeersCount) {
                     resolve(true)
                     clearInterval(interval);

@@ -6,7 +6,7 @@
         "addtoall": "lerna add $PACKAGE packages/*Sync --dev",
         "setup": "yarn install && lerna bootstrap",
         "test": "lerna run test",
-        "build": "lerna run clean:build && lerna run build"
+        "build": "yarn test && lerna run clean:build && lerna run build"
     },
     "devDependencies": {
         "lerna": "^3.22.1",
