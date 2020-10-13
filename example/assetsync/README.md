@@ -1,24 +1,20 @@
-# New Project
+# AssetSync basic setup
 
-> ✨ Bootstrapped with Create Snowpack App (CSA).
+## Install
 
-## Available Scripts
+navigate to this folder
 
-### npm start
+`cd example/assetsync`
 
-Runs the app in the development mode.
-Open http://localhost:8080 to view it in the browser.
+```
+yarn install
+yarn start
+```
 
-The page will reload if you make edits.
-You will also see any lint errors in the console.
+## Play around
 
-### npm run build
+`await assetSync.registerPlugin(websocketPlugin)`
 
-Builds a static copy of your site to the `build/` folder.
-Your app is ready to be deployed!
+Registering the websocket plugin will connect the browser and node as one
 
-**For the best production performance:** Add a build bundler plugin like "@snowpack/plugin-webpack" or "@snowpack/plugin-parcel" to your `snowpack.config.json` config file.
-
-### Q: What about Eject?
-
-No eject needed! Snowpack guarantees zero lock-in, and CSA strives for the same.
+Turning off the websocket plugin will load AssetSync in both node and the browser, and you will see the peers connect. Alternatively, you can load the example on another machine and see the peers connect via the websocket.
