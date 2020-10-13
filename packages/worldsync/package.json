@@ -16,6 +16,9 @@
     "ava": {
         "files": [
             "test/*.spec.js"
+        ],
+        "nodeArguments": [
+            "--harmony-top-level-await"
         ]
     },
     "dependencies": {
