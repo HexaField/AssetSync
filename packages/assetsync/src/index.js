@@ -1,5 +1,6 @@
 export { Libp2pPlugin } from './plugins/libp2p/index.js'
 export { NetworkPlugin } from './plugins/network/index.js'
+export { RemoteNetworkPlugin } from './plugins/network/remote.js'
 export { StoragePlugin } from './plugins/storage/index.js'
 
 export default class AssetSync {

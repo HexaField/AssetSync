@@ -19,9 +19,9 @@ export default class Peer extends EventEmitter {
 
         // ------- //
 
-        await this.networkPlugin.joinNetwork(networkID)
-        this.networkPlugin.on('onMessage', (message, peerID) => this.emit('onMessage', message, peerID))
-        this.networkPlugin.on('onPeerJoin', (peerID) => this.emit('onPeerJoin', peerID))
-        this.networkPlugin.on('onPeerLeave', (peerID) => this.emit('onPeerLeave', peerID))
+        const network = await this.networkPlugin.joinNetwork(networkID)
+        network.on('onMessage', (message, peerID) => this.emit('onMessage', message, peerID))
+        network.on('onPeerJoin', (peerID) => this.emit('onPeerJoin', peerID))
+        network.on('onPeerLeave', (peerID) => this.emit('onPeerLeave', peerID))
     }
 }

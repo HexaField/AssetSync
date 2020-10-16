@@ -35,25 +35,18 @@ inital config {
 
 */
 
-const BASE_OPTIONS = {
-    enableLogging: true
-}
+import AssetSync, { NetworkPlugin, Libp2pPlugin } from '@AssetSync/AssetSync'
+import { isBrowser, isNode, libp2p } from '@AssetSync/common'
+import { createWorker } from '@AssetSync/WorkerSync'
 
-import { isBrowser, isNode, isWebWorker } from '@AssetSync/common'
-import PeerSync from '@AssetSync/PeerSync'
-import { createOffscreenCanvas } from '@AssetSync/WorkerSync'
-
-// assetSync = file to run in worker
-// options = {
-//     
-// }
+export { Server } from './server/index.js'
+export { Client } from './client/index.js'
 
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
     await worldsync.start(args)
     return worldsync
 }
-
 
 class WorldSync {
 
@@ -63,7 +56,11 @@ class WorldSync {
 
     async start(args = {}) {
 
-        if (isBrowser) {
+        if (isNode) { 
+
+            this._server = args.serverFunc()
+
+        } else {
 
             this._connectedToNode = await new Promise((resolve) => {
                 const sock = new WebSocket('ws://localhost:' + (args.websocketPort || '19843'))
@@ -75,32 +72,72 @@ class WorldSync {
                 sock.onerror = (error) => resolve(false)
                 sock.onclose = (error) => resolve(false)
             })
-
-            console.log('Found node?', this._connectedToNode)
             
             if(!this._connectedToNode) {
 
                 if(window.Worker) {
 
-                    this._worker = createOffscreenCanvas(document.getElementById('transferrablecanvas'), args.serverFile)
+                    this._worker = createWorker(args.serverFile)
+
+                    this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._worker)
+
+                    this._worker.start(args.canvas)
                     
                 } else {
-                    
+                    console.log('ERROR: browser does not support WebWorker')
+                    this._server = args.serverFunc()
                 }
             }
 
-            // const { default: client } = await import('./client/index.js')
-            // this._client = await client()
-
-        } else {
-
-            const server = args.serverFunc()
-
-            // await this._peerSync.initialise(false, websocketPort)
-            // this._server = await this._startServer()
+            this._client = args.client()
 
         }
 
+    }
+
+    async _startNetworkPluginForRemoteLibp2p(remoteHandler) {
+
+        const assetSync = new AssetSync()
+        const libp2pPlugin = new Libp2pPlugin({ libp2p })
+        const networkPlugin = new NetworkPlugin({ 
+            libp2pPlugin,
+            networkEvents: {
+                onPeerJoin: (networkID, peerID) => { 
+                    remoteHandler.sendEvent({
+                        event: 'networkEvent-'+networkID,
+                        data: ['onPeerJoin', peerID]
+                    })
+                },
+                onPeerLeave: (networkID, peerID) => { 
+                    remoteHandler.sendEvent({
+                        event: 'networkEvent-'+networkID,
+                        data: ['onPeerLeave', peerID]
+                    })
+                },
+                onMessage: (networkID, data, from) => { 
+                    remoteHandler.sendEvent({
+                        event: 'networkEvent-'+networkID,
+                        data: ['onMessage', data, from]
+                    })
+                }
+            }
+        })
+
+        await assetSync.registerPlugin(libp2pPlugin)
+        await assetSync.registerPlugin(networkPlugin)
+        await assetSync.initialise()
+
+        remoteHandler.addHandlers({
+            leaveAllNetworks: networkPlugin.leaveAllNetworks.bind(networkPlugin),
+            leaveAllClientNetworks: networkPlugin.leaveAllClientNetworks.bind(networkPlugin),
+            joinNetwork: networkPlugin.joinNetwork.bind(networkPlugin),
+            leaveNetwork: networkPlugin.leaveNetwork.bind(networkPlugin),
+            sendTo: networkPlugin.sendTo.bind(networkPlugin),
+            sendData: networkPlugin.sendData.bind(networkPlugin),
+            getPeers: networkPlugin.getPeers.bind(networkPlugin)
+        })
+
+        return networkPlugin
     }
 
 }

@@ -12,9 +12,9 @@ export async function config() {
   return {
     addresses: {
       listen: [
-        '/ip4/0.0.0.0/tcp/0',
-        '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
-        '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
+        '/dns4/boiling-hamlet-91904.herokuapp.com/tcp/443/wss/p2p-webrtc-star',
+        // '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
+        // '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
       ]
     },
     modules: {
@@ -65,7 +65,10 @@ export async function config() {
     }
   }
 }
-export default async function () {
+
+// todo: add custom config options
+
+export default async function (options = {}) {
   const node = await Libp2p.create(await config())
   await node.start()
   return node

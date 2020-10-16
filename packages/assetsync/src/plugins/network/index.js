@@ -8,7 +8,19 @@ export class NetworkPlugin extends PluginBase {
         this._pluginName = 'CORE_NetworkPlugin'
         this._libp2pPlugin = options.libp2pPlugin
 
-        this.networks = {}
+        this._networks = {}
+        
+        this._networkEvents = options.networkEvents || {
+            onPeerJoin: (networkID, peerID) => { 
+                this._networks[networkID].emit('onPeerJoin', peerID)
+            },
+            onPeerLeave: (networkID, peerID) => { 
+                this._networks[networkID].emit('onPeerLeave', peerID)
+            },
+            onMessage: (networkID, data, from) => { 
+                this._networks[networkID].emit('onMessage', data, from)
+            }
+        }
     }
 
     async start(args = {}) {
@@ -23,35 +35,53 @@ export class NetworkPlugin extends PluginBase {
         return true
     }
 
+    setNetworkEvents(events) {
+        this._networkEvents = events
+    }
+
     async leaveAllNetworks() {
-        for (let networkID of Object.keys(this.networks)) {
-            await this.networks[networkID].leave()
+        for (let networkID of Object.keys(this._networks)) {
+            await this._networks[networkID].leave()
         }
+        return true
     }
 
     async leaveAllClientNetworks() {
-        for (let networkID of Object.keys(this.networks)) {
-            if (!this.networks[networkID]._options.isGlobalNetwork)
-                await this.networks[networkID].leave()
+        for (let networkID of Object.keys(this._networks)) {
+            if (!this._networks[networkID]._options.isGlobalNetwork)
+                await this._networks[networkID].leave()
         }
+        return true
     }
 
     // todo: change callbacks to events
 
     async joinNetwork(networkID) {
-        
-        if (!networkID || !this._libp2pPlugin.getLibp2p()) return false
 
-        if (this.networks[networkID])
+        
+        if (typeof networkID !== 'string')
+        {
+            this.log('ERROR you must supply a network id, got ', networkID)
+            return false
+        }
+
+        if (this._networks[networkID])
             await this.leaveNetwork(networkID)
 
         // todo: make this a plugin
-        this.networks[networkID] = new Room(this._libp2pPlugin.getLibp2p(), networkID)
+        this._networks[networkID] = new Room(this._libp2pPlugin.getLibp2p(), networkID)
+        this._networks[networkID]
 
-        this.networks[networkID].on('peer joined', (peerID) => { this.emit('onPeerJoin', peerID) })
-        this.networks[networkID].on('peer leave', (peerID) => { this.emit('onPeerLeave', peerID) })
-        this.networks[networkID].on('message', (message) => {
+        this._networks[networkID].on('peer joined', (peerID) => { 
+            this._networkEvents.onPeerJoin(networkID, peerID)
+        })
 
+        this._networks[networkID].on('peer leave', (peerID) => {
+            this._networkEvents.onPeerLeave(networkID, peerID)
+        })
+
+        this._networks[networkID].on('message', (message) => {
+            
             if (message.from === this._libp2pPlugin.getPeerID()) return
 
             if (message.data === undefined || message.data === null) {
@@ -69,17 +99,18 @@ export class NetworkPlugin extends PluginBase {
                 return;
             }
 
-            this.emit('onMessage', data, message.from);
+            this._networkEvents.onMessage(networkID, data, message.from)
         })
 
-        return true
+        // returning ipfs-pubsub-room also exposes getPeers() & hasPeer()
+        return this._networks[networkID]
     }
 
     async leaveNetwork(networkID) {
-        if (!this.networks[networkID]) return
+        if (!this._networks[networkID]) return
         try {
-            await this.networks[networkID].leave()
-            delete this.networks[networkID]
+            await this._networks[networkID].leave()
+            delete this._networks[networkID]
             return true
         } catch (error) {
             return false
@@ -87,21 +118,23 @@ export class NetworkPlugin extends PluginBase {
     }
 
     async sendTo(networkID, protocol, content, peerID) {
-        if (!this.networks[networkID]) return
+        if (!this._networks[networkID]) return
         if (!peerID) return;
         if (!content) content = '';
 
-        await this.networks[networkID].sendTo(peerID, JSON.stringify({ protocol, content }));
+        await this._networks[networkID].sendTo(peerID, JSON.stringify({ protocol, content }))
+        return true
     }
 
     async sendData(networkID, protocol, content) {
-        if (!this.networks[networkID]) return
+        if (!this._networks[networkID]) return
         if (!content) content = '';
 
-        await this.networks[networkID].broadcast(JSON.stringify({ protocol: protocol, content: content }));
+        await this._networks[networkID].broadcast(JSON.stringify({ protocol: protocol, content: content }))
+        return true
     }
 
-    getPeers(networkID) {
-        return this.networks[networkID].getPeers()
+    async getPeers(networkID) {
+        return this._networks[networkID].getPeers()
     }
 }

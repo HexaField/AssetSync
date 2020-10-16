@@ -1,11 +1,15 @@
-import worldSync from '@AssetSync/WorldSync'
+import { isNode } from '@AssetSync/common'
+import WorldSync from '@AssetSync/WorldSync'
+import { runApp } from './server/index.js'
 
 async function startApp() {
 
-    const WorldSync = await worldSync({ 
-        serverFile: '_dist_/start-server/index.js', 
-        serverFunc: await(await import('./start-server/index.js')).default 
+    const worldSync = await WorldSync({ 
+        serverFile: '_dist_/server/index.js', 
+        serverFunc: runApp,
+        client: await(await import('./client/index.js')).default,
+        canvas: isNode ? undefined : document.getElementById('transferrablecanvas')
     })
-    // console.log(WorldSync)
+    
 }
 startApp()

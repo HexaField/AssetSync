@@ -7,10 +7,8 @@ export default class RemoteResponseInterface
     }
 
     // creates a promise and waits for response
-    async request(type, protocol, data)
+    async request(protocol, data)
     {
-        if(!data) data = ''
-
         return await new Promise((resolve, reject) => {
 
             const requestTimestamp = protocol + '-' + Date.now() + '-' + Math.round(Math.random() * 1000)
@@ -22,7 +20,7 @@ export default class RemoteResponseInterface
                     : resolve(_returnedData.data) 
             })
             
-            this.sendRequest(type, { protocol: protocol, requestTimestamp: requestTimestamp, data: data })
+            this.sendRequest('request', { protocol, requestTimestamp: requestTimestamp, data: data })
         })
     }
 

@@ -1,3 +1,13 @@
-export default async function startClient() {
+export class Client {
+
+    constructor() {
+
+    }
+
+    async start() {
+
+
+        return this
+    }
 
 }

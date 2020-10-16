@@ -1,2 +1,2 @@
-export { createOffscreenCanvas } from './createOffscreenCanvas.js';
-export { elementProxyReceiver } from './elementProxyReceiver.js';
+export { receiveWorker } from './receiveWorker.js'
+export { createWorker } from './createWorker.js'

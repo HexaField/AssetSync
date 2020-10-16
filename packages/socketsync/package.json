@@ -1,5 +1,5 @@
 {
-    "name": "@AssetSync/PeerSync",
+    "name": "@AssetSync/SocketSync",
     "version": "0.0.0",
     "main": "src/index.js",
     "author": "HexaField <joshfield999@gmail.com>",
