@@ -10,6 +10,8 @@ export class Server {
         this.start = this.start.bind(this)
         if(isWebWorker)
             receiveWorker(this.start)
+        else
+            this.start()
     }
 
     /**

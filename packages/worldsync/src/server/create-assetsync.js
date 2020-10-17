@@ -19,8 +19,9 @@ export async function startAssetSync(args = {}) {
         networkPlugin = new RemoteNetworkPlugin()
         networkPlugin.setTarget(args.proxy)
     } else {
-        const libp2pPlugin = await assetSync.registerPlugin(new Libp2pPlugin({ libp2p }))
-        networkPlugin = new NetworkPlugin({ libp2pPlugin })
+        const transportPlugin = new Libp2pPlugin({ libp2p, minPeersCount: 4 })
+        networkPlugin = new NetworkPlugin({ transportPlugin })
+        await assetSync.registerPlugin(transportPlugin)
     }
     const storagePlugin = new StoragePlugin()
 
@@ -38,7 +39,7 @@ export async function startAssetSync(args = {}) {
     })
     network.on('onPeerJoin', (peerID) => {
         console.log(peerID, 'has joined')
-        networkPlugin.sendTo('test-network-worldsync', '', 'Hello peer!', peerID)
+        networkPlugin.sendTo('test-network-worldsync', 'Hello peer!', peerID)
     })
     network.on('onPeerLeave', (peerID) => {
         console.log(peerID, 'has left')

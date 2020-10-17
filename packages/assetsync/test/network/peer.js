@@ -1,5 +1,5 @@
 import AssetSync from '../../src/index.js'
-import { Libp2pPlugin } from '../../src/plugins/libp2p/index.js'
+import { Libp2pPlugin } from '../../src/plugins/libp2pTransport/index.js'
 import { NetworkPlugin } from '../../src/plugins/network/index.js'
 import { EventEmitter } from 'events'
 
@@ -9,7 +9,7 @@ export default class Peer extends EventEmitter {
         super()
         this.assetSync = new AssetSync()
         this.libp2pPlugin = new Libp2pPlugin({ libp2p })
-        this.networkPlugin = new NetworkPlugin({ libp2pPlugin: this.libp2pPlugin })
+        this.networkPlugin = new NetworkPlugin({ transportPlugin: this.libp2pPlugin })
     }
 
     async start(networkID) {

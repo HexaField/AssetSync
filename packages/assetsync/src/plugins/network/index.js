@@ -1,4 +1,3 @@
-import Room from './ipfs-pubsub-room/index.js'
 import { PluginBase } from '../../PluginBase.js'
 
 export class NetworkPlugin extends PluginBase {
@@ -6,7 +5,7 @@ export class NetworkPlugin extends PluginBase {
     constructor(options = {}) {
         super(options)
         this._pluginName = 'CORE_NetworkPlugin'
-        this._libp2pPlugin = options.libp2pPlugin
+        this._transportPlugin = options.transportPlugin
 
         this._networks = {}
         
@@ -58,7 +57,6 @@ export class NetworkPlugin extends PluginBase {
 
     async joinNetwork(networkID) {
 
-        
         if (typeof networkID !== 'string')
         {
             this.log('ERROR you must supply a network id, got ', networkID)
@@ -69,7 +67,7 @@ export class NetworkPlugin extends PluginBase {
             await this.leaveNetwork(networkID)
 
         // todo: make this a plugin
-        this._networks[networkID] = new Room(this._libp2pPlugin.getLibp2p(), networkID)
+        this._networks[networkID] = this._transportPlugin.joinNetwork(networkID)
         this._networks[networkID]
 
         this._networks[networkID].on('peer joined', (peerID) => { 
@@ -82,7 +80,7 @@ export class NetworkPlugin extends PluginBase {
 
         this._networks[networkID].on('message', (message) => {
             
-            if (message.from === this._libp2pPlugin.getPeerID()) return
+            if (message.from === this._transportPlugin.getPeerID()) return
 
             if (message.data === undefined || message.data === null) {
                 this.warn('Received bad buffer data', message.data, 'from peer', message.from)
@@ -117,20 +115,13 @@ export class NetworkPlugin extends PluginBase {
         }
     }
 
-    async sendTo(networkID, protocol, content, peerID) {
-        if (!this._networks[networkID]) return
-        if (!peerID) return;
-        if (!content) content = '';
-
-        await this._networks[networkID].sendTo(peerID, JSON.stringify({ protocol, content }))
+    async sendTo(networkID, content, peerID) {
+        await this._networks[networkID].sendTo(peerID, content)
         return true
     }
 
-    async sendData(networkID, protocol, content) {
-        if (!this._networks[networkID]) return
-        if (!content) content = '';
-
-        await this._networks[networkID].broadcast(JSON.stringify({ protocol: protocol, content: content }))
+    async sendData(networkID, content) {
+        await this._networks[networkID].broadcast(content)
         return true
     }
 

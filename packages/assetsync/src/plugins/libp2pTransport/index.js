@@ -1,5 +1,6 @@
 import { PluginBase } from '../../PluginBase.js'
 import { number } from '@AssetSync/common'
+import Room from './ipfs-pubsub-room/index.js'
 
 export class Libp2pPlugin extends PluginBase {
 
@@ -23,9 +24,9 @@ export class Libp2pPlugin extends PluginBase {
 
         this.peerInfo = {}
         this.peerInfo.peersCount = 0;
-        this.showStats();
+        this._showStats();
 
-        await this.waitForLibp2pPeers(number(this._options.minPeersCount))
+        await this._waitForLibp2pPeers(number(this._options.minPeersCount))
         return true
     }
 
@@ -41,11 +42,15 @@ export class Libp2pPlugin extends PluginBase {
         return this._peerID
     }
 
-    getLibp2p() {
+    getTransport() {
         return this._libp2p
     }
 
-    showStats() {
+    joinNetwork(networkID) {
+        return new Room(this._libp2p, networkID)
+    }
+
+    _showStats() {
         this.peerInterval = setInterval(async () => {
             try {
                 this.peerInfo.peersCount = await this._libp2p.connections.size
@@ -55,7 +60,7 @@ export class Libp2pPlugin extends PluginBase {
         }, 1000)
     }
 
-    async waitForLibp2pPeers(minPeersCount) {
+    async _waitForLibp2pPeers(minPeersCount) {
         this.log('Connecting to the network...', minPeersCount || '')
         return await new Promise((resolve, reject) => {
             const interval = setInterval(() => {

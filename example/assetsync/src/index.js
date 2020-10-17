@@ -25,13 +25,13 @@ async function run() {
     // ------- //
 
     const assetSync = new AssetSync()
-    const libp2pPlugin = new Libp2pPlugin({ libp2p })
-    const networkPlugin = new NetworkPlugin({ libp2pPlugin })
+    const transportPlugin = new Libp2pPlugin({ libp2p })
+    const networkPlugin = new NetworkPlugin({ transportPlugin })
     const storagePlugin = new StoragePlugin()
 
     // ------- //
 
-    await assetSync.registerPlugin(libp2pPlugin)
+    await assetSync.registerPlugin(transportPlugin)
     await assetSync.registerPlugin(networkPlugin)
     await assetSync.registerPlugin(storagePlugin)
     await assetSync.initialise()

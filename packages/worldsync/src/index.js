@@ -98,9 +98,9 @@ class WorldSync {
     async _startNetworkPluginForRemoteLibp2p(remoteHandler) {
 
         const assetSync = new AssetSync()
-        const libp2pPlugin = new Libp2pPlugin({ libp2p })
+        const transportPlugin = new Libp2pPlugin({ libp2p })
         const networkPlugin = new NetworkPlugin({ 
-            libp2pPlugin,
+            transportPlugin,
             networkEvents: {
                 onPeerJoin: (networkID, peerID) => { 
                     remoteHandler.sendEvent({
@@ -123,7 +123,7 @@ class WorldSync {
             }
         })
 
-        await assetSync.registerPlugin(libp2pPlugin)
+        await assetSync.registerPlugin(transportPlugin)
         await assetSync.registerPlugin(networkPlugin)
         await assetSync.initialise()
 
