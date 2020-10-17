@@ -1,13 +1,13 @@
-import { PluginBase } from '../../PluginBase.js'
+import { TransportBase } from '../transport/index.js'
 import { number } from '@AssetSync/common'
 import Room from './ipfs-pubsub-room/index.js'
 
-export class Libp2pPlugin extends PluginBase {
+export class Libp2pPlugin extends TransportBase {
 
     constructor(options = {}) {
         super(options)
         this._libp2p = options.libp2p
-        this._pluginName = 'CORE_Libp2pPlugin'
+        this._pluginName = 'CORE_Libp2pTransportPlugin'
     }
 
     async start(args = {}) {

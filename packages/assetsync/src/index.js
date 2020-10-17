@@ -1,3 +1,4 @@
+export { TransportBase } from './plugins/transport/index.js'
 export { Libp2pPlugin } from './plugins/libp2pTransport/index.js'
 export { NetworkPlugin } from './plugins/network/index.js'
 export { RemoteNetworkPlugin } from './plugins/network/remote.js'

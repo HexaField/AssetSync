@@ -29,6 +29,10 @@ export class PluginBase extends EventEmitter {
             console.warn(new Date().toTimeString().substring(0, 8) + ": " + this.getName() + ":", ...message)
     }
 
+    error(...message) {
+        console.error(new Date().toTimeString().substring(0, 8) + ": " + this.getName() + ":", ...message)
+    }
+
     getName() {
         return this._pluginName
     }
