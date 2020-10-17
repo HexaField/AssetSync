@@ -35,7 +35,6 @@
         "multiaddr": "^8.0.0"
     },
     "dependencies": {
-        "@AssetSync/PeerSync": "^0.0.0",
         "@AssetSync/common": "^0.0.0",
         "@forlagshuset/simple-fs": "^0.4.0",
         "file-type": "^14.7.1",
