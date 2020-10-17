@@ -89,18 +89,9 @@ export class NetworkPlugin extends PluginBase {
 
             let data = message.data
 
-            try {
-                data = JSON.parse(data);
-            }
-            catch (error) {
-                this.warn('Received bad json data', data, 'from peer', message.from);
-                return;
-            }
-
             this._networkEvents.onMessage(networkID, data, message.from)
         })
 
-        // returning ipfs-pubsub-room also exposes getPeers() & hasPeer()
         return this._networks[networkID]
     }
 
