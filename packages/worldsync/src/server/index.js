@@ -1,17 +1,19 @@
-import { isWebWorker } from '@AssetSync/common'
+import { isBrowser, isWebWorker } from '@AssetSync/common'
 import { receiveWorker } from '@AssetSync/WorkerSync'
 import { startAssetSync } from './create-assetsync.js'
-
-
 export class Server {
 
-    constructor() {
-        
-        this.start = this.start.bind(this)
-        if(isWebWorker)
-            receiveWorker(this.start)
-        else
-            this.start()
+    constructor(args = {}) {
+        if(args.isSlave) {
+
+        }
+        else {
+            this.start = this.start.bind(this)
+            if(isWebWorker)
+                receiveWorker(this.start)
+            else
+               this.start({ inputElement: args.socket })
+        }
     }
 
     /**
@@ -21,10 +23,9 @@ export class Server {
     */
     
     async start(args = {}) {
-        
+
         this._assetSync = await startAssetSync({ proxy: args.inputElement })
 
-        return this
     }
 
 }

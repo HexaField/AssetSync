@@ -4,13 +4,18 @@ import { isBrowser } from '@AssetSync/common'
 import clone from 'lodash.clonedeep'
 import { EventEmitter } from 'events'
 
-export default class PeerSync extends EventEmitter {
+export default class SocketSync extends EventEmitter {
 
     constructor() {
         super()
         this._protocolFunctions = {}
         this._callbacks = {}
         this._isMaster = false
+        this._interface = undefined // TODO: return a facade server interface 
+    }
+
+    getServerInterface() {
+        return this._interface
     }
 
     // INITIALISE
@@ -37,24 +42,20 @@ export default class PeerSync extends EventEmitter {
             console.log('Lost connection with client' + (error ? ' with error ' + error : ''))
             this.loseSlave()
         })
+        console.log('Started WebSocket server')
     }
 
     async initialiseClient(websocketPort) {
 
-        await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this.receiveWebsocketData = this.receiveWebsocketData.bind(this)
             this._websocket = new WebSocketClient({ port: websocketPort })
             this._websocket.on('connect', () => {
-
                 console.log('Data Module: Successfully connected to local node!')
-                this._isMaster = false
-                resolve()
+                resolve(true)
             })
             this._websocket.on('disconnect', async (error) => {
-
-                // Still need to figure out what to do here
-
-                throw new Error('ERROR! Lost connection to server!')
+                resolve(false)
             })
             this._websocket.on('message', this.receiveWebsocketData)
         })

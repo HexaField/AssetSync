@@ -38,6 +38,11 @@ inital config {
 import AssetSync, { NetworkPlugin, Libp2pPlugin } from '@AssetSync/AssetSync'
 import { isBrowser, isNode, libp2p } from '@AssetSync/common'
 import { createWorker } from '@AssetSync/WorkerSync'
+import PeerSync from '@AssetSync/SocketSync'
+
+
+export { Server } from './server/index.js'
+export { Client } from './client/index.js'
 
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
@@ -53,24 +58,33 @@ class WorldSync {
 
     async start(args = {}) {
 
+        this._peerSync = new PeerSync()
+
         if (isNode) { 
 
             this._server = args.serverFunc()
+            await this._peerSync.initialise()
 
         } else {
 
-            this._connectedToNode = await new Promise((resolve) => {
-                const sock = new WebSocket('ws://localhost:' + (args.websocketPort || '19843'))
-                sock.onopen = () => {
-                    console.log('Found server!')
-                    sock.close(1000)
-                    resolve(true)
-                }
-                sock.onerror = (error) => resolve(false)
-                sock.onclose = (error) => resolve(false)
-            })
+            this._connectedToNode = !await this._peerSync.initialise()
+            //  await new Promise((resolve) => {
+            //     const sock = new WebSocket('ws://localhost:' + (args.websocketPort || '19843'))
+            //     sock.onopen = () => {
+            //         console.log('Found server!')
+            //         sock.close(1000)
+            //         resolve(true)
+            //     }
+            //     sock.onerror = (error) => resolve(false)
+            //     sock.onclose = (error) => resolve(false)
+            // })
             
-            if(!this._connectedToNode) {
+            if(this._connectedToNode) {
+                
+                console.log('Found local node, starting server interface...')
+                this._server = args.serverFunc(true, this._peerSync.getServerInterface())
+
+            } else {
 
                 if(window.Worker) {
 
@@ -84,6 +98,7 @@ class WorldSync {
                     console.log('ERROR: browser does not support WebWorker')
                     this._server = args.serverFunc()
                 }
+
             }
 
             this._client = args.client()
