@@ -138,7 +138,7 @@ class WorldSync {
         await assetSync.registerPlugin(networkPlugin)
         await assetSync.initialise()
 
-        remoteHandler.addHandlers({
+        remoteHandler.addRequestOpcodes({
             leaveAllNetworks: networkPlugin.leaveAllNetworks.bind(networkPlugin),
             leaveAllClientNetworks: networkPlugin.leaveAllClientNetworks.bind(networkPlugin),
             joinNetwork: networkPlugin.joinNetwork.bind(networkPlugin),
