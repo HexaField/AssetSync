@@ -47,7 +47,7 @@ export class Libp2pPlugin extends TransportBase {
     }
 
     joinNetwork(networkID) {
-        return new Room(this._libp2p, networkID)
+        return new Room(this._libp2p, networkID, { pollInterval: 100 })
     }
 
     _showStats() {

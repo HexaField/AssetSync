@@ -1,1 +1,1 @@
-export default 'ipfs-pubsub-room/v2'
+export default '/assetsync/1.0.0'

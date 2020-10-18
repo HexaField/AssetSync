@@ -39,9 +39,6 @@ import AssetSync, { NetworkPlugin, Libp2pPlugin } from '@AssetSync/AssetSync'
 import { isBrowser, isNode, libp2p } from '@AssetSync/common'
 import { createWorker } from '@AssetSync/WorkerSync'
 
-export { Server } from './server/index.js'
-export { Client } from './client/index.js'
-
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
     await worldsync.start(args)
@@ -90,7 +87,6 @@ class WorldSync {
             }
 
             this._client = args.client()
-
         }
 
     }
