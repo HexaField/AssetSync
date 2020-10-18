@@ -101,7 +101,7 @@ class WorldSync {
 
             }
 
-            this._client = args.client()
+            this._client = args.client(this)
         }
 
     }

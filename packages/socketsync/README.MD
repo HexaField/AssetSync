@@ -6,4 +6,4 @@ Allows you to send arbitrary buffers and message between nodejs and the browser 
 
 ## API
 
-*to do*
+`async initialise(forceSlave: boolean, websocketPort: string): boolean`

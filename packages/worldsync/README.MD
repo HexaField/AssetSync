@@ -61,7 +61,14 @@ World Sync is split into your traditional server & client architecture, except t
 
 ## API
 
-*to do*
+```
+createWorldSync({
+    serverFile: string,
+    serverFunc: function (isSlave: boolean, peerSync: PeerSync),
+    client: function: (worldSync: WorldSync),
+    canvas: OffscreenCanvas
+}): WorldSync
+```
 
 ## Resources
 *todo*

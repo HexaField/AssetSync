@@ -1,13 +1,13 @@
 export class Client {
 
-    constructor() {
+    constructor(worldSync) {
+
+        this.worldSync = worldSync
 
     }
 
     async start() {
 
-
-        return this
     }
 
 }

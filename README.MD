@@ -14,7 +14,15 @@ For your assets - data & payments
 
 ## [Peer Sync](packages/PeerSync)
 
+Provides a simple interface for sending buffers, requests and events across a messaging context
+
+## [Socket Sync](packages/SocketSync)
+
 For connecting nodejs with the browser
+
+## [Worker Sync](packages/WorkerSync)
+
+For connecting workers to the DOM
 
 ## [World Sync](packages/WorldSync)
 
@@ -28,15 +36,15 @@ Please read the [contributing document](CONTRIBUTING.MD) if you would like to co
 
 General
 
-- [x] Unit tests
+- [x] Unit tests (not comprehensive)
 - [ ] Integration tests
-- [ ] Lint
 - [ ] Migrate to typescript
 
-PeerSync
+PeerSync / SocketSync / WorkerSync / QUICSync
 
 - [x] Messaging
 - [x] Callbacks
+- [x] Events
 - [ ] Array Buffers
 
 AssetSync
@@ -47,13 +55,21 @@ AssetSync
 - [x] File system plugin
 - [ ] DHT plugin
 - [ ] Synchronised database plugin
+- [ ] QUIC network plugin 
+- [ ] DHT plugin
+- [ ] Crypto plugin
+- [ ] ZKP plugin
+- [ ] Ring Sig plugin
+- [ ] ILP plugin
+.
 
 WorldSync
 
-- [ ] Basic client & server structure
-- [ ] Websocket messages and buffers with PeerSync
-- [ ] AssetSync integration
-- [ ] WebWorkers
+- [x] Basic client & server structure
+- [x] Websocket messages and buffers with PeerSync
+- [x] AssetSync integration
+- [x] WebWorkers
 - [ ] Example project running threejs, ammojs with networking
+- [ ] Audio (worklets?)
 
 more to come...

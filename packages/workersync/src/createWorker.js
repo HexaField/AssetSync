@@ -2,7 +2,7 @@ import { getCircularReplacer, simplifyObject } from '@AssetSync/common'
 import { PeerSync } from '@AssetSync/PeerSync'
 import { EventEmitter } from 'events'
 
-class ElementProxy extends PeerSync {
+class WorkerMainProxy extends PeerSync {
     constructor(worker) {
         super()
 
@@ -38,6 +38,6 @@ class ElementProxy extends PeerSync {
 export function createWorker(workerURL) {
     const worker = new Worker(workerURL, { type: 'module' })
     worker.postMessage('');
-    const proxy = new ElementProxy(worker)
+    const proxy = new WorkerMainProxy(worker)
     return proxy
 }

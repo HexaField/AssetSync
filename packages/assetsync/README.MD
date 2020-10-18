@@ -25,17 +25,17 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 
 ## Plugins
 
-### Libp2p
+### Transport
 
-- if you are just using the networking plugin
+- a base class for transport plugins
+
+### Libp2p (Transport)
+
+- provides a simple API for pubsub & direct messaging via Libp2p
 
 ### Network
 
-- requires Libp2p plugin
-
-*TODO*
-
-- make generic & not rely on libp2p
+- requires a transport plugin
 
 ### File Storage
 

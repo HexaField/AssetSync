@@ -6,4 +6,6 @@ Allows you to send arbitrary buffers and message between workers
 
 ## API
 
-*to do*
+`createWorker(workerURL: string): WorkerMainProxy`
+
+`receiveWorker(init: function({ canvas: OffscreenCanvas, peerSync: PeerSync })): null`

@@ -1,8 +1,6 @@
 import WebSocketClient from './WebSocketClient.js'
 import WebSocketServer from './WebSocketServer.js'
 import { isBrowser } from '@AssetSync/common'
-import clone from 'lodash.clonedeep'
-import { EventEmitter } from 'events'
 import { PeerSync } from '@AssetSync/PeerSync'
 
 export default class SocketSync extends PeerSync {
@@ -17,24 +15,24 @@ export default class SocketSync extends PeerSync {
 
     async initialise(forceSlave, websocketPort) {
         if (forceSlave) {
-            await this.initialiseClient(websocketPort)
+            await this._initialiseClient(websocketPort)
         } else if (isBrowser) {
-            if (!await this.initialiseClient(websocketPort))
+            if (!await this._initialiseClient(websocketPort))
                 this._isMaster = true // no need to initialise a websocket
         } else {
-            await this.initialiseServer(websocketPort)
+            await this._initialiseServer(websocketPort)
             this._isMaster = true
         }
         return this._isMaster
     }
 
-    async initialiseServer(websocketPort) {
+    async _initialiseServer(websocketPort) {
 
         this._websocket = new WebSocketServer({ port: websocketPort })
         
         this._websocket.on('disconnect', (error) => {
             console.log('Lost connection with client' + (error ? ' with error ' + error : ''))
-            this.loseSlave()
+            this._loseSlave()
         })
 
         this._websocket.on('connection', (ws) => {
@@ -44,7 +42,7 @@ export default class SocketSync extends PeerSync {
         console.log('Started WebSocket server')
     }
 
-    async initialiseClient(websocketPort) {
+    async _initialiseClient(websocketPort) {
 
         return await new Promise((resolve, reject) => {
 
@@ -62,7 +60,7 @@ export default class SocketSync extends PeerSync {
         })
     }
 
-    loseSlave() {
+    _loseSlave() {
         // TODO: figure out how to properly initialise master
         // this.initialiseMaster()
     }

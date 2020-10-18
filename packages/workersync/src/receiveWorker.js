@@ -1,7 +1,7 @@
 import { PeerSync } from '@AssetSync/PeerSync'
 import { EventEmitter } from 'events'
 
-class ProxyReceiver extends PeerSync {
+class WorkerThreadProxy extends PeerSync {
     constructor() {
         super()
         const eventEmitter = new EventEmitter()
@@ -11,7 +11,7 @@ class ProxyReceiver extends PeerSync {
 }
 
 export function receiveWorker(init) {
-    const proxy = new ProxyReceiver()
+    const proxy = new WorkerThreadProxy()
 
     proxy.addListener('start', (data) => {
         proxy.removeAllListeners('start')
@@ -25,4 +25,6 @@ export function receiveWorker(init) {
         proxy.clientWidth = data.width
         proxy.clientHeight = data.height
     })
+
+    return proxy
 }
