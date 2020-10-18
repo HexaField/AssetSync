@@ -12,7 +12,7 @@ export class Server {
             if(isWebWorker)
                 receiveWorker(this.start)
             else
-               this.start({ inputElement: args.socket })
+               this.start({ peerSync: args.peerSync })
         }
     }
 
@@ -24,7 +24,7 @@ export class Server {
     
     async start(args = {}) {
 
-        this._assetSync = await startAssetSync({ proxy: args.inputElement })
+        this._assetSync = await startAssetSync({ proxy: args.peerSync })
 
     }
 

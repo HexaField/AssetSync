@@ -56,6 +56,6 @@ export class RemoteNetworkPlugin extends NetworkPlugin {
     }
 
     async sendEvent(protocol, args) {
-        return await this._target.request(protocol, args)
+        return await this._target.makeRequest(protocol, args)
     }
 }

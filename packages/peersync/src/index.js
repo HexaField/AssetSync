@@ -1,5 +1,5 @@
 import Requester from './Requester.js'
-import { simplifyObject } from '@AssetSync/common'
+import { isWebWorker, simplifyObject } from '@AssetSync/common'
 import { EventEmitter } from 'events'
 
 /**  <message> {
@@ -23,22 +23,23 @@ import { EventEmitter } from 'events'
 
 export class PeerSync extends EventEmitter {
 
-    constructor(sendMessage, onMessage) {
+    constructor() {
         super()
 
+        this._sendMessage = () => { } // no op
         this._handleMessage = this._handleMessage.bind(this)
 
-        this.sendMessage = sendMessage
         this.sendMessage = this.sendMessage.bind(this)
-        onMessage = this._handleMessage
 
         this.makeRequest = this.makeRequest.bind(this)
         this._sendRequest = this._sendRequest.bind(this)
+
         this._receiveRequest = this._receiveRequest.bind(this)
         this._receiveEvent = this._receiveEvent.bind(this)
+        this._receiveReply = this._receiveReply.bind(this)
 
         this.requester = new Requester(this._sendRequest)
-        
+
         this._requestHandlers = {}
 
         this._handlers = {
@@ -50,11 +51,27 @@ export class PeerSync extends EventEmitter {
 
     // API
 
-    sendEvent(event, args) {
-        this.sendMessage({ 
+    /**
+     * 
+     * @param {function} sendMessage 
+     * @param {EventEmitter} onMessage 
+     */
+    setMessageHandlers(sendMessage, onMessage) {
+        this._sendMessage = sendMessage
+        this._sendMessage = this._sendMessage.bind(this)
+        onMessage.on('message', this._handleMessage)
+    }
+
+    sendMessage(message, ...buffers) {
+        if (this._sendMessage)
+            this._sendMessage(message, ...buffers)
+    }
+
+    sendEvent(event, args, ...buffers) {
+        this.sendMessage({
             handle: 'event',
             data: { event, args }
-        })
+        }, ...buffers)
     }
 
     async makeRequest(opcode, data) {
@@ -102,18 +119,21 @@ export class PeerSync extends EventEmitter {
     }
 
     _receiveReply(data) {
-      this.requester.receiveReply(data)
+        this.requester.receiveReply(data)
     }
 
     _sendRequest(request) {
-        this.sendMessage({ 
+        this.sendMessage({
             handle: 'request',
             data: request
         })
     }
 
     _receiveEvent(event) {
-        this.emit(event.type, event.args)
+        if(Array.isArray(event.args))
+            this.emit(event.event, ...event.args)
+        else
+            this.emit(event.event, event.args)
     }
 
     _handleMessage(message) {

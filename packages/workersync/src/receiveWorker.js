@@ -1,8 +1,12 @@
 import { PeerSync } from '@AssetSync/PeerSync'
+import { EventEmitter } from 'events'
 
 class ProxyReceiver extends PeerSync {
     constructor() {
-        super((...data) => { self.postMessage(...data) }, self.onmessage)
+        super()
+        const eventEmitter = new EventEmitter()
+        self.onmessage = (message) => { eventEmitter.emit('message', message.data)}
+        this.setMessageHandlers((...data) => { self.postMessage(...data) }, eventEmitter)
     }
 }
 
@@ -10,11 +14,15 @@ export function receiveWorker(init) {
     const proxy = new ProxyReceiver()
 
     proxy.addListener('start', (data) => {
-        proxy.removeListener('start')
+        proxy.removeAllListeners('start')
         init({
             canvas: data.canvas,
-            inputElement: this,
-            userData: data.userData
+            peerSync: proxy
         })
+    })
+
+    proxy.addListener('size', (data) => {
+        proxy.clientWidth = data.width
+        proxy.clientHeight = data.height
     })
 }

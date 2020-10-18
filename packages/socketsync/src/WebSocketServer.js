@@ -25,7 +25,7 @@ export default class WebSocketServer extends EventEmitter {
 
     onConnect(ws) {
 
-        ws.on('message', (data) => this.emit('message', JSON.parse(data)))
+        ws.on('message', (data) => this.emit('message', data))
         this.connection = ws
         console.log('WebSocketServer: Successfully connected to client!')
 
@@ -48,7 +48,7 @@ export default class WebSocketServer extends EventEmitter {
         }, 1000);
     }
 
-    sendData(data) {
+    sendMessage(data) {
         if (this.connection)
             this.connection.send(JSON.stringify(data))
     }

@@ -38,7 +38,7 @@ inital config {
 import AssetSync, { NetworkPlugin, Libp2pPlugin } from '@AssetSync/AssetSync'
 import { isBrowser, isNode, libp2p } from '@AssetSync/common'
 import { createWorker } from '@AssetSync/WorkerSync'
-import PeerSync from '@AssetSync/SocketSync'
+import SocketSync from '@AssetSync/SocketSync'
 
 
 export { Server } from './server/index.js'
@@ -58,16 +58,16 @@ class WorldSync {
 
     async start(args = {}) {
 
-        this._peerSync = new PeerSync()
+        this._socketSync = new SocketSync()
 
         if (isNode) { 
 
-            this._server = args.serverFunc()
-            await this._peerSync.initialise()
+            this._server = args.serverFunc(false, this._socketSync)
+            await this._socketSync.initialise()
 
         } else {
 
-            this._connectedToNode = !await this._peerSync.initialise()
+            this._connectedToNode = !await this._socketSync.initialise()
             //  await new Promise((resolve) => {
             //     const sock = new WebSocket('ws://localhost:' + (args.websocketPort || '19843'))
             //     sock.onopen = () => {
@@ -82,7 +82,7 @@ class WorldSync {
             if(this._connectedToNode) {
                 
                 console.log('Found local node, starting server interface...')
-                this._server = args.serverFunc(true, this._peerSync.getServerInterface())
+                this._server = args.serverFunc(true, this._socketSync)
 
             } else {
 
@@ -96,7 +96,7 @@ class WorldSync {
                     
                 } else {
                     console.log('ERROR: browser does not support WebWorker')
-                    this._server = args.serverFunc()
+                    this._server = args.serverFunc(false, this._socketSync)
                 }
 
             }
@@ -114,22 +114,13 @@ class WorldSync {
             transportPlugin,
             networkEvents: {
                 onPeerJoin: (networkID, peerID) => { 
-                    remoteHandler.sendEvent({
-                        event: 'networkEvent-'+networkID,
-                        data: ['onPeerJoin', peerID]
-                    })
+                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onPeerJoin', peerID])
                 },
                 onPeerLeave: (networkID, peerID) => { 
-                    remoteHandler.sendEvent({
-                        event: 'networkEvent-'+networkID,
-                        data: ['onPeerLeave', peerID]
-                    })
+                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onPeerLeave', peerID])
                 },
                 onMessage: (networkID, data, from) => { 
-                    remoteHandler.sendEvent({
-                        event: 'networkEvent-'+networkID,
-                        data: ['onMessage', data, from]
-                    })
+                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onMessage', data, from])
                 }
             }
         })
