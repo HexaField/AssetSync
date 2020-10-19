@@ -7,7 +7,7 @@
         "setup": "yarn install && lerna bootstrap",
         "test": "lerna run test",
         "build": "yarn test && lerna run clean:build && lerna run build",
-        "example": "npm run setup && npm run build && cd examples/worldsync && npm run build"
+        "example": "yarn setup && yarn build && cd examples/worldsync && yarn build"
     },
     "devDependencies": {
         "lerna": "^3.22.1",
