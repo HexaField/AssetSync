@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@AssetSync/WorldSync": "./@AssetSync/WorldSync.js",
+    "@AssetSync/common": "./@AssetSync/common.js",
+    "@enable3d/ammo-physics": "./@enable3d/ammo-physics.js"
+  }
+}
