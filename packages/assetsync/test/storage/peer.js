@@ -11,7 +11,7 @@ export default class Peer extends EventEmitter {
     }
 
     async start() {
-        await this.assetSync.registerPlugin(this.storagePlugin)
+        await this.assetSync.register({ storagePlugin: this.storagePlugin })
         await this.assetSync.initialise()
         // ------- //
         // be careful! make sure yo set the root dir and clean it up after!

@@ -14,10 +14,17 @@ class WorkerMainProxy extends PeerSync {
 
         this.start = this.start.bind(this)
         this.sendSize = this.sendSize.bind(this)
+
+        this.onEvent = this.onEvent.bind(this)
+    }
+
+    onEvent(event) {
+        this.sendEvent(simplifyObject(event))
     }
 
     sendSize() {
-        this.sendEvent('size', {
+        this.sendEvent({
+            type: 'size',
             width: this.canvas.clientWidth,
             height: this.canvas.clientHeight,
         })
@@ -28,9 +35,17 @@ class WorkerMainProxy extends PeerSync {
 
             const offscreen = canvas.transferControlToOffscreen()
             this.canvas = canvas
-            this.sendEvent('start', { canvas: offscreen }, [offscreen])
             this.sendSize()
+            this.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio }, [offscreen])
             window.addEventListener('resize', this.sendSize)
+
+            this.addEventListener('addEventListener', (event) => {
+                this.canvas.addEventListener(event.event, this.onEvent)
+            })
+
+            this.addEventListener('removeEventListener', (event) => {
+                this.canvas.removeEventListener(event.event, this.onEvent)
+            })
         }
     }
 }

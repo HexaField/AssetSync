@@ -13,8 +13,7 @@ export default class Peer extends EventEmitter {
     }
 
     async start(networkID) {
-        await this.assetSync.registerPlugin(this.libp2pPlugin)
-        await this.assetSync.registerPlugin(this.networkPlugin)
+        await this.assetSync.register({ libp2pPlugin: this.libp2pPlugin, networkPlugin: this.networkPlugin })
         await this.assetSync.initialise()
 
         // ------- //

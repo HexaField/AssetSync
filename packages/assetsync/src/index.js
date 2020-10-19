@@ -12,9 +12,12 @@ export default class AssetSync {
 
     // PRE-INIT & UTIL
 
-    async registerPlugin(plugin) {
-        await plugin.register(this)
-        this._plugins[plugin.getName()] = plugin
+    async register(plugins = {}) {
+        for(let plugin of Object.keys(plugins)) {
+            await plugins[plugin].register(this)
+            this._plugins[plugins[plugin].getName()] = plugins[plugin]
+            this[plugin] = plugins[plugin]
+        }
     }
 
     getPlugin(pluginName) {
@@ -37,10 +40,10 @@ export default class AssetSync {
     // INITIALISE
 
     async initialise() {
-        await this.initialisePlugins()
+        await this._initialisePlugins()
     }
 
-    async initialisePlugins() {
+    async _initialisePlugins() {
         for (let plugin of this.getPlugins()) {
             if (await plugin.start())
                 console.log('Successfully loaded plugin ' + plugin.getName())

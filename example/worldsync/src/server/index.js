@@ -1,10 +1,11 @@
 import { isWebWorker } from '@AssetSync/common'
-import { Server } from '@AssetSync/WorldSync'
+import { server } from '@AssetSync/WorldSync'
 
-export async function runApp(isSlave, peerSync) {
+export async function runApp(worldSync) {
 
     console.log('Starting server...')
-    const server = new Server({ isSlave, peerSync })
+    const { default: game } = await import('./game/index.js')
+    server(game, worldSync)
 
     // server stuff    
 }

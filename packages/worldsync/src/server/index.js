@@ -1,31 +1,25 @@
 import { isBrowser, isWebWorker } from '@AssetSync/common'
 import { receiveWorker } from '@AssetSync/WorkerSync'
 import { startAssetSync } from './create-assetsync.js'
-export class Server {
 
-    constructor(args = {}) {
-        if(args.isSlave) {
+export async function server(startGame, worldSync) {
 
-        }
-        else {
-            this.start = this.start.bind(this)
-            if(isWebWorker)
-                receiveWorker(this.start)
-            else
-               this.start({ peerSync: args.peerSync })
-        }
+    if (isWebWorker)
+    {
+        // client in main, server in worker 
+        const proxy = await receiveWorker()
+        const assetSync = await startAssetSync(proxy)
+        startGame(assetSync, proxy)
     }
+    else
+    {
+        // TODO: fake proxy for same thread
+        // in the case that we don't have a webworker (maybe offscreencanvas is not supported)
+        // we need to pipe in the client proxy
 
-    /**
-     * 
-     * args = { canvas, inputElement, userData }
-     * 
-    */
-    
-    async start(args = {}) {
-
-        this._assetSync = await startAssetSync({ proxy: args.peerSync })
-
+        // for now, just fake some stuff
+        const assetSync = await startAssetSync()
+        // window.canvas = worldSync.canvas
+        // startGame(assetSync, window)
     }
-
 }

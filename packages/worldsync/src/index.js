@@ -41,8 +41,8 @@ import { createWorker } from '@AssetSync/WorkerSync'
 import SocketSync from '@AssetSync/SocketSync'
 
 
-export { Server } from './server/index.js'
-export { Client } from './client/index.js'
+export { server } from './server/index.js'
+export { client } from './client/index.js'
 
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
@@ -58,45 +58,36 @@ class WorldSync {
 
     async start(args = {}) {
 
-        this._socketSync = new SocketSync()
-
         if (isNode) { 
 
-            this._server = args.serverFunc(false, this._socketSync)
-            await this._socketSync.initialise()
+            // start a local server
+            this._peerSync = new SocketSync()    
+            this._peerSync.initialiseServer()
+            this._server = args.serverFunc(this)
 
         } else {
 
-            this._connectedToNode = !await this._socketSync.initialise()
-            //  await new Promise((resolve) => {
-            //     const sock = new WebSocket('ws://localhost:' + (args.websocketPort || '19843'))
-            //     sock.onopen = () => {
-            //         console.log('Found server!')
-            //         sock.close(1000)
-            //         resolve(true)
-            //     }
-            //     sock.onerror = (error) => resolve(false)
-            //     sock.onclose = (error) => resolve(false)
-            // })
+            // try and find a local node to offload the server
+            this._peerSync = new SocketSync()
+            this._connectedToNode = await this._peerSync.initialiseClient()
             
             if(this._connectedToNode) {
                 
                 console.log('Found local node, starting server interface...')
-                this._server = args.serverFunc(true, this._socketSync)
+                // this._server = args.serverFunc(this) // we shouldn't need to run the server at all if its running on an external node
 
             } else {
 
                 if(window.Worker) {
-
-                    this._worker = createWorker(args.serverFile)
-
-                    this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._worker)
-
-                    this._worker.start(args.canvas)
+                    // override socketsync with worker since we're running everything in the browser
+                    // starts the server in a worker from the specified file
+                    this._peerSync = createWorker(args.serverFile)
+                    this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
+                    this._peerSync.start(args.canvas)
                     
                 } else {
                     console.log('ERROR: browser does not support WebWorker')
-                    this._server = args.serverFunc(false, this._socketSync)
+                    this._server = args.serverFunc(this)
                 }
 
             }
@@ -114,19 +105,18 @@ class WorldSync {
             transportPlugin,
             networkEvents: {
                 onPeerJoin: (networkID, peerID) => { 
-                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onPeerJoin', peerID])
+                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerJoin', peerID] })
                 },
                 onPeerLeave: (networkID, peerID) => { 
-                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onPeerLeave', peerID])
+                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerLeave', peerID] })
                 },
                 onMessage: (networkID, data, from) => { 
-                    remoteHandler.sendEvent('networkEvent-'+networkID, ['onMessage', data, from])
+                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onMessage', data, from] })
                 }
             }
         })
 
-        await assetSync.registerPlugin(transportPlugin)
-        await assetSync.registerPlugin(networkPlugin)
+        await assetSync.register({ transportPlugin, networkPlugin })
         await assetSync.initialise()
 
         remoteHandler.addRequestOpcodes({

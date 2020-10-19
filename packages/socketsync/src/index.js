@@ -10,23 +10,7 @@ export default class SocketSync extends PeerSync {
         this._isMaster = false
     }
 
-
-    // INITIALISE
-
-    async initialise(forceSlave, websocketPort) {
-        if (forceSlave) {
-            await this._initialiseClient(websocketPort)
-        } else if (isBrowser) {
-            if (!await this._initialiseClient(websocketPort))
-                this._isMaster = true // no need to initialise a websocket
-        } else {
-            await this._initialiseServer(websocketPort)
-            this._isMaster = true
-        }
-        return this._isMaster
-    }
-
-    async _initialiseServer(websocketPort) {
+    async initialiseServer(websocketPort) {
 
         this._websocket = new WebSocketServer({ port: websocketPort })
         
@@ -42,7 +26,7 @@ export default class SocketSync extends PeerSync {
         console.log('Started WebSocket server')
     }
 
-    async _initialiseClient(websocketPort) {
+    async initialiseClient(websocketPort) {
 
         return await new Promise((resolve, reject) => {
 
@@ -52,6 +36,10 @@ export default class SocketSync extends PeerSync {
                 this.setMessageHandlers(this._websocket.sendMessage, this._websocket)
                 console.log('Data Module: Successfully connected to local node!')
                 resolve(true)
+            })
+            
+            this._websocket.on('error', async (error) => {
+                resolve(false)
             })
             
             this._websocket.on('disconnect', async (error) => {

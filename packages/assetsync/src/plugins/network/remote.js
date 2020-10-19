@@ -31,7 +31,7 @@ export class RemoteNetworkPlugin extends NetworkPlugin {
 
     async joinNetwork(networkID) {
         const eventEmitter = new EventEmitter()
-        this._target.addListener('networkEvent-'+networkID, (event, ...data) => {
+        this._target.addEventListener('networkEvent-'+networkID, (event, ...data) => {
             eventEmitter.emit(event, ...data)
         })
         this.sendEvent('joinNetwork', networkID)

@@ -10,40 +10,23 @@ import { isBrowser, isNode, isWebWorker, libp2p } from '@AssetSync/common'
 
 // args = { }
 
-export async function startAssetSync(args = {}) {
+export async function startAssetSync(proxy) {
     
     let assetSync = new AssetSync()
     let networkPlugin
 
     if(isWebWorker) {
         networkPlugin = new RemoteNetworkPlugin()
-        networkPlugin.setTarget(args.proxy)
+        networkPlugin.setTarget(proxy)
     } else {
-        const transportPlugin = new Libp2pPlugin({ libp2p, minPeersCount: 4 })
+        const transportPlugin = new Libp2pPlugin({ libp2p, minPeersCount: 0 })
         networkPlugin = new NetworkPlugin({ transportPlugin })
-        await assetSync.registerPlugin(transportPlugin)
+        await assetSync.register({ transportPlugin })
     }
     const storagePlugin = new StoragePlugin()
 
-    // ------- //
-
-    await assetSync.registerPlugin(networkPlugin)
-    await assetSync.registerPlugin(storagePlugin)
+    await assetSync.register({ networkPlugin, storagePlugin })
     await assetSync.initialise()
-
-    // ------- //
-    
-    const network = await networkPlugin.joinNetwork('test-network-worldsync')
-    network.on('onMessage', (message, peerID) => {
-        console.log(peerID, 'says', message)
-    })
-    network.on('onPeerJoin', (peerID) => {
-        console.log(peerID, 'has joined')
-        networkPlugin.sendTo('test-network-worldsync', 'Hello peer!', peerID)
-    })
-    network.on('onPeerLeave', (peerID) => {
-        console.log(peerID, 'has left')
-    })
 
     return assetSync
 }

@@ -41,3 +41,19 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 
 - node storage on file system
 - browser storage in IndexedDB
+
+## API
+
+### Example
+
+```javascript
+import AssetSync, { StoragePlugin } from '@AssetSync/AssetSync'
+
+const assetSync = new AssetSync()
+const storagePlugin = new StoragePlugin()
+
+await assetSync.register({ storagePlugin })
+await assetSync.initialise()
+
+assetSync.storagePlugin.exists('file.txt')
+```

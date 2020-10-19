@@ -1,6 +1,6 @@
 import Requester from './Requester.js'
 import { isWebWorker, simplifyObject } from '@AssetSync/common'
-import { EventEmitter } from 'events'
+import { EventDispatcher } from './EventDispatcher.js'
 
 /**  <message> {
  *      handle: ''
@@ -21,7 +21,7 @@ import { EventEmitter } from 'events'
  *   }
  */
 
-export class PeerSync extends EventEmitter {
+export class PeerSync extends EventDispatcher {
 
     constructor() {
         super()
@@ -67,10 +67,10 @@ export class PeerSync extends EventEmitter {
             this._sendMessage(message, ...buffers)
     }
 
-    sendEvent(event, args, ...buffers) {
+    sendEvent(event, ...buffers) {
         this.sendMessage({
             handle: 'event',
-            data: { event, args }
+            data: event
         }, ...buffers)
     }
 
@@ -122,18 +122,17 @@ export class PeerSync extends EventEmitter {
         this.requester.receiveReply(data)
     }
 
+    _receiveEvent(event) { 
+        event.preventDefault = () => {}
+        event.stopPropagation = () => {}
+        this.dispatchEvent(event) 
+    }
+
     _sendRequest(request) {
         this.sendMessage({
             handle: 'request',
             data: request
         })
-    }
-
-    _receiveEvent(event) {
-        if(Array.isArray(event.args))
-            this.emit(event.event, ...event.args)
-        else
-            this.emit(event.event, event.args)
     }
 
     _handleMessage(message) {
