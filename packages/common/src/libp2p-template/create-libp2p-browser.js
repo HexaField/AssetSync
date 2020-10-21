@@ -53,10 +53,6 @@ export async function config() {
 
 export default async function (options = {}) {
 
-    // good enough for now
-    if (isWebWorker)
-        self.window = self
-
     // dynamic imports here since webworkers can't access DOM scripts
     await import('https://unpkg.com/libp2p@0.29.0/dist/index.min.js')
     await import('https://unpkg.com/libp2p-mplex@0.10.0/dist/index.min.js')
@@ -68,7 +64,7 @@ export default async function (options = {}) {
 
     await import('https://unpkg.com/libp2p-webrtc-star@0.20.0/dist/index.min.js') // we can't use webrtc in webworker
 
-    const node = await window.Libp2p.create(await config())
+    const node = await self.Libp2p.create(await config())
     await node.start()
     return node
 }

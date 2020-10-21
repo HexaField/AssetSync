@@ -30,13 +30,13 @@ class WorkerMainProxy extends PeerSync {
         })
     }
 
-    start(canvas) {
+    start(canvas, config) {
         if (canvas.transferControlToOffscreen) { // make sure our browser supports offscreencanvas
 
             const offscreen = canvas.transferControlToOffscreen()
             this.canvas = canvas
             this.sendSize()
-            this.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio }, [offscreen])
+            this.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio, config }, [offscreen])
             window.addEventListener('resize', this.sendSize)
 
             this.addEventListener('addEventListener', (event) => {

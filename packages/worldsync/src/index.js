@@ -83,7 +83,7 @@ class WorldSync {
                     // starts the server in a worker from the specified file
                     this._peerSync = createWorker(args.serverFile)
                     this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
-                    this._peerSync.start(args.canvas)
+                    this._peerSync.start(args.canvas, args.config)
                     
                 } else {
                     console.log('ERROR: browser does not support WebWorker')

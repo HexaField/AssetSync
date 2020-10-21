@@ -14,7 +14,7 @@
     "lint": "prettier --check \"src/**/*.js\""
   },
   "dependencies": {
-    "@enable3d/ammo-physics": "^0.19.1",
+    "enable3d": "^0.20.0",
     "jsdom": "^16.4.0"
   },
   "devDependencies": {

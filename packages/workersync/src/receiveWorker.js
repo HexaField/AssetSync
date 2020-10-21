@@ -42,6 +42,7 @@ export function receiveWorker() {
         proxy.addEventListener('start', (data) => {
             proxy.devicePixelRatio = data.devicePixelRatio
             proxy.canvas = data.canvas
+            proxy.config = data.config
             proxy.ownerDocument = proxy;
             proxy.domElement = proxy
             self.global = proxy;

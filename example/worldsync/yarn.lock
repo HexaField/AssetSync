@@ -23,28 +23,37 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@enable3d/ammo-physics@^0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@enable3d/ammo-physics/-/ammo-physics-0.19.1.tgz#9e9c6d68227ae8a1b468c93175a8afd2bfbafdda"
-  integrity sha512-6uilin+XhWuyyak4PLV4q8KwqEMlxkVm+LCGqxb37HF/gZYIaIsp+jiq+ac8YJUpxzj6d9V+PkrDusgYuzRFkg==
+"@enable3d/ammo-physics@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@enable3d/ammo-physics/-/ammo-physics-0.20.0.tgz#04c0a1250f245260cd6214c991b7f4615331eb0e"
+  integrity sha512-7I9D44mE+s9V8HxZj2J4jnny3Sgh6eOthHC7GDefMlwkb2oRe+UlDKXNHBCKx3m3FGWMq/tqceUlZLr8PeAiBA==
   dependencies:
-    "@enable3d/common" "^0.19.1"
-    "@enable3d/three-wrapper" "^0.19.1"
-    eventemitter3 "^4.0.0"
+    "@enable3d/common" "^0.20.0"
+    "@enable3d/three-wrapper" "^0.20.0"
+    eventemitter3 "^4.0.4"
 
-"@enable3d/common@^0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@enable3d/common/-/common-0.19.1.tgz#a04928f6d24a26100e2da075b1f88a3bd672054d"
-  integrity sha512-yg07tk0eVMQJEfTURD6ogWIlcqmBoveNfkibGy/LOLtAbmxA+JAFUUrkphAeAqqqlSVznx8ZL6/JnyWORcpNGg==
+"@enable3d/common@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@enable3d/common/-/common-0.20.0.tgz#db7564f95d07040a49c3148c1867bc5628f3a1bc"
+  integrity sha512-yWYYvC11hWI49bYjHpmUpDfH5v/TszXTMQpbitgfZ89QPaah/NXWSsdR1MQFqb2rvSJj1uvuOTgQ5ySU2dD3gQ==
   dependencies:
-    "@enable3d/three-wrapper" "^0.19.1"
+    "@enable3d/three-wrapper" "^0.20.0"
 
-"@enable3d/three-wrapper@^0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@enable3d/three-wrapper/-/three-wrapper-0.19.1.tgz#54ab89f1c89b648243ee6549b3a1a5718e9eaba9"
-  integrity sha512-CUbD8oV3wJc8w368GCFxGrOEy85+asHXEO1m/79ndOdmZp5+Gi7Hwy8kllpn9xyVaOh1UwPN/qUvwNhOjn70oQ==
+"@enable3d/three-graphics@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@enable3d/three-graphics/-/three-graphics-0.20.0.tgz#6d06a5e2b6ab3ea6268c93f85254237ce3769c01"
+  integrity sha512-Ue5PfPWdkWEN7yoNkpjRsVTPSCjc1sPy2FdqVQ+L7A4nLAKwvW5a/4FrAjvFf+w0znoskqBvBa7J9VJsw1fo2A==
   dependencies:
-    three "~0.117.0"
+    "@enable3d/ammo-physics" "^0.20.0"
+    "@enable3d/common" "^0.20.0"
+    "@enable3d/three-wrapper" "^0.20.0"
+
+"@enable3d/three-wrapper@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@enable3d/three-wrapper/-/three-wrapper-0.20.0.tgz#be7d37e5cbd325ba0dde7becea88b53e39117ec8"
+  integrity sha512-4dxeZBYGuaVa5c3zVnhVH9sriR6VL9vY1QDWFNEnOXKf2GC7nAN+0B5ZmpsVeTRy8dIeyNmck33Cr0H2NS9eqA==
+  dependencies:
+    three "~0.121.0"
 
 "@npmcli/move-file@^1.0.1":
   version "1.0.1"
@@ -806,6 +815,16 @@ emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
+
+enable3d@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/enable3d/-/enable3d-0.20.0.tgz#7f1664963c9c9c59d0250281c8f27e2246b2cc8c"
+  integrity sha512-rkKgVH83wlYhuKzX17Ff+VL1soY6lDYZBnD5u+Fv8JlrPVd65JO4YO0bCHJzx/MTLo/3ua68S0u7/4oGwtZfRQ==
+  dependencies:
+    "@enable3d/ammo-physics" "^0.20.0"
+    "@enable3d/common" "^0.20.0"
+    "@enable3d/three-graphics" "^0.20.0"
+    "@enable3d/three-wrapper" "^0.20.0"
 
 end-of-stream@^1.1.0:
   version "1.4.4"
@@ -2690,10 +2709,10 @@ term-size@^2.1.0:
   resolved "https://registry.yarnpkg.com/term-size/-/term-size-2.2.0.tgz#1f16adedfe9bdc18800e1776821734086fcc6753"
   integrity sha512-a6sumDlzyHVJWb8+YofY4TW112G6p2FCPEAFk+59gIYHv3XHRhm9ltVQ9kli4hNWeQBwSpe8cRN25x0ROunMOw==
 
-three@~0.117.0:
-  version "0.117.1"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.117.1.tgz#a49bcb1a6ddea2f250003e42585dc3e78e92b9d3"
-  integrity sha512-t4zeJhlNzUIj9+ub0l6nICVimSuRTZJOqvk3Rmlu+YGdTOJ49Wna8p7aumpkXJakJfITiybfpYE1XN1o1Z34UQ==
+three@~0.121.0:
+  version "0.121.1"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.121.1.tgz#fda39cf4701d02be9c3be5c27ccea24b7a1ea59b"
+  integrity sha512-+rYhNpW5W1aBdLkPQDld/GA4Sj/uOKJJKVpCAZUbpk/HZEiYRUlPt8+s+9nmxRglWmRHdBa3ERvUwqg4nmoA5w==
 
 to-readable-stream@^1.0.0:
   version "1.0.0"
