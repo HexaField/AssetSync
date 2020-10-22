@@ -8,8 +8,10 @@ async function startApp() {
         serverFile: '_dist_/server/index.js', 
         serverFunc: runApp,
         client: await(await import('./client/index.js')).default,
-        canvas: isNode ? undefined : document.getElementById('transferrablecanvas')
+        canvas: isNode ? undefined : document.getElementById('transferrablecanvas'),
+        config: {
+            assetSync: false
+        }
     })
-    
 }
 startApp()

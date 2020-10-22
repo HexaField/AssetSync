@@ -23,7 +23,8 @@
     },
     "dependencies": {
         "@AssetSync/AssetSync": "^0.0.0",
-        "@AssetSync/common": "^0.0.0"
+        "@AssetSync/common": "^0.0.0",
+        "js-quadtree": "^3.3.3"
     },
     "devDependencies": {
         "ava": "^3.13.0"

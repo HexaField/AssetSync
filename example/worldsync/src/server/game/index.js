@@ -1,25 +1,18 @@
-import { AmmoPhysics } from '@enable3d/ammo-physics';
+// import { AmmoPhysics } from '@enable3d/ammo-physics';
 import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls.js';
-import HaveSomeFun from './havesomefun.js';
+// import HaveSomeFun from './havesomefun.js';
 
-import Ammo from './lib/ammo.worker.js';
-Ammo();
+// import Ammo from './lib/ammo.worker.js';
+// Ammo();
 
-export default async function (assetSync, proxy) {
+import { Regions } from './world/index.js'
+import { HeightmapGenerator } from './world/HeightmapGenerator.js'
+import { easyWorldOrigin } from './world/MeshTemplates.js';
 
-    assetSync.networkPlugin.joinNetwork('test-network-worldsync').then((network) => {
-        network.on('onMessage', (message, peerID) => {
-            console.log(peerID, 'says', message)
-        })
-        network.on('onPeerJoin', (peerID) => {
-            console.log(peerID, 'has joined')
-            assetSync.networkPlugin.sendTo('test-network-worldsync', 'Hello peer!', peerID)
-        })
-        network.on('onPeerLeave', (peerID) => {
-            console.log(peerID, 'has left')
-        })
-    })
+export default async function (args) {
+
+    const { assetSync, proxy } = args
 
     // scene
     const scene = new THREE.Scene();
@@ -46,38 +39,11 @@ export default async function (assetSync, proxy) {
     const controls = new OrbitControls(camera, proxy);
 
     // light
-    scene.add(new THREE.HemisphereLight(0xffffbb, 0x080820, 1));
-    scene.add(new THREE.AmbientLight(0x666666));
-    const light = new THREE.DirectionalLight(0xdfebff, 1);
+    scene.add(new THREE.HemisphereLight(0xffffbb, 0x080820, 0.4));
+    // scene.add(new THREE.AmbientLight(0x666666));
+    const light = new THREE.DirectionalLight(0xdfebff, 0.8);
     light.position.set(50, 200, 100);
     light.position.multiplyScalar(1.3);
-
-    // physics
-    const physics = new AmmoPhysics(scene);
-    // physics.debug.enable(true)
-
-    // extract the object factory from physics
-    // the factory will make/add object without physics
-    const { factory } = physics;
-
-    physics.add.ground({ width: 20, height: 20 });
-    let objects = [];
-
-    proxy.addEventListener('clear', () => {
-        for (let obj of objects) {
-            physics.destroy(obj.body);
-            scene.remove(obj);
-        }
-        objects = [];
-
-        // physics.add.ground({ width: 20, height: 20 })
-    });
-
-    proxy.addEventListener('drop', (event) => {
-        objects.push(...HaveSomeFun(event.detail, physics));
-    });
-
-    proxy.dispatchEvent({ type: 'drop', detail: 100 })
 
     // clock
     const clock = new THREE.Clock();
@@ -93,6 +59,38 @@ export default async function (assetSync, proxy) {
         return needResize;
     }
 
+    const player = new THREE.Mesh(new THREE.SphereBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x00ff00 }))
+    scene.add(player)
+
+    const heightmapGenerator = new HeightmapGenerator()
+
+    scene.add(easyWorldOrigin(1000))
+
+    const regions = new Regions({
+        generateFunction: async (region) => {
+            const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true }))
+            mesh.position.set(region.center.x, 0, region.center.y)
+            
+            const { vertices, indices } = await heightmapGenerator.generate(region.coords)
+            mesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+            mesh.geometry.setIndex(indices)
+            mesh.geometry.computeVertexNormals()
+
+            region.mesh = mesh
+            
+            // const origin = new THREE.Mesh(new THREE.SphereBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+            // origin.position.set(RegionConfig.regionSize / 2, 0, RegionConfig.regionSize / 2)
+            // mesh.add(origin)
+        },
+        loadFunction: (region) => {
+            scene.add(region.mesh)
+        },
+        unloadFunction: (region) => {
+            scene.remove(region.mesh)
+        }
+    })
+    // regions.updatePosition(camera.position.x, camera.position.y)
+
     // loop
     const animate = () => {
         if (resizeRendererToDisplaySize(renderer)) {
@@ -100,8 +98,9 @@ export default async function (assetSync, proxy) {
             camera.updateProjectionMatrix();
         }
 
-        physics.update(clock.getDelta() * 1000);
-        physics.updateDebugger();
+        // player.position.x+=0.1
+        regions.updatePosition(camera.position.x, camera.position.z)
+
         renderer.render(scene, camera);
 
         requestAnimationFrame(animate);

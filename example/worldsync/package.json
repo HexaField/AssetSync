@@ -14,8 +14,6 @@
     "lint": "prettier --check \"src/**/*.js\""
   },
   "dependencies": {
-    "enable3d": "^0.20.0",
-    "jsdom": "^16.4.0"
   },
   "devDependencies": {
     "@snowpack/plugin-optimize": "^0.2.5",

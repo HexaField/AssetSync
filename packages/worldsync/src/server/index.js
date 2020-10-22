@@ -8,8 +8,7 @@ export async function server(startGame, worldSync) {
     {
         // client in main, server in worker 
         const proxy = await receiveWorker()
-        const assetSync = await startAssetSync(proxy)
-        startGame(assetSync, proxy)
+        startGame({ assetSync: proxy.assetSync ? await startAssetSync(proxy) : {}, proxy })
     }
     else
     {

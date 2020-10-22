@@ -1,1 +1,1 @@
-export{i as isNode,a as isWebWorker}from"../common/env-435c5b99.js";
+import"../common/process-e9e98960.js";import{R as o}from"../common/Requester-67e0b4dd.js";export{i as isNode,a as isWebWorker}from"../common/Requester-67e0b4dd.js";class a{constructor(e){const s=URL.createObjectURL(new Blob(["(",e.toString(),")()"],{type:"application/javascript"})),t=new Worker(s);URL.revokeObjectURL(s),this.requester=new o(r=>{t.postMessage(r)}),t.onmessage=r=>{this.requester.receiveReply(r.data)}}async makeRequest(e){return await this.requester.request("",e)}}export{a as InlineWorker};

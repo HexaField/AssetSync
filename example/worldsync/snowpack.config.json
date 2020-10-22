@@ -6,11 +6,18 @@
   "plugins": [
     [
       "@snowpack/plugin-optimize"
+    ],
+    [
+      "snowpack-plugin-import-replacer", {
+        "modules": {
+          "three": "https://cdn.skypack.dev/pin/three@v0.121.1-01UDfMGdzKBc6pDlaRa9/min/three.js"
+        },
+        "extensions": [".js"]
+      }
     ]
   ],
   "installOptions": {
     "namedExports": [
-      
     ],
     "polyfillNode": true
   }

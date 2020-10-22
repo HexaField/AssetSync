@@ -1,4 +1,6 @@
-export default class Requester {
+import { generateUUID } from './generateUUID.js' 
+
+export class Requester {
     constructor(sendRequest) {
         this.sendRequest = sendRequest
         this.replyCallbacks = {}
@@ -6,7 +8,7 @@ export default class Requester {
 
     // creates a promise and waits for response
     async request(opcode, data) {
-        const timestamp = Date.now() + '-' + Math.round(Math.random() * 1000)
+        const timestamp = generateUUID()
 
         return await new Promise((resolve, reject) => {
 

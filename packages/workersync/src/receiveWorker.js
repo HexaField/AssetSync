@@ -38,6 +38,8 @@ export function receiveWorker() {
         }
     }
 
+    proxy.sendEvent({ type: 'init' })
+
     return new Promise((resolve) => {
         proxy.addEventListener('start', (data) => {
             proxy.devicePixelRatio = data.devicePixelRatio

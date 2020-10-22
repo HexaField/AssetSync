@@ -50,9 +50,12 @@ class WorkerMainProxy extends PeerSync {
     }
 }
 
-export function createWorker(workerURL) {
+export async function createWorker(workerURL) {
     const worker = new Worker(workerURL, { type: 'module' })
     worker.postMessage('');
     const proxy = new WorkerMainProxy(worker)
+    await new Promise((resolve) => {
+        proxy.addEventListener('init', resolve)
+    })
     return proxy
 }

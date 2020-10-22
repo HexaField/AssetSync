@@ -40,6 +40,8 @@ import { isBrowser, isNode, libp2p } from '@AssetSync/common'
 import { createWorker } from '@AssetSync/WorkerSync'
 import SocketSync from '@AssetSync/SocketSync'
 
+// export * from './server/world/index.js'
+
 
 export { server } from './server/index.js'
 export { client } from './client/index.js'
@@ -81,8 +83,10 @@ class WorldSync {
                 if(window.Worker) {
                     // override socketsync with worker since we're running everything in the browser
                     // starts the server in a worker from the specified file
-                    this._peerSync = createWorker(args.serverFile)
-                    this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
+                    this._peerSync = await createWorker(args.serverFile)
+                    if(args.assetSync) {
+                        this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
+                    }
                     this._peerSync.start(args.canvas, args.config)
                     
                 } else {
