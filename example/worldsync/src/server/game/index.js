@@ -9,6 +9,8 @@ import { OrbitControls } from './OrbitControls.js';
 import { Regions } from './world/index.js'
 import { HeightmapGenerator } from './world/HeightmapGenerator.js'
 import { easyWorldOrigin } from './world/MeshTemplates.js';
+import { RegionConfig } from './world/RegionConfig.js'
+import { timer } from '@AssetSync/common'
 
 export default async function (args) {
 
@@ -65,33 +67,7 @@ export default async function (args) {
     const heightmapGenerator = new HeightmapGenerator()
 
     scene.add(easyWorldOrigin(1000))
-
-    const regions = new Regions({
-        generateFunction: async (region) => {
-            const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true }))
-            mesh.position.set(region.center.x, 0, region.center.y)
-            
-            const { vertices, indices } = await heightmapGenerator.generate(region.coords)
-            mesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
-            mesh.geometry.setIndex(indices)
-            mesh.geometry.computeVertexNormals()
-
-            region.mesh = mesh
-            
-            // const origin = new THREE.Mesh(new THREE.SphereBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xffffff }))
-            // origin.position.set(RegionConfig.regionSize / 2, 0, RegionConfig.regionSize / 2)
-            // mesh.add(origin)
-        },
-        loadFunction: (region) => {
-            scene.add(region.mesh)
-        },
-        unloadFunction: (region) => {
-            scene.remove(region.mesh)
-        }
-    })
-    // regions.updatePosition(camera.position.x, camera.position.y)
-
-    // loop
+    
     const animate = () => {
         if (resizeRendererToDisplaySize(renderer)) {
             camera.aspect = proxy.clientWidth / proxy.clientHeight;
@@ -106,4 +82,38 @@ export default async function (args) {
         requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
+
+    const regions = new Regions({
+        generateFunction: async (region) => {
+            const time = Date.now()
+            const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ wireframe: true }))
+            mesh.position.set(region.bounds.x, 0, region.bounds.y)
+            region.mesh = mesh
+            mesh.frustumCulled = false
+            // mesh.visible = false
+            // mesh.position.y = mesh.position.z
+
+            const { vertices, indices } = await heightmapGenerator.generate({ origin: region.bounds, detail: region.depth + 1 })
+            mesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+            mesh.geometry.setIndex(indices)
+            mesh.geometry.computeVertexNormals()
+
+            region.mesh = mesh
+            
+            // const origin = new THREE.Mesh(new THREE.SphereBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xff0000 }))
+            // origin.position.set(region.size / 2, 0, region.size / 2)
+            // mesh.add(origin)
+        },
+        loadFunction: (region) => {
+            // region.mesh.visible = true
+            scene.add(region.mesh)
+        },
+        unloadFunction: (region) => {
+            // region.mesh.visible = false
+            scene.remove(region.mesh)
+        }
+    })
+    // regions.updatePosition(camera.position.x, camera.position.y)
+
+    // loop
 }

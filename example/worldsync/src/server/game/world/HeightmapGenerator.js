@@ -2,8 +2,8 @@ import { RegionConfig } from './RegionConfig.js'
 import { InlineWorker } from '@AssetSync/common'
 
 const defaultConfig = {
-    scale: 0.1,
-    regionSize: RegionConfig.regionSize
+    gridSize: RegionConfig.regionSize,
+    gridScale: RegionConfig.regionScale
 }
 
 export class HeightmapGenerator {
@@ -12,8 +12,8 @@ export class HeightmapGenerator {
         this.generatorThread = new InlineWorker(_generate)
     }
 
-    async generate(coords, config) {
-        return await this.generatorThread.makeRequest({ coords, config: Object.assign({}, config, defaultConfig) })
+    async generate(args) {
+        return await this.generatorThread.makeRequest(Object.assign({}, args, defaultConfig))
     }
 }
 
@@ -47,30 +47,32 @@ function _generate() {
 
         const { data, timestamp } = message.data
 
-        const { coords, config } = data
+        const { detail, origin, gridSize, gridScale } = data
 
-        const gridSize = config.regionSize
-        const scale = config.scale
+        const meshScale = gridScale / detail
+        // const meshScale = Math.pow(2, scale)
 
         var vertices = [];
         var indices = [];
         let index = 0;
-        var width = gridSize + 1
-        var height = gridSize + 1
-        const offsetX = coords.x * config.regionSize
-        const offsetY = coords.y * config.regionSize
+        var width = (gridSize / meshScale) + 1
+        var height = (gridSize / meshScale) + 1
+        const offsetX = origin.x
+        const offsetY = origin.y
 
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
+                let _x = x * meshScale
+                let _y = y * meshScale
                 let h = 0
                 for(let level = 1; level <= levels; level++) {
-                    const multi = level * level
-                    h += noise((x + offsetX + 0.5) / multi, (y + offsetY + 0.5) / multi) * multi
+                    const multi = level * level * 0.1
+                    h += noise((_x + offsetX + 0.5) / multi, (_y + offsetY + 0.5) / multi) * multi
                 }
                 vertices.push(
-                    x,
+                    _x,
                     h * 10,
-                    y
+                    _y
                 )
                 if (x < width - 1 && y < height - 1) {
                     indices.push(index, index + width + 1, index + width)

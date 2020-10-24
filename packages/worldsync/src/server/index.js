@@ -8,6 +8,29 @@ export async function server(startGame, worldSync) {
     {
         // client in main, server in worker 
         const proxy = await receiveWorker()
+
+        proxy.addFunction('focus')
+
+        proxy.addEventListener('size', (data) => {
+            proxy.clientWidth = data.width
+            proxy.clientHeight = data.height
+        })
+
+        await new Promise((resolve) => {
+            proxy.addEventListener('start', (data) => {
+                proxy.devicePixelRatio = data.devicePixelRatio
+                proxy.canvas = data.canvas
+                proxy.config = data.config
+                proxy.ownerDocument = proxy;
+                proxy.domElement = proxy
+                self.global = proxy;
+                self.document = proxy;
+                self.window = proxy;
+    
+                resolve()
+            })
+        })
+
         startGame({ assetSync: proxy.assetSync ? await startAssetSync(proxy) : {}, proxy })
     }
     else

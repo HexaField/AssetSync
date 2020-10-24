@@ -12,9 +12,12 @@ export function easyOrigin()
 export function easyWorldOrigin(scale)
 {	
     let group = new THREE.Group()
-    group.add(easyLine({ points: [new THREE.Vector3(-scale, 0, 0), new THREE.Vector3(scale,0,0)] }, { color: 0xff0000 } ))
-    group.add(easyLine({ points: [new THREE.Vector3(0, -scale, 0), new THREE.Vector3(0,scale,0)] }, { color: 0x00ff00 } ))
-    group.add(easyLine({ points: [new THREE.Vector3(0, 0, -scale), new THREE.Vector3(0,0,scale)] }, { color: 0x0000ff } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(scale,0,0)] }, { color: 0xff0000, linewidth: 2 } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(0,scale,0)] }, { color: 0x00ff00, linewidth: 2 } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(0,0,scale)] }, { color: 0x0000ff, linewidth: 2 } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(-scale,0,0)] }, { color: 0x550000 } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(0,-scale,0)] }, { color: 0x005500 } ))
+    group.add(easyLine({ points: [new THREE.Vector3(), new THREE.Vector3(0,0,-scale)] }, { color: 0x000055 } ))
     return group
 }
 

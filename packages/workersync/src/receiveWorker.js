@@ -18,40 +18,16 @@ class WorkerThreadProxy extends PeerSync {
         super.removeEventListener(event, listener)
         this.sendEvent({ type: 'removeEventListener', event })
     }
-}
 
-const functions = [
-    'focus'
-]
+    addFunction(func) {
+        this[func] = (...args) => {
+            this.sendEvent({ type: func, args: [...args] })
+        }
+    }
+}
 
 export function receiveWorker() {
     const proxy = new WorkerThreadProxy()
-
-    proxy.addEventListener('size', (data) => {
-        proxy.clientWidth = data.width
-        proxy.clientHeight = data.height
-    })
-
-    for(let func of functions) {
-        proxy[func] = (...args) => {
-            proxy.sendEvent({ type: func, args: [...args] })
-        }
-    }
-
     proxy.sendEvent({ type: 'init' })
-
-    return new Promise((resolve) => {
-        proxy.addEventListener('start', (data) => {
-            proxy.devicePixelRatio = data.devicePixelRatio
-            proxy.canvas = data.canvas
-            proxy.config = data.config
-            proxy.ownerDocument = proxy;
-            proxy.domElement = proxy
-            self.global = proxy;
-            self.document = proxy;
-            self.window = proxy;
-
-            resolve(proxy)
-        })
-    })
+    return proxy
 }

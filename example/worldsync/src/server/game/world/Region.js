@@ -1,4 +1,4 @@
-import { QuadTree, Box } from 'js-quadtree'
+import { QuadTree, Box } from './QuadTree/index.js'
 import { RegionConfig } from './RegionConfig.js'
 import { sqrDistance } from './MathUtil.js'
 
@@ -18,49 +18,47 @@ export class Region {
 
         this.coords = { x, y }
         this.bounds = new Box(
-            (this.coords.x - 1) * RegionConfig.regionSize,
-            (this.coords.y - 1) * RegionConfig.regionSize,
             this.coords.x * RegionConfig.regionSize,
-            this.coords.y * RegionConfig.regionSize
+            this.coords.y * RegionConfig.regionSize,
+            RegionConfig.regionSize,
+            RegionConfig.regionSize
         )
         this.center = {
             x: (this.coords.x + 0.5) * RegionConfig.regionSize,
             y: (this.coords.y + 0.5) * RegionConfig.regionSize
         }
-        this.quadtree = new QuadTree(this.bounds, { capacity: 16, removeEmptyNodes: true, maximumDepth: 5 })
-        this.visible = false
+        this.quadtree = new QuadTree(this.bounds, 0)
 
-        this.loadThreshold = RegionConfig.regionSize * 8
-    }
+        this.isVisible = false
+        this.hasMesh = false
+        this.isLoaded = false
+        this.needsUpdate = false
 
-    getLabel() {
-        return coordsToLabel(this.coords.x, this.coords.y)
+        this.label = coordsToLabel(this.coords.x, this.coords.y)
     }
 
     updateView(x, y) {
-        if(!this.needsUpdate) return
-        if(this.isLoaded) {
-            if (sqrDistance(this.center, { x, y }) > this.loadThreshold * 2)
+        if (sqrDistance(this.center, { x, y }) > RegionConfig.regionSize * RegionConfig.viewDistance) {
+            if (this.isLoaded)
                 this.unloadRegion()
-        } else  {
-            if (sqrDistance(this.center, { x, y }) <= this.loadThreshold)
-                this.loadRegion()
         }
-        this.needsUpdate = false
+        else
+            this.loadRegion()
     }
 
     async generateRegion() {
-        await this.generateFunction(this)
-        this.isLoaded = false
+        this.quadtree.divide(this.generateFunction, 0, this.region)
+        if(this.needsUpdate)
+            this.loadRegion()
     }
 
     loadRegion() {
-        this.loadFunction(this)
         this.isLoaded = true
+        this.loadFunction(this.quadtree)
     }
 
     unloadRegion() {
-        this.unloadFunction(this)
         this.isLoaded = false
+        this.unloadFunction(this.quadtree)
     }
 }

@@ -84,6 +84,37 @@ class WorldSync {
                     // override socketsync with worker since we're running everything in the browser
                     // starts the server in a worker from the specified file
                     this._peerSync = await createWorker(args.serverFile)
+
+                    await new Promise((resolve) => {
+                        this._peerSync.addEventListener('init', resolve)
+                    })
+                    
+                    this._peerSync.sendSize = () => {
+                        this._peerSync.sendEvent({
+                            type: 'size',
+                            width: this._peerSync.canvas.clientWidth,
+                            height: this._peerSync.canvas.clientHeight,
+                        })
+                    }
+                
+                    this._peerSync.start = (canvas, config) => {
+                        if (canvas.transferControlToOffscreen) { // make sure our browser supports offscreencanvas
+                
+                            const offscreen = canvas.transferControlToOffscreen()
+                            this._peerSync.canvas = canvas
+                            this._peerSync.sendSize()
+                            this._peerSync.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio, config }, [offscreen])
+                            window.addEventListener('resize', this._peerSync.sendSize)
+                
+                            this._peerSync.addEventListener('addEventListener', (event) => {
+                                this._peerSync.canvas.addEventListener(event.event, this._peerSync.onEvent)
+                            })
+                
+                            this._peerSync.addEventListener('removeEventListener', (event) => {
+                                this._peerSync.canvas.removeEventListener(event.event, this._peerSync.onEvent)
+                            })
+                        }
+                    }
                     if(args.assetSync) {
                         this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
                     }
