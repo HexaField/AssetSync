@@ -14,7 +14,7 @@ export function labelToCoords(label) {
 }
 
 export class Region {
-    constructor(x, y) {
+    constructor(x, y, genFunc, loadFunc) {
 
         this.coords = { x, y }
         this.bounds = new Box(
@@ -27,7 +27,7 @@ export class Region {
             x: (this.coords.x + 0.5) * RegionConfig.regionSize,
             y: (this.coords.y + 0.5) * RegionConfig.regionSize
         }
-        this.quadtree = new QuadTree(this.bounds, 0)
+        this.quadtree = new QuadTree(this.bounds, 1, this, { genFunc, loadFunc })
 
         this.isVisible = false
         this.hasMesh = false
@@ -38,27 +38,28 @@ export class Region {
     }
 
     updateView(x, y) {
-        if (sqrDistance(this.center, { x, y }) > RegionConfig.regionSize * RegionConfig.viewDistance) {
-            if (this.isLoaded)
-                this.unloadRegion()
+        const dist = sqrDistance(this.center, { x, y }) 
+        if (dist > RegionConfig.regionSize * RegionConfig.viewDistance) {
+            // if (this.isLoaded)
+                this.unloadRegion(x, y)
         }
         else
-            this.loadRegion()
+            this.loadRegion(x, y)
     }
 
     async generateRegion() {
-        this.quadtree.divide(this.generateFunction, 0, this.region)
+        this.quadtree.divide(0, this.region)
         if(this.needsUpdate)
             this.loadRegion()
     }
 
-    loadRegion() {
-        this.isLoaded = true
-        this.loadFunction(this.quadtree)
+    loadRegion(x, y) {
+        // this.isLoaded = true
+        this.quadtree.load(x, y)
     }
 
-    unloadRegion() {
-        this.isLoaded = false
-        this.unloadFunction(this.quadtree)
+    unloadRegion(x, y) {
+        // this.isLoaded = false
+        this.quadtree.unload(x, y)
     }
 }

@@ -2,8 +2,8 @@ import { RegionConfig } from './RegionConfig.js'
 import { InlineWorker } from '@AssetSync/common'
 
 const defaultConfig = {
-    gridSize: RegionConfig.regionSize,
-    gridScale: RegionConfig.regionScale
+    gridDetail: RegionConfig.regionDetail,
+    gridScale: RegionConfig.regionSize / RegionConfig.regionScale
 }
 
 export class HeightmapGenerator {
@@ -43,30 +43,42 @@ function _generate() {
         return total;
     }
 
+
+    function crossVectors(a, b) {
+
+        const ax = a.x, ay = a.y, az = a.z;
+        const bx = b.x, by = b.y, bz = b.z;
+
+        return {
+            x: (ay * bz) - (az * by),
+            y: (az * bx) - (ax * bz),
+            z: (ax * by) - (ay * bx)
+        }
+    }
+
     self.onmessage = (message) => {
 
         const { data, timestamp } = message.data
 
-        const { detail, origin, gridSize, gridScale } = data
+        const { detail, origin, gridDetail, gridScale, stitchBorders } = data
 
-        const meshScale = gridScale / detail
-        // const meshScale = Math.pow(2, scale)
+        const meshLength = gridScale / Math.pow(2, detail - 1)
 
         var vertices = [];
         var indices = [];
         let index = 0;
-        var width = (gridSize / meshScale) + 1
-        var height = (gridSize / meshScale) + 1
+        var width = (gridDetail) + 1
+        var height = (gridDetail) + 1
         const offsetX = origin.x
         const offsetY = origin.y
 
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
-                let _x = x * meshScale
-                let _y = y * meshScale
+                let _x = meshLength * x
+                let _y = meshLength * y
                 let h = 0
-                for(let level = 1; level <= levels; level++) {
-                    const multi = level * level * 0.1
+                for (let level = 1; level <= levels; level++) {
+                    const multi = level * level
                     h += noise((_x + offsetX + 0.5) / multi, (_y + offsetY + 0.5) / multi) * multi
                 }
                 vertices.push(
@@ -82,7 +94,63 @@ function _generate() {
             }
         }
 
-        self.postMessage({ timestamp, data: { vertices, indices } })
+        function calculateNormals() {
+    
+            const normals = []
+            const triangleCount = vertices.length / 3;
+            for (let i = 0; i < triangleCount; i++) {
+                const normalTriangleIndex = i * 3;
+                const vertexIndexA = vertices[normalTriangleIndex];
+                const vertexIndexB = vertices[normalTriangleIndex + 1];
+                const vertexIndexC = vertices[normalTriangleIndex + 2];
+    
+                const normal = surfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
+                normals.push(normal, normal, normal)
+            }
+            // console.log(normals)
+    
+            // const borderTriangleCount = outOfMeshTriangles.Length / 3;
+            // for (let i = 0; i < borderTriangleCount; i++) {
+            //     const normalTriangleIndex = i * 3;
+            //     const vertexIndexA = outOfMeshTriangles[normalTriangleIndex];
+            //     const vertexIndexB = outOfMeshTriangles[normalTriangleIndex + 1];
+            //     const vertexIndexC = outOfMeshTriangles[normalTriangleIndex + 2];
+    
+            //     const triangleNormal = surfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
+            //     if (vertexIndexA >= 0) {
+            //         vertexNormals[vertexIndexA] += triangleNormal;
+            //     }
+            //     if (vertexIndexB >= 0) {
+            //         vertexNormals[vertexIndexB] += triangleNormal;
+            //     }
+            //     if (vertexIndexC >= 0) {
+            //         vertexNormals[vertexIndexC] += triangleNormal;
+            //     }
+            // }
+    
+    
+            // for (let i = 0; i < vertexNormals.Length; i++) {
+            //     vertexNormals[i].Normalize();
+            // }
+    
+            return normals;
+    
+        }
+    
+        function surfaceNormalFromIndices(indexA, indexB, indexC) {
+            const pointA = vertices[indexA];
+            const pointB = vertices[indexB];
+            const pointC = vertices[indexC];
+    
+            const sideAB = pointB - pointA;
+            const sideAC = pointC - pointA;
+            return crossVectors(sideAB, sideAC);
+        }
+    
+
+        const normals = [];// = calculateNormals()
+
+        self.postMessage({ timestamp, data: { vertices, indices, normals } })
     }
     /**
      * Perlin Noise functions for 1D, 2D, 3D and 4D.

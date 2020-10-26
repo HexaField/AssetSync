@@ -1,2 +1,2 @@
 export { Region } from './Region'
-export { Regions } from './Regions'
+export { ProceduralRegions } from './ProceduralRegions'

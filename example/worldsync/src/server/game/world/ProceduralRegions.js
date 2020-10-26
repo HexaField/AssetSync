@@ -2,7 +2,7 @@ import { Region, labelToCoords, coordsToLabel } from "./Region"
 import { RegionConfig } from './RegionConfig.js'
 import { sqrDistance } from './MathUtil.js'
 
-export class Regions {
+export class ProceduralRegions {
     constructor(config = {}) {
         this.regions = {}
 
@@ -10,7 +10,6 @@ export class Regions {
 
         this.generateFunction = config.generateFunction
         this.loadFunction = config.loadFunction
-        this.unloadFunction = config.unloadFunction
 
         this.lastViewPosition = { x: -1000, y: -10000 }
 
@@ -18,12 +17,8 @@ export class Regions {
     }
 
     async createRegion(x, y) {
-        const region = new Region(x, y)
+        const region = new Region(x, y, this.generateFunction, this.loadFunction)
         this.regions[region.label] = region
-
-        region.generateFunction = this.generateFunction
-        region.loadFunction = this.loadFunction
-        region.unloadFunction = this.unloadFunction
 
         region.generateRegion()
         region.updateView(this.viewPosition.x, this.viewPosition.y)
