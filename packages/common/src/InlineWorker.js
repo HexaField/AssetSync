@@ -16,7 +16,7 @@ export class InlineWorker {
         }
     }
 
-    async makeRequest(args) {
-        return await this.requester.request('', args)
+    async makeRequest(opcode, args) {
+        return await this.requester.request(opcode, args)
     }
 }

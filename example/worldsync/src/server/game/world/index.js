@@ -1,2 +1,2 @@
-export { Region } from './Region'
-export { ProceduralRegions } from './ProceduralRegions'
+export { Chunk } from './TerrainChunk'
+export { TerrainChunkGenerator } from './TerrainChunkGenerator'

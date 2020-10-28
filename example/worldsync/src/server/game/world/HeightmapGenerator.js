@@ -1,9 +1,9 @@
-import { RegionConfig } from './RegionConfig.js'
+import { TerrainChunkConfig } from './TerrainChunkConfig.js'
 import { InlineWorker } from '@AssetSync/common'
 
 const defaultConfig = {
-    gridDetail: RegionConfig.regionDetail,
-    gridScale: RegionConfig.regionSize / RegionConfig.regionScale
+    gridDetail: TerrainChunkConfig.chunkDetail,
+    gridScale: TerrainChunkConfig.chunkSize / TerrainChunkConfig.chunkDetail
 }
 
 export class HeightmapGenerator {
@@ -12,20 +12,30 @@ export class HeightmapGenerator {
         this.generatorThread = new InlineWorker(_generate)
     }
 
-    async generate(args) {
-        return await this.generatorThread.makeRequest(Object.assign({}, args, defaultConfig))
+    async getPoint(args) {
+        return await this.generatorThread.makeRequest('getPoint', { x: args.x, y: args.y })
+    }
+
+    async heightmap(args) {
+        return await this.generatorThread.makeRequest('heightmap', Object.assign({}, args, defaultConfig))
+    }
+
+    async aggregate(args) {
+        return await this.generatorThread.makeRequest('aggregate', Object.assign({}, args, defaultConfig))
     }
 }
 
 function _generate() {
 
-    const persistence = 0.78;
-    const lacunarity = 2;
-    const octaves = 6
+    const persistence = 0.784259;
+    const lacunarity = 1.8;
+    const octaves = 8
+    const superOctaves = 6
     const sampleScale = 0.001
-    const levels = 4
 
-    function noise(x, y, z = 1) {
+    const heightmaps = {}
+
+    function noise(x, y) {
 
         var total = 0;
         let frequency = 1;
@@ -43,6 +53,15 @@ function _generate() {
         return total;
     }
 
+    function samplePosition(x, y) {
+        let h = 0
+        for (let level = 1; level <= superOctaves; level++) {
+            const multi = level * level
+            h += noise((x + 0.5 + (level * 1000)) / multi, (y + 0.5 + (level * 1000)) / multi) * multi
+        }
+        return h * 4
+    }
+
 
     function crossVectors(a, b) {
 
@@ -56,101 +75,69 @@ function _generate() {
         }
     }
 
+    function generateHeightmap(data) {
+
+        const { origin, gridDetail, gridScale } = data
+
+        if (heightmaps['x' + origin.x + 'y' + origin.y]) return
+
+        const h_y = []
+
+        for (let x = 0; x < gridDetail + 1; x++) {
+            const h_x = []
+            for (let y = 0; y < gridDetail + 1; y++) {
+                let _x = gridScale * x
+                let _y = gridScale * y
+                h_x.push(samplePosition(_x + origin.x, _y + origin.y))
+            }
+            h_y.push(h_x)
+        }
+        heightmaps['x' + origin.x + 'y' + origin.y] = h_y
+    }
+
     self.onmessage = (message) => {
 
-        const { data, timestamp } = message.data
+        const { data, timestamp, opcode } = message.data
+        switch (opcode) {
+            case 'heightmap': self.postMessage({ data: generateHeightmap(data), timestamp }); break;
+            case 'getPoint': self.postMessage({ data: samplePosition(data.x, data.y), timestamp }); break;
+            case 'aggregate': self.postMessage({ data: generateChunk(data), timestamp }); break;
+        }
+    }
 
-        const { detail, origin, gridDetail, gridScale, stitchBorders } = data
+    function generateChunk(data) {
 
-        const meshLength = gridScale / Math.pow(2, detail - 1)
+        const { origin, gridDetail, gridScale, meshSimplification } = data
 
         var vertices = [];
+        var uv = [];
         var indices = [];
         let index = 0;
-        var width = (gridDetail) + 1
-        var height = (gridDetail) + 1
-        const offsetX = origin.x
-        const offsetY = origin.y
+        var width = gridDetail + 1
+        var height = gridDetail + 1
+        const verticesPerLine = (width - 1) / meshSimplification + 1;
 
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
-                let _x = meshLength * x
-                let _y = meshLength * y
-                let h = 0
-                for (let level = 1; level <= levels; level++) {
-                    const multi = level * level
-                    h += noise((_x + offsetX + 0.5) / multi, (_y + offsetY + 0.5) / multi) * multi
-                }
+        const heightmap = heightmaps['x' + origin.x + 'y' + origin.y]
+
+        for (let x = 0; x < width; x += meshSimplification) {
+            for (let y = 0; y < height; y += meshSimplification) {
                 vertices.push(
-                    _x,
-                    h * 10,
-                    _y
+                    x * gridScale,
+                    heightmap[x][y],
+                    y * gridScale
                 )
+                uv.push(x / width, y / height)
                 if (x < width - 1 && y < height - 1) {
-                    indices.push(index, index + width + 1, index + width)
-                    indices.push(index + width + 1, index, index + 1)
+                    indices.push(index, index + verticesPerLine + 1, index + verticesPerLine)
+                    indices.push(index + verticesPerLine + 1, index, index + 1)
                 }
                 index++;
             }
         }
 
-        function calculateNormals() {
-    
-            const normals = []
-            const triangleCount = vertices.length / 3;
-            for (let i = 0; i < triangleCount; i++) {
-                const normalTriangleIndex = i * 3;
-                const vertexIndexA = vertices[normalTriangleIndex];
-                const vertexIndexB = vertices[normalTriangleIndex + 1];
-                const vertexIndexC = vertices[normalTriangleIndex + 2];
-    
-                const normal = surfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
-                normals.push(normal, normal, normal)
-            }
-            // console.log(normals)
-    
-            // const borderTriangleCount = outOfMeshTriangles.Length / 3;
-            // for (let i = 0; i < borderTriangleCount; i++) {
-            //     const normalTriangleIndex = i * 3;
-            //     const vertexIndexA = outOfMeshTriangles[normalTriangleIndex];
-            //     const vertexIndexB = outOfMeshTriangles[normalTriangleIndex + 1];
-            //     const vertexIndexC = outOfMeshTriangles[normalTriangleIndex + 2];
-    
-            //     const triangleNormal = surfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
-            //     if (vertexIndexA >= 0) {
-            //         vertexNormals[vertexIndexA] += triangleNormal;
-            //     }
-            //     if (vertexIndexB >= 0) {
-            //         vertexNormals[vertexIndexB] += triangleNormal;
-            //     }
-            //     if (vertexIndexC >= 0) {
-            //         vertexNormals[vertexIndexC] += triangleNormal;
-            //     }
-            // }
-    
-    
-            // for (let i = 0; i < vertexNormals.Length; i++) {
-            //     vertexNormals[i].Normalize();
-            // }
-    
-            return normals;
-    
-        }
-    
-        function surfaceNormalFromIndices(indexA, indexB, indexC) {
-            const pointA = vertices[indexA];
-            const pointB = vertices[indexB];
-            const pointC = vertices[indexC];
-    
-            const sideAB = pointB - pointA;
-            const sideAC = pointC - pointA;
-            return crossVectors(sideAB, sideAC);
-        }
-    
-
         const normals = [];// = calculateNormals()
 
-        self.postMessage({ timestamp, data: { vertices, indices, normals } })
+        return { vertices, indices, uv, normals }
     }
     /**
      * Perlin Noise functions for 1D, 2D, 3D and 4D.
