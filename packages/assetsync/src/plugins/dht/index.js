@@ -11,11 +11,9 @@ export class DHTPlugin extends PluginBase {
         this._pluginName = 'CORE_DHTPlugin'
         this._transportPlugin = options.transportPlugin
 
-        // this._networks = {} // cache?
+        // this._cache = {} // cache?
 
-        this._dhtEvents = options.networkEvents || {
-
-        }
+        // this._dhtEvents = options.networkEvents || {}
     }
 
     async start(args = {}) {
@@ -26,10 +24,6 @@ export class DHTPlugin extends PluginBase {
     async stop(args = {}) {
         await super.stop(args)
         return true
-    }
-
-    setNetworkEvents(events) {
-        this._dhtEvents = events
     }
 
     /**

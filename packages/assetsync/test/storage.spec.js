@@ -3,7 +3,7 @@ import Peer from './storage/peer.js'
 
 const peer = new Peer({ rootDirectory: process.cwd() })
 await peer.start()
-console.log(peer.assetSync)
+
 test.serial('can make directory', async t => {
     const success = await peer.assetSync.storagePlugin.makeDirectory('/testdir/')
     t.true(success)

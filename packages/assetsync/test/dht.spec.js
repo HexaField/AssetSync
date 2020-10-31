@@ -6,23 +6,32 @@ import delay from 'delay'
 // import CID from 'cids'
 // import all from 'it-all'
 // import multihashing from 'multihashing-async'
-const peers = []
-const peerCount = 2
 
-for (let i = 0; i < peerCount; i++) {
-    const peer = new Peer(await createLibp2p())
-    await peer.start()
-    peers.push(peer)
+async function createPeers() {
+
+    const peers = []
+    const peerCount = 2
+    
+    for (let i = 0; i < peerCount; i++) {
+        const peer = new Peer(await createLibp2p())
+        await peer.start()
+        peers.push(peer)
+    }
+
+    return peers
 }
 
-const key = '/' + Math.random().toString(36)
-const val = Math.random().toString(36)
+test.serial('can put and get to DHT', async (t) => {
 
-test('can put and get to DHT', t => {
+    const peers = await createPeers()
+
+    const key = Math.random().toString(36)
+    const val = Math.random().toString(36)
+    
     return new Promise((resolve) => {
 
         peers[0].libp2pPlugin.getTransport().connectionManager.on('peer:connect', async (connection) => {
-            await peers[1].dhtPlugin.put(key, val)
+            await peers[0].dhtPlugin.put(key, val)
         })
 
         peers[1].libp2pPlugin.getTransport().connectionManager.on('peer:connect', async (connection) => {
