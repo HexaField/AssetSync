@@ -6,7 +6,9 @@
 
 This project is one half of [#ProjectConjure](https://info.conjure.world/)
 
-[Join the conversation!](https://discord.com/invite/ExBxEN2)
+Read about AssetSync & Conjure [here](https://medium.com/@joshfield999)
+
+[Join the conversation on discord!](https://discord.com/invite/ExBxEN2)
 
 ## [Asset Sync](packages/AssetSync)
 
@@ -36,7 +38,7 @@ Please read the [contributing document](CONTRIBUTING.MD) if you would like to co
 
 General
 
-- [x] Unit tests (not comprehensive)
+- [x] Unit tests (not yet comprehensive)
 - [ ] Integration tests
 - [ ] Migrate to typescript
 
@@ -53,7 +55,7 @@ AssetSync
 - [x] IPFS plugin
 - [x] Network Plugin
 - [x] File system plugin
-- [ ] DHT plugin
+- [x] DHT plugin
 - [ ] Synchronised database plugin
 - [ ] QUIC network plugin 
 - [ ] DHT plugin

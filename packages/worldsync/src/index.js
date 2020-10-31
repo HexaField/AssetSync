@@ -115,7 +115,7 @@ class WorldSync {
                             })
                         }
                     }
-                    if(args.assetSync) {
+                    if(args.config && args.config.assetSync) {
                         this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
                     }
                     this._peerSync.start(args.canvas, args.config)

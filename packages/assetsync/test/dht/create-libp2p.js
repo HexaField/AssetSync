@@ -1,15 +1,15 @@
 import Libp2p from 'libp2p'
 import WS from 'libp2p-websockets'
-import WebrtcStar from 'libp2p-webrtc-star'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
 import SECIO from 'libp2p-secio'
-import GossipSub from 'libp2p-gossipsub'
 import KadDHT from 'libp2p-kad-dht'
+import GossipSub from 'libp2p-gossipsub'
+import WebrtcStar from 'libp2p-webrtc-star'
 import wrtc from 'wrtc'
 
-export async function config() {
-    return {
+export default async function () {
+    const node = await Libp2p.create({
         addresses: {
             listen: [
                 '/dns4/boiling-hamlet-91904.herokuapp.com/tcp/443/wss/p2p-webrtc-star',
@@ -46,13 +46,8 @@ export async function config() {
                 }
             }
         }
-    }
-}
+    })
 
-// todo: add custom config options
-
-export default async function (options = {}) {
-    const node = await Libp2p.create(await config())
     await node.start()
     return node
 }

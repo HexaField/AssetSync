@@ -31,11 +31,16 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 
 ### Libp2p (Transport)
 
-- provides a simple API for pubsub & direct messaging via Libp2p
+- add libp2p as a transport with a customisable configuration
 
 ### Network
 
 - requires a transport plugin
+- provides a simple API for pubsub & direct messaging
+
+### DHT
+
+- get, set and query (todo) the DHT (only libp2p currently supported)
 
 ### File Storage
 
