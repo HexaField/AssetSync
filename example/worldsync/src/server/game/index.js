@@ -19,7 +19,7 @@ import { Sky } from 'three/examples/jsm/objects/Sky.js';
 
 export default async function (args) {
 
-    const { assetSync, proxy } = args
+    const { assetSync, worldSync } = args
 
     // scene
     const scene = new THREE.Scene();
@@ -28,22 +28,22 @@ export default async function (args) {
     // camera
     const camera = new THREE.PerspectiveCamera(
         70,
-        proxy.clientWidth / proxy.clientHeight,
+        worldSync.clientWidth / worldSync.clientHeight,
         0.1,
         100000,
     );
     camera.position.set(10, 50, 20);
 
     // renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: proxy.canvas });
-    renderer.setSize(proxy.clientWidth, proxy.clientHeight, false);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: worldSync.canvas });
+    renderer.setSize(worldSync.clientWidth, worldSync.clientHeight, false);
 
     // dpr    
-    const DPR = proxy.devicePixelRatio;
+    const DPR = worldSync.devicePixelRatio;
     renderer.setPixelRatio(Math.min(2, DPR));
 
     // orbit controls
-    const controls = new OrbitControls(camera, proxy);
+    const controls = new OrbitControls(camera, worldSync);
 
     // light
     scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.4));
@@ -68,8 +68,8 @@ export default async function (args) {
 
     function resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
-        const width = proxy.clientWidth;
-        const height = proxy.clientHeight;
+        const width = worldSync.clientWidth;
+        const height = worldSync.clientHeight;
         const needResize = canvas.width !== width || canvas.height !== height;
         if (needResize) {
             renderer.setSize(width, height, false);
@@ -173,7 +173,7 @@ export default async function (args) {
 
     const animate = () => {
         if (resizeRendererToDisplaySize(renderer)) {
-            camera.aspect = proxy.clientWidth / proxy.clientHeight;
+            camera.aspect = worldSync.clientWidth / worldSync.clientHeight;
             camera.updateProjectionMatrix();
         }
 

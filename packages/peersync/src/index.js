@@ -1,5 +1,4 @@
-import { isWebWorker, simplifyObject, Requester } from '@AssetSync/common'
-import { EventDispatcher } from './EventDispatcher.js'
+import { isWebWorker, simplifyObject, Requester, EventDispatcher } from '@AssetSync/common'
 
 /**  <message> {
  *      handle: ''

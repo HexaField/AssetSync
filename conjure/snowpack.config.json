@@ -1,0 +1,25 @@
+{
+  "mount": {
+    "public": "/",
+    "src": "/_dist_"
+  },
+  "plugins": [
+    [
+      "@snowpack/plugin-optimize"
+    ],
+    [
+      "snowpack-plugin-import-map", {
+        "imports": {
+          "three": "https://cdn.skypack.dev/pin/three@v0.121.1-01UDfMGdzKBc6pDlaRa9/min/three.js"
+        },
+        "extensions": [".js"],
+        "dev": true
+
+      }
+    ]
+  ],
+  "installOptions": {
+    "namedExports": [],
+    "polyfillNode": true
+  }
+}

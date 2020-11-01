@@ -2,41 +2,43 @@ import { isBrowser, isWebWorker } from '@AssetSync/common'
 import { receiveWorker } from '@AssetSync/WorkerSync'
 import { startAssetSync } from './create-assetsync.js'
 
-export async function server(startGame, worldSync) {
+export async function server(startGame) {
 
     if (isWebWorker)
     {
         // client in main, server in worker 
-        const proxy = await receiveWorker()
+        const worldSync = await receiveWorker()
 
-        proxy.addFunction('focus')
+        worldSync.addFunction('focus')
 
-        proxy.addEventListener('size', (data) => {
+        worldSync.addEventListener('size', (data) => {
             
-            proxy.clientWidth = data.width
-            proxy.clientHeight = data.height
-        
+            worldSync.clientWidth = data.width
+            worldSync.clientHeight = data.height
+
         })
 
         await new Promise((resolve) => {
-            proxy.addEventListener('start', (data) => {
+            worldSync.addEventListener('start', (data) => {
 
-                proxy.devicePixelRatio = data.devicePixelRatio
-                proxy.canvas = data.canvas
-                proxy.config = data.config
+                worldSync.devicePixelRatio = data.devicePixelRatio
+                worldSync.canvas = data.canvas
+                worldSync.config = data.config
 
-                proxy.ownerDocument = proxy
-                proxy.domElement = proxy
-                self.global = proxy
-                self.document = proxy
-                self.window = proxy
+                worldSync.ownerDocument = worldSync
+                worldSync.domElement = worldSync
+                self.global = worldSync
+                self.document = worldSync
+                self.window = worldSync
     
                 resolve()
 
             })
         })
 
-        startGame({ assetSync: proxy.config.assetSync ? await startAssetSync(proxy) : undefined, proxy })
+
+
+        startGame({ assetSync: worldSync.config.assetSync ? await startAssetSync(worldSync) : undefined, worldSync: worldSync })
     }
     else
     {

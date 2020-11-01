@@ -10,13 +10,15 @@ class WorkerThreadProxy extends PeerSync {
     }
 
     addEventListener(event, listener) {
+        if(!this._listeners[event])
+            this.sendEvent({ type: 'addEventListener', event })
         super.addEventListener(event, listener)
-        this.sendEvent({ type: 'addEventListener', event })
     }
     
     removeEventListener(event, listener) {
         super.removeEventListener(event, listener)
-        this.sendEvent({ type: 'removeEventListener', event })
+        if(!this._listeners[event])
+            this.sendEvent({ type: 'removeEventListener', event })
     }
 
     addFunction(func) {
