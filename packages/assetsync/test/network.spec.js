@@ -1,10 +1,10 @@
 import test from 'ava'
-import { relay } from './network/test-utils.js'
+import { relay } from './utils.js'
 import Peer from './network/peer.js'
-import createLibp2p from './network/create-libp2p.js'
+import createLibp2p, { config } from './network/create-libp2p.js'
 // import browser from './browser.js'
 
-await relay()
+await relay(config)
 
 const node1 = await createLibp2p()
 const peer1ID = node1.peerId.toB58String()
@@ -20,27 +20,7 @@ await peer1.start(networkID)
 const peer2 = new Peer(node2)
 await peer2.start(networkID)
 
-// test('Browser: peer 1 finds peer 2', browser, t => {
-//     return new Promise((resolve) => {
-//         peer1.on('onPeerJoin', (id) => {
-//             resolve(id)
-//         })
-//     }).then((result) => {
-//         t.is(result, peer2ID)
-//     })
-// })
-
-// test('Browser: peer 2 finds peer 1', browser, t => {
-//     return new Promise((resolve) => {
-//         peer2.on('onPeerJoin', (id) => {
-//             resolve(id)
-//         })
-//     }).then((result) => {
-//         t.is(result, peer1ID)
-//     })
-// })
-
-test('Node: peer 1 finds peer 2', t => {
+test.serial('can find peers', t => {
     return new Promise((resolve) => {
         peer1.on('onPeerJoin', (id) => {
             resolve(id)
@@ -50,21 +30,37 @@ test('Node: peer 1 finds peer 2', t => {
     })
 })
 
-test('Node: peer 2 finds peer 1', t => {
+test.serial('can message peer', t => {
+
+    const opcode = Math.random().toString(36)
+    const content = Math.random().toString(36)
+
+    peer1.network.sendToPeer(opcode, content, peer2ID)
     return new Promise((resolve) => {
-        peer2.on('onPeerJoin', (id) => {
-            resolve(id)
+        peer2.on('onMessage', (opcode, content, peerID) => {
+            resolve({ opcode, content, peerID })
         })
     }).then((result) => {
-        t.is(result, peer1ID)
+        t.is(result.peerID, peer1ID)
+        t.is(result.opcode, opcode)
+        t.is(result.content, content)
     })
 })
 
-/*
-describe('libp2p plugin', function () {
-describe('#indexOf()', function () {
-    it('should return -1 when the value is not present', function () {
-    assert.equal([1, 2, 3].indexOf(4), -1);
-    });
-});
-});*/
+
+test.serial('can message all peers', t => {
+
+    const opcode = Math.random().toString(36)
+    const content = Math.random().toString(36)
+
+    peer2.network.sendToAll(opcode, content)
+    return new Promise((resolve) => {
+        peer1.on('onMessage', (opcode, content, peerID) => {
+            resolve({ opcode, content, peerID })
+        })
+    }).then((result) => {
+        t.is(result.peerID, peer2ID)
+        t.is(result.opcode, opcode)
+        t.is(result.content, content)
+    })
+})

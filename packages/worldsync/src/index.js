@@ -146,7 +146,7 @@ class WorldSync {
                     remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerLeave', peerID] })
                 },
                 onMessage: (networkID, data, from) => { 
-                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onMessage', data, from] })
+                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onMessage', data.opcode, data.content, from] })
                 }
             }
         })

@@ -47,6 +47,16 @@ Asset Sync is a peer to peer data utility that gives your web applications all t
 - node storage on file system
 - browser storage in IndexedDB
 
+### Synced Database
+
+- add and remove entries
+- automatically syncronises entries
+
+**TODO**
+
+- add timestamp checks for entries
+- add tests for coherency across load & unload
+
 ## API
 
 ### Example

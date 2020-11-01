@@ -17,6 +17,8 @@
         "files": [
             "test/*.spec.js"
         ],
+		"concurrency": 1,
+		"verbose": true,
         "nodeArguments": [
             "--harmony-top-level-await"
         ]

@@ -1,7 +1,6 @@
-import { config } from './create-libp2p.js'
 import Libp2p from 'libp2p'
 
-export async function relay() {
+export async function relay(config) {
 
     const defaultConfig = await config(true)
 

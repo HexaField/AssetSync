@@ -23,12 +23,13 @@ export default class FileStorageNode {
         return false
     }
 
-    async exists(directory) {
+    async exists(directory, printError) {
         try {
             let stat = await this.files.stat(this.rootDirectory + directory)
             return Boolean(stat)
         } catch (err) {
-            console.log('Error finding status of file at location', directory, err)
+            if(printError)
+                console.log('Error finding status of file at location', directory, err)
         }
         return false
     }

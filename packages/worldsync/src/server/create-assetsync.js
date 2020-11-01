@@ -3,7 +3,10 @@ import AssetSync, {
     RemoteNetworkPlugin,
     Libp2pPlugin,
     NetworkPlugin,
-    StoragePlugin
+    StoragePlugin,
+    SyncedDatabasePlugin,
+    // DHTPlugin
+
 } from '@AssetSync/AssetSync'
 
 import { isBrowser, isNode, isWebWorker, libp2p } from '@AssetSync/common'
@@ -23,9 +26,11 @@ export async function startAssetSync(proxy) {
         networkPlugin = new NetworkPlugin({ transportPlugin })
         await assetSync.register({ transportPlugin })
     }
+    
     const storagePlugin = new StoragePlugin()
+    const syncedDatabasePlugin = new SyncedDatabasePlugin({ networkPlugin })
 
-    await assetSync.register({ networkPlugin, storagePlugin })
+    await assetSync.register({ networkPlugin, storagePlugin, syncedDatabasePlugin })
     await assetSync.initialise()
 
     return assetSync

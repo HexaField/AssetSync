@@ -17,7 +17,7 @@ export class NetworkPlugin extends PluginBase {
                 this._networks[networkID].emit('onPeerLeave', peerID)
             },
             onMessage: (networkID, data, from) => { 
-                this._networks[networkID].emit('onMessage', data, from)
+                this._networks[networkID].emit('onMessage', data.opcode, data.content, from)
             }
         }
     }
@@ -87,10 +87,18 @@ export class NetworkPlugin extends PluginBase {
                 return
             }
 
-            let data = message.data
-
+            let data = JSON.parse(message.data)
+            
             this._networkEvents.onMessage(networkID, data, message.from)
         })
+
+        this._networks[networkID].sendToPeer = (opcode, content, peerID) => {
+            this._networks[networkID].sendTo(peerID, JSON.stringify({ opcode, content }))
+        }
+
+        this._networks[networkID].sendToAll = (opcode, content) => {
+            this._networks[networkID].broadcast(JSON.stringify({ opcode, content }))
+        }
 
         return this._networks[networkID]
     }
@@ -106,13 +114,13 @@ export class NetworkPlugin extends PluginBase {
         }
     }
 
-    async sendTo(networkID, content, peerID) {
-        await this._networks[networkID].sendTo(peerID, content)
+    async sendTo(networkID, opcode, content, peerID) {
+        await this._networks[networkID].sendToPeer(peerID, opcode, content)
         return true
     }
 
-    async sendData(networkID, content) {
-        await this._networks[networkID].broadcast(content)
+    async sendData(networkID, opcode, content) {
+        await this._networks[networkID].sendToAll(opcode, content)
         return true
     }
 

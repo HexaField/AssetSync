@@ -20,7 +20,7 @@ Provides a simple interface for sending buffers, requests and events across a me
 
 ## [Socket Sync](packages/SocketSync)
 
-For connecting nodejs with the browser
+For connecting nodejs with the browser with websockets
 
 ## [Worker Sync](packages/WorkerSync)
 
@@ -28,7 +28,7 @@ For connecting workers to the DOM
 
 ## [World Sync](packages/WorldSync)
 
-For your virtual worlds
+A context agnostic wrapper for your virtual worlds
 
 ## [Contributing](CONTRIBUTING.MD)
 
@@ -38,7 +38,7 @@ Please read the [contributing document](CONTRIBUTING.MD) if you would like to co
 
 General
 
-- [x] Unit tests (not yet comprehensive)
+- [x] Unit tests
 - [ ] Integration tests
 - [ ] Migrate to typescript
 
@@ -56,14 +56,12 @@ AssetSync
 - [x] Network Plugin
 - [x] File system plugin
 - [x] DHT plugin
-- [ ] Synchronised database plugin
-- [ ] QUIC network plugin 
-- [ ] DHT plugin
+- [x] Synchronised database plugin
+- [ ] QUIC network plugin
 - [ ] Crypto plugin
 - [ ] ZKP plugin
 - [ ] Ring Sig plugin
 - [ ] ILP plugin
-.
 
 WorldSync
 
