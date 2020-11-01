@@ -30,11 +30,11 @@ test.serial('can put and get to DHT', async (t) => {
     
     return new Promise((resolve) => {
 
-        peers[0].libp2pPlugin.getTransport().connectionManager.on('peer:connect', async (connection) => {
+        peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
             await peers[0].dhtPlugin.put(key, val)
         })
 
-        peers[1].libp2pPlugin.getTransport().connectionManager.on('peer:connect', async (connection) => {
+        peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
             await delay(250) // wait for entry to propagate
             resolve(await peers[1].dhtPlugin.get(key))
         })

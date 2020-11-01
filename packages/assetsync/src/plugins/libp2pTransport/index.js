@@ -27,6 +27,17 @@ export class Libp2pPlugin extends TransportBase {
         this._showStats();
 
         await this._waitForLibp2pPeers(number(this._options.minPeersCount))
+
+        this.getTransport().connectionManager.on('peer:connect', (...args) => {
+            this.emit('peer:connect', ...args)
+        })
+        this.getTransport().connectionManager.on('peer:disconnect', (...args) => {
+            this.emit('peer:disconnect', ...args)
+        })
+        this.getTransport().on('peer:discovery', (...args) => {
+            this.emit('peer:discovery', ...args)
+        })
+        
         return true
     }
 
