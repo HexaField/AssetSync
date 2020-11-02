@@ -1,13 +1,18 @@
+import { EventDispatcher } from '@AssetSync/common';
 import * as THREE from 'three';
+import { EVENTS } from './Constants';
 
-export default class SceneController {
+export default class SceneController extends EventDispatcher {
 
     constructor(worldSync, input) {
-
+        super()
+        
         this.worldSync = worldSync
         this.input = input
 
-        this.sceneFunctions = []
+        this.sceneFunctions = {}
+        this.currentScene
+
         this.cameras = []
         this.renderers = []
         this.rendererWidth = 0
@@ -41,15 +46,20 @@ export default class SceneController {
         }
     }
 
-    registerSceneLoop(scene) {
-        this.sceneFunctions.push(scene)
+    registerSceneLoop(name, scene) {
+        if (scene && typeof scene === 'function')
+            this.sceneFunctions[name] = scene
     }
 
-    unregisterSceneLoop(scene) {
-        const index = this.sceneFunctions.indexOf(scene);
-        if (index !== -1) {
-            this.sceneFunctions.splice(index, 1);
-        }
+    unregisterSceneLoop(name) {
+        if(this.sceneFunctions[name])
+            delete this.sceneFunctions[name]
+    }
+
+    setScene(name) {
+        this.dispatchEvent(EVENTS.SCENE_STOP + this.currentScene)
+        this.currentScene = name
+        this.dispatchEvent(EVENTS.SCENE_START + this.currentScene)
     }
 
     resizeRendererToDisplaySize() {
@@ -75,7 +85,7 @@ export default class SceneController {
         return needResize
     }
 
-    startWorld() {
+    startWorld(logic) {
 
         const animate = () => {
 
@@ -84,18 +94,18 @@ export default class SceneController {
 
             this.resizeRendererToDisplaySize()
 
-            // TODO add in delta & time etc
-
-            for (let scene of this.sceneFunctions) {
-                if (scene && typeof scene === 'function')
-                    scene({
-                        delta,
-                        time,
-                        input: this.input,
-                        mouseRaycaster: this.mouseRaycaster,
-                        worldRaycaster: this.worldRaycaster
-                    })
+            const updateData = {
+                delta,
+                time,
+                input: this.input,
+                mouseRaycaster: this.mouseRaycaster,
+                worldRaycaster: this.worldRaycaster
             }
+
+            logic(updateData)
+
+            if(this.currentScene && this.sceneFunctions[this.currentScene])
+                this.sceneFunctions[this.currentScene](updateData)
 
             requestAnimationFrame(animate)
         }

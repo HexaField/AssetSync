@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import ThreeEditableText from 'three-typeable-text'
+import { EVENTS } from './Constants'
 
 export default class LoadingScreen {
     constructor(fonts) {
@@ -7,6 +8,8 @@ export default class LoadingScreen {
         this.passcodeLoseFocus = this.passcodeLoseFocus.bind(this)
         this.active = false
         this.passcodeCallback = undefined
+
+        this.sceneName = 'loading'
     }
 
     init(sceneController, proxy) {
@@ -46,7 +49,16 @@ export default class LoadingScreen {
         this.scene.add(this.passcodeText.getObject())
         this.scene.add(this.textObj.getObject())
 
-        sceneController.registerSceneLoop(({ delta, time, mouseRaycaster, worldRaycaster }) => {
+        sceneController.addEventListener(EVENTS.SCENE_STOP + this.sceneName, () => {
+            this.renderer.clear(true)
+            this.active = false
+        })
+
+        sceneController.addEventListener(EVENTS.SCENE_START + this.sceneName, () => {
+            this.active = true
+        })
+
+        sceneController.registerSceneLoop(this.sceneName, ({ delta, time, mouseRaycaster, worldRaycaster }) => {
             this.passcodeTextEntry.updateCursor()
             this.renderer.render(this.scene, this.camera)
         })
@@ -76,7 +88,6 @@ export default class LoadingScreen {
             this.textObj.getObject().position.setY((this.textObj._line_height * text.match(/\n/g).length))
         else
             this.textObj.getObject().position.setY(0)
-        this.update()
     }
 
     async awaitInput() {

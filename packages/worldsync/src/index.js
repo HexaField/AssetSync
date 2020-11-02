@@ -49,6 +49,8 @@ export { client } from './client/index.js'
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
     await worldsync.start(args)
+    window.worldSync = worldsync
+    window.peerSync = worldsync._peerSync
     return worldsync
 }
 
@@ -107,11 +109,11 @@ class WorldSync {
                             window.addEventListener('resize', this._peerSync.sendSize)
                 
                             this._peerSync.addEventListener('addEventListener', (event) => {
-                                this._peerSync.canvas.addEventListener(event.event, this._peerSync.onEvent)
+                                window.addEventListener(event.event, this._peerSync.onEvent)
                             })
                 
                             this._peerSync.addEventListener('removeEventListener', (event) => {
-                                this._peerSync.canvas.removeEventListener(event.event, this._peerSync.onEvent)
+                                window.removeEventListener(event.event, this._peerSync.onEvent)
                             })
                         }
                     }

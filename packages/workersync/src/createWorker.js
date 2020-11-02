@@ -12,7 +12,6 @@ class WorkerMainProxy extends PeerSync {
         worker.onmessage = (message) => { eventEmitter.emit('message', message.data) }
         this.setMessageHandlers((...data) => { worker.postMessage(...data) }, eventEmitter)
 
-
         this.onEvent = this.onEvent.bind(this)
     }
 

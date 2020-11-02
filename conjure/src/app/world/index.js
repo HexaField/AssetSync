@@ -1,49 +1,53 @@
 import * as THREE from 'three';
-import { OrbitControls } from './OrbitControls.js';
+import { EVENTS } from '../core/Constants';
+import User from '../user/User.js'
 
 export class World {
-    constructor(sceneController, proxy) {
+    constructor(proxy) {
+
+        this.sceneName = 'world'
 
         // scene
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000);
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000000);
 
         // camera
-        const camera = new THREE.PerspectiveCamera(
+        this.camera = new THREE.PerspectiveCamera(
             70,
             proxy.clientWidth / proxy.clientHeight,
             0.1,
             100000,
         );
-        camera.position.set(10, 50, 20);
-        sceneController.registerCamera(camera)
+        this.camera.position.set(10, 50, 20);
+        this.camera.lookAt(0, 0, 0);
 
         // renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: proxy.canvas });
-        renderer.setSize(proxy.clientWidth, proxy.clientHeight, false);
-        sceneController.registerRenderer(renderer)
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: proxy.canvas });
 
         // dpr    
         const DPR = proxy.devicePixelRatio;
-        renderer.setPixelRatio(Math.min(2, DPR));
-
-        // orbit controls
-        const controls = new OrbitControls(camera, proxy);
+        this.renderer.setPixelRatio(Math.min(2, DPR));
 
         // light
-        scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.4));
+        this.scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.4));
         // scene.add(new THREE.AmbientLight(0x666666));
-        const light = new THREE.DirectionalLight(0xdcd0ff, 0.8);
-        light.position.set(50, 200, 100);
-        light.position.multiplyScalar(1.3);
+        this.light = new THREE.DirectionalLight(0xdcd0ff, 0.8);
+        this.light.position.set(50, 200, 100);
+        this.light.position.multiplyScalar(1.3);
 
-        const player = new THREE.Mesh(new THREE.SphereBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xff00ff }))
-        scene.add(player)
+        this.user = new User()
+        this.scene.add(this.user.group)
+    }
 
-        sceneController.registerSceneLoop(({ delta, time, mouseRaycaster, worldRaycaster }) => {
-            renderer.render(scene, camera)
+    register(sceneController) {
+        sceneController.registerCamera(this.camera)
+        sceneController.registerRenderer(this.renderer)
+
+        sceneController.addEventListener(EVENTS.SCENE_STOP + this.sceneName, () => { })
+        sceneController.addEventListener(EVENTS.SCENE_START + this.sceneName, () => { })
+        sceneController.registerSceneLoop(this.sceneName, ({ delta, time, mouseRaycaster, worldRaycaster }) => {
+            this.renderer.render(this.scene, this.camera)
         })
-
 
         // loop
     }

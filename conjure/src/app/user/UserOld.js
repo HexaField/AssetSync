@@ -1,5 +1,5 @@
-import { THREE, ExtendedObject3D } from 'enable3d'
-import { REALM_PROTOCOLS } from '../world/realm/Realm'
+import * as THREE from 'three'
+// import { REALM_PROTOCOLS } from '../world/realm/Realm'
 // import { easySphere, easyOrigin } from '../util/MeshTemplates';
 
 export default class User
@@ -14,7 +14,7 @@ export default class User
         this.conjure = conjure;
         this.scene = conjure.scene;
 
-        this.group = new ExtendedObject3D();
+        this.group = new THREE.Group();
         this.group.name = 'user'
         this.group.position.y += 1;
         this.group.rotateY(Math.PI + 0.1) // a hack
@@ -24,25 +24,13 @@ export default class User
         this.thirdPerson = false;
 
         this.eyeHeight = 1.75;
-        this.focusLength = 2;
 
-        this.theta = 0;
-        this.phi = 0;
-        this.sensitivityX = 1;
-        this.sensitivityY = 0.8;
-
-        this.yMinLimit = -20;
-        this.yMaxLimit = 80;
-
-        this.radius = 10;
-        this.follow = false;
-
-        this.focusPoint = new ExtendedObject3D();
+        this.focusPoint = new THREE.Group();
         this.focusPoint.position.y = this.eyeHeight;
         this.focusPoint.position.z = -2;
         this.group.add(this.focusPoint);
 
-        this.previewMeshPoint = new ExtendedObject3D();
+        this.previewMeshPoint = new THREE.Group();
         this.previewMeshPoint.position.y = 1;
         this.previewMeshPoint.position.z = -1.5;
         this.group.add(this.previewMeshPoint);
@@ -81,27 +69,27 @@ export default class User
         })
 
         this.group.add(this.mesh);
-        if(!this.isRemote)
-        {
-            this.collider = this.conjure.physics.add.existing(this.group, {
-                shape: 'box',
-                width: 0.6,
-                depth: 0.4,
-                height: this.modelHeight,
-                offset: { x : 0, y: -this.modelHeight / 2, z:0},
-                autoCenter: false,
-                mass: 1
-                // shape: 'sphere',
-                // radius: 0.25,
-                // width: 0.5,
-                // offset: { y: -0.25 }
-            })
-            this.group.body.setCollisionFlags(0);
-            this.group.body.setFriction(1.5)
-            this.group.body.setBounciness(0)
-            this.group.body.setAngularFactor(0, 0, 0)
-            this.group.body.setLinearFactor(1, 1, 1)
-        }
+        // if(!this.isRemote)
+        // {
+        //     this.collider = this.conjure.physics.add.existing(this.group, {
+        //         shape: 'box',
+        //         width: 0.6,
+        //         depth: 0.4,
+        //         height: this.modelHeight,
+        //         offset: { x : 0, y: -this.modelHeight / 2, z:0},
+        //         autoCenter: false,
+        //         mass: 1
+        //         // shape: 'sphere',
+        //         // radius: 0.25,
+        //         // width: 0.5,
+        //         // offset: { y: -0.25 }
+        //     })
+        //     this.group.body.setCollisionFlags(0);
+        //     this.group.body.setFriction(1.5)
+        //     this.group.body.setBounciness(0)
+        //     this.group.body.setAngularFactor(0, 0, 0)
+        //     this.group.body.setLinearFactor(1, 1, 1)
+        // }
             
         // Continuous Collision Detection - https://docs.panda3d.org/1.10/python/programming/physics/bullet/ccd
         // this.group.body.setCcdMotionThreshold(1e-7)
@@ -374,8 +362,8 @@ export default class User
         this.currentAnimation = name;
         this.getMovementLock()
         this.group.animation.play(name, fadeTime * 1000, !Boolean(once));
-        if(!this.isRemote)
-            this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.ANIMATION, { name, fadeTime, once, startTime });
+        // if(!this.isRemote)
+        //     this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.ANIMATION, { name, fadeTime, once, startTime });
     }
 
     getMovementLock()

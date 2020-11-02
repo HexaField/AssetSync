@@ -43,7 +43,7 @@ export default class pinput {
 			this.mouseStates[i] = false;
 			this.previousMouseStates[i] = false;
 		}
-
+        
 		window.addEventListener('keydown', (e) => {
 			if (e.which == 18)
 				e.preventDefault();
@@ -274,9 +274,9 @@ export default class pinput {
 	// the current ones are set to reflect the actual state of the keyboard
 	// and mouse.
 	update() {
-		this.previousKeyStates = this.keyStates.slice(0);
+        this.previousKeyStates = this.keyStates.slice(0);
 		this.keyStates = this.realState.keyStates.slice(0);
-
+        
 		this.previousMouseStates = this.mouseStates.slice(0);
 		this.mouseStates = this.realState.mouseStates.slice(0);
 

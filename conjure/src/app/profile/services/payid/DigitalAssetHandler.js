@@ -1,5 +1,4 @@
 import { PayIdClient, IlpClient, PaymentRequest } from 'https://cdn.skypack.dev/xpring-js'
-import bigInt from "big-integer"
 
 export default class DigitalAssetHandler
 {
