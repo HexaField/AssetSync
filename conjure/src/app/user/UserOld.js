@@ -363,7 +363,7 @@ export default class User
         this.getMovementLock()
         this.group.animation.play(name, fadeTime * 1000, !Boolean(once));
         // if(!this.isRemote)
-        //     this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.ANIMATION, { name, fadeTime, once, startTime });
+        //     this.conjure.world.sendData(REALM_PROTOCOLS.USER.ANIMATION, { name, fadeTime, once, startTime });
     }
 
     getMovementLock()

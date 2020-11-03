@@ -45,7 +45,7 @@ export default class UserRemote extends User
         if(this.timeoutCount > this.timeoutLimit)
         {
             console.log(this.group.name + ' has timed out')
-            this.conjure.getWorld().onUserLeave(this.peerID);
+            this.conjure.world.onUserLeave(this.peerID);
             return
         }
         this.group.position.set(this.group.position.x + (this.velocity.x * updateArgs.delta), this.group.position.y + (this.velocity.y * updateArgs.delta), this.group.position.z + (this.velocity.z * updateArgs.delta))
@@ -63,7 +63,7 @@ export default class UserRemote extends User
 
     destroy()
     {
-        // this.conjure.getWorld().onUserLeave(this.peerID)
+        // this.conjure.world.onUserLeave(this.peerID)
         // this.conjure.physics.destroy(this.group.body)
         // this.scene.remove(this.group)
         // this.timedOut = true;

@@ -63,28 +63,27 @@ class Conjure extends EventDispatcher {
         // const { default: Profile } = await import('./profile/Profile.js')
         // this.profile = new Profile()
 
-        // Controls
-        // User
         // Screens
         // World
 
         const { Controls } = await import('./controls/Controls.js')
         this.controls = new Controls(this.input)
 
-
-        // const { FlyControls } = await import('./controls/FlyControls.js')
-        // this.controls.addControlScheme(new FlyControls())
-
+        const { Screens } = await import('./screens/Screens.js')
+        this.screens = new Screens(this)
+        
         const { World } = await import('./world/index.js')
         this.world = new World(this.worldSync)
+        this.world.scene.add(this.screens.group)
 
-        this.startConjure()
-
+        
         this.sceneController.startWorld((updateData) => {
             this.input.update()
+            this.screens.update(updateData)
             this.controls.update(updateData)
         })
-        console.log(this.worldSync)
+
+        await this.startConjure()
     }
 
     async startConjure() {
@@ -92,8 +91,12 @@ class Conjure extends EventDispatcher {
         const { AvatarControls } = await import('./controls/AvatarControls.js')
         this.controls.addControlScheme('avatar', new AvatarControls(this.world.camera, this.world.user), true)
 
+        // const { FlyControls } = await import('./controls/FlyControls.js')
+        // this.controls.addControlScheme(new FlyControls())
+
 
         this.loadingScreen.init(this.sceneController, this.worldSync)
+        this.sceneController.setScene(this.loadingScreen.sceneName)
         this.loadingScreen.setText('Initialising...')
 
         this.loadingScreen.setText('Downloading assets...')
@@ -116,6 +119,8 @@ class Conjure extends EventDispatcher {
 
         // const { default: ProfileServiceDiscord } = await import('./profile/services/ProfileServiceDiscord.js')
         // this.addService(new ProfileServiceDiscord(this.profile))
+
+        this.screens.createDefaultScreens()
 
         this.loadingScreen.setText('Loading World...')
         this.world.register(this.sceneController)

@@ -104,8 +104,8 @@ class WorldSync {
                 
                             const offscreen = canvas.transferControlToOffscreen()
                             this._peerSync.canvas = canvas
-                            this._peerSync.sendSize()
                             this._peerSync.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio, config }, [offscreen])
+                            this._peerSync.sendSize()
                             window.addEventListener('resize', this._peerSync.sendSize)
                 
                             this._peerSync.addEventListener('addEventListener', (event) => {

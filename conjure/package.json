@@ -19,6 +19,7 @@
         "snowpack": "^2.14.1",
         "snowpack-plugin-import-map": "^1.1.1",
         "three": "^0.122.0",
+        "three-spritetext": "^1.5.2",
         "three-typeable-text": "^0.1.6"
     }
 }

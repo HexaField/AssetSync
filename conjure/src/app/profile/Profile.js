@@ -30,7 +30,7 @@ export default class Profile
     setUsername(newName)
     {
         this.profileData.username = newName
-        // this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.UPDATE, { username: this.getUsername() })
+        // this.conjure.world.sendData(REALM_PROTOCOLS.USER.UPDATE, { username: this.getUsername() })
     }
 
     createProfile()
@@ -50,7 +50,7 @@ export default class Profile
 
     sendToPeers()
     {
-        // this.conjure.getWorld().sendData(REALM_PROTOCOLS.PROFILE.PROPAGATE, this.getProfile())
+        // this.conjure.world.sendData(REALM_PROTOCOLS.PROFILE.PROPAGATE, this.getProfile())
     }
 
     loadFromPeer(data)
@@ -66,7 +66,7 @@ export default class Profile
 
     // requestFromPeer(id)
     // {
-    //     this.conjure.getWorld().sendData(REALM_PROTOCOLS.PROFILE.REQUEST, id)
+    //     this.conjure.world.sendData(REALM_PROTOCOLS.PROFILE.REQUEST, id)
     // }
 
     async loadFromDatabase()

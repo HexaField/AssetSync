@@ -21,6 +21,12 @@ export class World {
         this.camera.position.set(10, 50, 20);
         this.camera.lookAt(0, 0, 0);
 
+        // for GUIs
+
+        this.cameraScreenAttach = new THREE.Group()
+        this.cameraScreenAttach.scale.set(0.2, 0.2, 0.2)
+        this.scene.add(this.cameraScreenAttach)
+
         // renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: proxy.canvas });
 
