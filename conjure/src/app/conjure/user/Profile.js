@@ -1,6 +1,5 @@
-import { REALM_PROTOCOLS } from "../world/realm/Realm"
-import ServiceManager from './services/ServiceManager'
-import { SERVER_PROTOCOLS } from '../../data/DataHandler'
+// import { REALM_PROTOCOLS } from "../world/realm/Realm.js"
+import ServiceManager from './services/ServiceManager.js'
 
 export default class Profile
 {  
@@ -74,8 +73,10 @@ export default class Profile
 
     async loadFromDatabase()
     {
-        let data = await this.conjure.getDataHandler(SERVER_PROTOCOLS.LOAD_PROFILE)
-        
+        return
+        // replace with dht
+        // let data = await this.conjure.getDataHandler(SERVER_PROTOCOLS.LOAD_PROFILE)
+
         if(!data || data.timestamp < this.lastUpdated || !data.data) return
         this.lastUpdated = data.timestamp
 
@@ -88,7 +89,8 @@ export default class Profile
 
     saveProfile()
     {
-        this.conjure.getDataHandler(SERVER_PROTOCOLS.SAVE_PROFILE, { profile: this.profileData, services: this.getServiceManager().getServiceAsJson() })
+        // replace with dht
+        // this.conjure.getDataHandler(SERVER_PROTOCOLS.SAVE_PROFILE, { profile: this.profileData, services: this.getServiceManager().getServiceAsJson() })
     }
 
     setProfileFromDatabase(data)

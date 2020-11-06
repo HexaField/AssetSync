@@ -1,8 +1,6 @@
 // import ProfileServiceDiscord from "./ProfileServiceDiscord"
 // import ProfileServicePayID from "./ProfileServicePayID"
 
-import { SERVER_PROTOCOLS } from '../../../data/DataHandler'
-
 export default class ServiceManager
 {  
     constructor(conjure)
@@ -91,9 +89,10 @@ export default class ServiceManager
             let ids = await service.getRealmsIDs()
             for(let i in ids)
             {
-                let realm = await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALM, ids[i].id)
-                if(realm)
-                    realmsFound.push(realm)
+                // replace with dht
+                // let realm = await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALM, ids[i].id)
+                // if(realm)
+                //     realmsFound.push(realm)
             }
         }
         return realmsFound

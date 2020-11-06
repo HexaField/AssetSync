@@ -3,7 +3,6 @@ import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementJSONTree from './elements/ScreenElementJSONTree'
 import { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from '../world/realm/RealmData'
 import RealmData from '../world/realm/RealmData'
-import { SERVER_PROTOCOLS } from '../../data/DataHandler'
 
 export default class ScreenRealmSettings extends ScreenBase
 {  
@@ -135,17 +134,18 @@ export default class ScreenRealmSettings extends ScreenBase
 
     async createRealm()
     {
-        if(this.isCreating)
-        {
-            await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: this.data.getData(), pin: true })
-            console.log('Successfully made realm!')
-            this.screenManager.showScreen(this.screenManager.screenRealms)
-            this.data = undefined // must reset data
-        }
-        else
-        {
-            await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_REALM, this.data.getData())
-        }
+        //replace with dht
+        // if(this.isCreating)
+        // {
+        //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: this.data.getData(), pin: true })
+        //     console.log('Successfully made realm!')
+        //     this.screenManager.showScreen(this.screenManager.screenRealms)
+        //     this.data = undefined // must reset data
+        // }
+        // else
+        // {
+        //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_REALM, this.data.getData())
+        // }
     }
 
     async selectFromList()

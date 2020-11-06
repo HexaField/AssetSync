@@ -1,7 +1,6 @@
-import { NetworkPlugin } from './index.js'
-import { EventEmitter } from 'events'
+import { DHTPlugin } from './index.js'
 
-export class RemoteNetworkPlugin extends NetworkPlugin {
+export class RemoteDHTPlugin extends DHTPlugin {
 
     constructor(options = {}) {
         super(options)
@@ -14,6 +13,9 @@ export class RemoteNetworkPlugin extends NetworkPlugin {
 
     async start(args = {}) {
         await super.start(args)
+        this._target.addEventListener('dhtEvent', (event, ...data) => {
+            this.emit(event, ...data)
+        })
     }
 
     async stop(args = {}) {
@@ -21,38 +23,12 @@ export class RemoteNetworkPlugin extends NetworkPlugin {
         await this.leaveAllNetworks()
     }
 
-    async leaveAllNetworks() {
-        await this.sendEvent('leaveAllNetworks')
+    async get(key) {
+        return await this.sendEvent('get', key)
     }
 
-    async leaveAllClientNetworks() {
-        await this.sendEvent('leaveAllClientNetworks')
-    }
-
-    async joinNetwork(networkID) {
-        const eventEmitter = new EventEmitter()
-        this._target.addEventListener('networkEvent-'+networkID, (event, ...data) => {
-            eventEmitter.emit(event, ...data)
-        })
-        this.sendEvent('joinNetwork', networkID)
-        return eventEmitter
-    }
-
-    async leaveNetwork(networkID) {
-        await this.sendEvent('leaveNetwork', networkID)
-    }
-
-    async sendTo(networkID, protocol, content, peerID) {
-        await this.sendEvent('sendTo', [networkID, protocol, content, peerID])
-    }
-
-    async sendData(networkID, protocol, content) {
-        await this.sendEvent('sendData', [networkID, protocol, content])
-    }
-
-    // todo, workersync stuff
-    async getPeers(networkID) {
-        return await this.sendEvent('getPeers', networkID)
+    async put(key, value) {
+        return await this.sendEvent('get', [key, value])
     }
 
     async sendEvent(protocol, args) {

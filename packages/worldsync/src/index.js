@@ -139,6 +139,16 @@ class WorldSync {
 
         const assetSync = new AssetSync()
         const transportPlugin = new Libp2pPlugin({ libp2p })
+        const dhtPlugin = new DHTPlugin({ transportPlugin })
+        dhtPlugin.on('dht:added', (...args) => {
+            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:added', ...args] })
+        })
+        dhtPlugin.on('dht:changed', (...args) => {
+            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:changed', ...args] })
+        })
+        dhtPlugin.on('dht:removed', (...args) => {
+            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:removed', ...args] })
+        })
         const networkPlugin = new NetworkPlugin({ 
             transportPlugin,
             networkEvents: {

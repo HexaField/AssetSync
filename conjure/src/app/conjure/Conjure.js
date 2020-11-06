@@ -1,22 +1,6 @@
-import Ammo from '../../lib/ammo.worker.js';
-import { AmmoPhysics } from '@enable3d/ammo-physics';
-import Mixers from './util/mixers'
-
 import * as THREE from 'three'
-import Loaders from './util/loaders'
-
-import Fonts from './screens/text/Fonts'
-import LoadingScreen from './LoadingScreen'
-import Input from './Input' 
-import PostProcessing from './PostProcessing'
-import AssetManager from './AssetManager';
-import Profile from './user/Profile'
 import { Store, get as getIDBItem, set as setIDBItem, keys as keysIDBItem, del as delIDBItem, clear as clearIDBItem } from 'idb-keyval';
-
-import World from './world/World'
-import ControlManager, { CONTROL_SCHEME } from './controls/ControlManager'
-import ScreenManager from './screens/ScreenManager'
-import AudioManager from './AudioManager'
+import { CONTROL_SCHEME } from './controls/ControlManager'
 
 export const CONJURE_MODE = {
     LOADING: 'Loading',
@@ -25,7 +9,18 @@ export const CONJURE_MODE = {
     CONJURE: 'Conjure',
 }
 
-export class Conjure
+export async function startConjure(data)
+{
+    if(!data)
+        console.error('ERROR at conjure start, missing data')
+
+    const { default: Ammo } = await import('./util/ammo.worker.js')
+    
+    Ammo();
+    new Conjure(data)
+}
+
+class Conjure
 {
     constructor(server)
     {
@@ -35,10 +30,8 @@ export class Conjure
 
         this.canvas = server.worldSync.canvas
         this.inputElement = server.worldSync
-        this.dataHandler = data.assetSync
-        // this.urlParams = data.userData.urlParams
-
-        this.assetURL = "https://assets.conjure.world/"
+        this.dataHandler = server.assetSync
+        this.urlParams = server.worldSync.config.urlParams
         
         this.start()
     }
@@ -68,10 +61,6 @@ export class Conjure
 
         await this.init()
         await this.preload()
-        this.physics = new AmmoPhysics(this.scene);
-        this.mixers = new Mixers()
-        this.animationMixers = this.mixers.mixers
-        
         await this.create()
 
         const animate = () => {
@@ -118,11 +107,14 @@ export class Conjure
         this.loadTimer = global.THISFRAME
         this.conjureMode = CONJURE_MODE.LOADING
 
+        const { default: Fonts } = await import('./screens/text/Fonts.js')
         this.fonts = new Fonts(this)
-        await this.fonts.addFont('Helvetiker', this.assetURL + 'assets/fonts/helvetiker.json')
-        await this.fonts.addFont('System', this.assetURL + 'assets/fonts/system.json')
+        await this.fonts.addFont('Helvetiker', '/assets/fonts/helvetiker.json')
+        await this.fonts.addFont('System', '/assets/fonts/system.json')
         this.fonts.setDefault('Helvetiker')
 
+
+        const { default: LoadingScreen } = await import('./LoadingScreen.js')
         this.loadingScreen = new LoadingScreen(this)
         this.loadingScreen.create()
         this.loadingScreen.setText('Initialising...')
@@ -138,6 +130,7 @@ export class Conjure
         this.vec2 = new THREE.Vector2()
         this.quat = new THREE.Quaternion()
 
+        const { default: Input } = await import('./Input.js')
         this.input = new Input(this)
     }
 
@@ -220,59 +213,62 @@ export class Conjure
         this.scene.add(this.dirLight)
     }
 
-    // async preload(label, url)
-    // {
-
-    // }
-
-    // async load(type, name)
-    // {
-    //     let asset = await this.dataHandler.loadAsset(name)
-    //     if(!asset)
-    //         asset = await this.dataHandler.saveAsset(name, )
-    // }
-
     async preload()
     {
         THREE.Cache.enabled = true
         this.cache = THREE.Cache
         this.textureAnisotropy = 1
+        
+        const { default: Loaders } = await import('./util/loaders.js')
         this.load = new Loaders(this.cache, this.textureAnisotropy)
         this.loadingScreen.setText('Downloading assets...') 
             
-        await this.load.preload('playerModel', this.assetURL + 'assets/models/ybot_anims.glb')
-        await this.load.preload('sword', this.assetURL + 'assets/models/chevalier/scene.gltf')
-        await this.load.preload('default_realm', this.assetURL + 'assets/icons/default_realm.png')
-        await this.load.preload('speaker', this.assetURL + 'assets/icons/pin_full.png')
-        await this.load.preload('pin_empty', this.assetURL + 'assets/icons/pin_empty.png')
+        await this.load.preload('playerModel', '/assets/models/ybot_anims.glb')
+        await this.load.preload('sword', '/assets/models/chevalier/scene.gltf')
+        await this.load.preload('default_realm', '/assets/icons/default_realm.png')
+        await this.load.preload('speaker', '/assets/icons/pin_full.png')
+        await this.load.preload('pin_empty', '/assets/icons/pin_empty.png')
 
-        await this.load.preload('missing_texture', this.assetURL + 'assets/textures/missing_texture.png')
-        await this.load.preload('menger_texture', this.assetURL + 'assets/textures/menger_texture.png')
-        await this.load.preload('ponder_texture', this.assetURL + 'assets/textures/ponder_texture.png')
-        await this.load.preload('default_texture', this.assetURL + 'assets/textures/default_texture.png')
+        await this.load.preload('missing_texture', '/assets/textures/missing_texture.png')
+        await this.load.preload('menger_texture', '/assets/textures/menger_texture.png')
+        await this.load.preload('ponder_texture', '/assets/textures/ponder_texture.png')
+        await this.load.preload('default_texture', '/assets/textures/default_texture.png')
     }
 
-    // this is for creating conjure-specific things
     async create()
     {
-        console.log('Took', (Date.now() - this.loadTimer)/1000, ' seconds to load.')
+        console.log('Took', (Date.now() - this.loadTimer)/1000, ' seconds to preload.')
 
+        const { AmmoPhysics } = await import('@enable3d/ammo-physics')
+        this.physics = new AmmoPhysics(this.scene)
+        
+        const { default: Mixers } = await import('./util/mixers.js')
+        this.mixers = new Mixers()
+        this.animationMixers = this.mixers.mixers
+        
+        const { default: PostProcessing } = await import('./PostProcessing.js')
         this.postProcessing = new PostProcessing(this);
 
         this.loadingScreen.setText('Loading default assets...') 
+        const { default: AssetManager } = await import('./AssetManager.js')
         this.assetManager = new AssetManager(this)
 
         await this.assetManager.createDefaultAssets(); // we want to do this now as some screens may use default assets or grab references in initialisation
         
+        const { default: Profile } = await import('./user/Profile.js')
         this.profile = new Profile(this)
-        
+
+        const { default: World } = await import('./world/World.js')
         this.world = new World(this)
+        const { default: ControlManager } = await import('./controls/ControlManager.js')
         this.controlManager = new ControlManager(this)
+        const { default: ScreenManager } = await import('./screens/ScreenManager.js')
         this.screenManager = new ScreenManager(this)
 
         this.resizeCanvas() // trigger this to set up screen anchors
         this.screenManager.hudGlobal.showScreen(true)
         
+        const { default: AudioManager } = await import('./AudioManager.js')
         this.audioManager = new AudioManager(this)
         this.screenManager.hudGlobal.audioControls.setAudioManager(this.audioManager)
 
@@ -412,13 +408,4 @@ export class Conjure
             this.screenManager.resizeScreens(width / height)
         // this.postProcessing.effectFXAA.uniforms['resolution'].value.set(1 / this.canvas.width, 1 / this.canvas.height)
     }
-}
-
-export function startConjure(data)
-{
-    if(!data)
-        console.error('ERROR at conjure start, missing data')
-
-    Ammo();
-    new Conjure(data)
 }

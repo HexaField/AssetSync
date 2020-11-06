@@ -344,4 +344,37 @@ export default class ControlManager
         
         this.avatarControls.update(updateArgs); 
     }
+
+    // TODO: schemes
+    
+    // addControlScheme(name, scheme, shouldSet) {
+    //     this.controlSchemes[name] = scheme
+    //     if(shouldSet)
+    //         this.setControlScheme(name)
+
+    // }
+
+    // removeControlScheme(name) {
+    //     if (this.controlSchemes[name])
+    //         delete this.controlSchemes[name]
+    // }
+
+    // setControlScheme(name) {
+    //     if (!this.controlSchemes[name]) return
+
+    //     if(this.currentScheme)
+    //         this.currentScheme.disable()
+        
+    //     this.currentScheme = this.controlSchemes[name]
+        
+    //     if(this.currentScheme)
+    //         this.currentScheme.enable()
+    // }
+
+    // update(updateArgs) {
+    //     if(!this.currentScheme) return
+
+    //     this.currentScheme.input(updateArgs)
+    //     this.currentScheme.update(updateArgs)
+    // }
 }

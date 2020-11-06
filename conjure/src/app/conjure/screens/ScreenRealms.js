@@ -5,7 +5,6 @@ import ScreenElementTextBox from './elements/ScreenElementTextBox'
 import ScreenElementScroll from './elements/ScreenElementScroll'
 import RealmData from '../world/realm/RealmData'
 import ScreenElementSprite from './elements/ScreenElementSprite'
-import { SERVER_PROTOCOLS } from '../../data/DataHandler'
 
 export default class ScreenRealms extends ScreenBase
 {  
@@ -92,16 +91,17 @@ export default class ScreenRealms extends ScreenBase
 
     async pin(realmData)
     {
-        for(let realm of await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALMS)) // get all stored realms
-        {
-            if(realm.id === realmData.realmData.id)
-            {
-                console.log(realmData)
-                await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: realmData.realmData, pin: !realmData.pinned })
-                this.getRealms()
-                return
-            }
-        }
+        // replace with dht
+        // for(let realm of await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALMS)) // get all stored realms
+        // {
+        //     if(realm.id === realmData.realmData.id)
+        //     {
+        //         console.log(realmData)
+        //         await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: realmData.realmData, pin: !realmData.pinned })
+        //         this.getRealms()
+        //         return
+        //     }
+        // }
     }
     
     async joinRealm(id)

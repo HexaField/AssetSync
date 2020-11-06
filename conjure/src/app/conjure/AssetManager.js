@@ -4,8 +4,6 @@ import _ from 'lodash'
 import { createGeometry, createMaterial } from './util/wireframe'
 import { number } from './util/number'
 
-import { SERVER_PROTOCOLS } from '../data/DataHandler'
-
 export const ASSET_TYPE = {
     TEXTURE: 'Texture', // THREE.Texture
     MATERIAL: 'Material', // THREE.Material
@@ -159,25 +157,26 @@ export default class AssetManager
         }
     }
 
+// TODO: use DHT
     async loadImageAssetFromHash(name)
     {
-        let asset = this.getByIPFSHash(ASSET_TYPE.TEXTURE, name)
-        if(asset)
-            return asset.data.metaData.src
+        // let asset = this.getByIPFSHash(ASSET_TYPE.TEXTURE, name)
+        // if(asset)
+        //     return asset.data.metaData.src
         
-        if(this.enableCaching)
-            asset = await this.conjure.getDataHandler(SERVER_PROTOCOLS.LOAD_ASSET, 'assets/' + name)
-        else
-            asset = await this.conjure.getDataHandler(SERVER_PROTOCOLS.REQUEST_ASSET, 'assets/' + name)
+        // if(this.enableCaching)
+        //     asset = await this.conjure.getDataHandler(SERVER_PROTOCOLS.LOAD_ASSET, 'assets/' + name)
+        // else
+        //     asset = await this.conjure.getDataHandler(SERVER_PROTOCOLS.REQUEST_ASSET, 'assets/' + name)
 
-        if(!asset)
-            return this.missingTextureData
+        // if(!asset)
+        //     return this.missingTextureData
 
-        let identical = this.getIdenticalTextureByImage(asset.metaData.src)
-        if(identical)
-            return this.getByIPFSHash(ASSET_TYPE.TEXTURE, identical).metaData.src;
-        this.setByIPFSHash(ASSET_TYPE.TEXTURE, name, asset.data, undefined, asset.metaData);
-        return asset.metaData.src
+        // let identical = this.getIdenticalTextureByImage(asset.metaData.src)
+        // if(identical)
+        //     return this.getByIPFSHash(ASSET_TYPE.TEXTURE, identical).metaData.src;
+        // this.setByIPFSHash(ASSET_TYPE.TEXTURE, name, asset.data, undefined, asset.metaData);
+        // return asset.metaData.src
     }
     
     getIdenticalMaterial(material)

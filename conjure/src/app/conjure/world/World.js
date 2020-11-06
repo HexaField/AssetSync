@@ -1,10 +1,10 @@
 import { THREE, ExtendedGroup } from 'enable3d'
-import Realm, { REALM_PROTOCOLS, GLOBAL_REALMS } from './realm/Realm'
-import User from '../user/User'
-import UserRemote from '../user/UserRemote'
-import { CONJURE_MODE } from '../Conjure';
-import { INTERACT_TYPES } from '../screens/hud/HUDInteract';
-import RealmData, { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from './realm/RealmData'
+import Realm, { REALM_PROTOCOLS, GLOBAL_REALMS } from './realm/Realm.js'
+import User from '../user/User.js'
+import UserRemote from '../user/UserRemote.js'
+import { CONJURE_MODE } from '../Conjure.js'
+import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
+import RealmData, { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from './realm/RealmData.js'
 import _ from 'lodash'
 // import { SERVER_PROTOCOLS } from '../../data/DataHandler';
 
@@ -14,6 +14,8 @@ export default class World
     {
         this.conjure = conjure
         this.scene = this.conjure.scene
+
+        this.realmHandler = conjure.server.realms
 
         this.group = new ExtendedGroup()
         this.scene.add(this.group)
@@ -61,7 +63,7 @@ export default class World
         let realms = []
         
         realms.push(...this.globalRealms)
-        realms.push(...await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALMS))
+        realms.push(...await this.realmHandler.getRealms())
         realms.push(...await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
         realms = realms.filter(realm => getPrivate ? true : (realm.visibility && realm.visibility !== REALM_VISIBILITY.PRIVATE))
         return realms
@@ -79,7 +81,7 @@ export default class World
         {
             realms.push({ realmData: realm, pinned: false })
         }
-        for(let pinned of (await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALMS)).filter(realm => getPrivate ? true : (realm.visibility && realm.visibility !== REALM_VISIBILITY.PRIVATE)))
+        for(let pinned of (await this.realmHandler.getRealms()).filter(realm => getPrivate ? true : (realm.visibility && realm.visibility !== REALM_VISIBILITY.PRIVATE)))
         {
             let found = false
             for(let realm of realms)
@@ -103,7 +105,7 @@ export default class World
             if(id === realm.id && (getPrivate ? true : (realm.visibility && realm.visibility !== REALM_VISIBILITY.PRIVATE)))
                 return realm
         console.log(id)
-        let realm = await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALM, id)
+        let realm = await this.realmHandler.getRealm(id)
         if(!realm) return
         return getPrivate ? realm : (realm.visibility && realm.visibility !== REALM_VISIBILITY.PRIVATE) ? realm : false
     }
@@ -113,7 +115,7 @@ export default class World
         for(let realm of Object.keys(GLOBAL_REALMS))
         {
             this.globalRealms.push(GLOBAL_REALMS[realm])
-            await this.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, {data: GLOBAL_REALMS[realm], pin: true })
+            await this.realmHandler.pinRealm({ data: GLOBAL_REALMS[realm], pin: true })
         }
     }
 

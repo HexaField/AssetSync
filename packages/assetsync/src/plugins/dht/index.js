@@ -3,9 +3,6 @@ import { PluginBase } from '../../PluginBase.js'
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 
-import diff from 'hyperdiff'
-
-
 export class DHTPlugin extends PluginBase {
 
     constructor(options = {}) {
@@ -20,32 +17,21 @@ export class DHTPlugin extends PluginBase {
 
     async start(args = {}) {
         await super.start(args)
-        this.pollChanges()
+        this._transportPlugin._dht.on('dht:added', (...args) => {
+            this.emit('dht:added', ...args)
+        })
+        this._transportPlugin._dht.on('dht:changed', (...args) => {
+            this.emit('dht:changed', ...args)
+        })
+        this._transportPlugin._dht.on('dht:removed', (...args) => {
+            this.emit('dht:removed', ...args)
+        })
         return true
     }
 
     async stop(args = {}) {
         await super.stop(args)
         return true
-    }
-
-    pollChanges() {
-        this.pollInterval = setInterval(() => {
-            const changes = diff([this._data], [this._transportPlugin.getTransport()._dht.datastore.data])
-            this._data = this._transportPlugin.getTransport()._dht.datastore.data
-            changes.added.forEach((entry) => {
-                this.emit('dht:add', {
-                    key: uint8ArrayToString(Object.keys(entry)[0]),
-                    value: uint8ArrayToString(Object.values(entry)[0])
-                })
-            })
-            changes.removed.forEach((entry) => {
-                this.emit('dht:remove', {
-                    key: uint8ArrayToString(Object.keys(entry)[0]),
-                    value: uint8ArrayToString(Object.values(entry)[0])
-                })
-            })
-        }, this._options.pollInterval || 1000)
     }
 
     /**

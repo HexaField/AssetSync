@@ -1,11 +1,10 @@
-import { THREE, ExtendedGroup } from 'enable3d'
+import * as THREE from 'three'
 import Terrain from './Terrain'
 import FeatureArtGallery from '../features/FeatureArtGallery'
 import FeatureLobby from '../features/FeatureLobby'
 import { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from './RealmData'
 import Platform from '../Platform'
 import ObjectManager from './ObjectManager'
-import { SERVER_PROTOCOLS } from '../../../data/DataHandler'
 // import FeatureParser from './FeatureParser'
 
 export const GLOBAL_REALMS = {
@@ -109,14 +108,14 @@ export default class Realm
 
     async preload()
     {
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_SUBSCRIBE, { realmID: this.realmID, onEntryAddition: this.onObjectCreate, onEntryRemoval: this.onObjectDestroy })
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_JOIN, { network: this.realmID, onMessage: this.receiveDataFromPeer, onPeerJoin: this.onPeerJoin, onPeerLeave: this.onPeerLeave })
+        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
+        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_JOIN, { network: this.realmID, onMessage: this.receiveDataFromPeer, onPeerJoin: this.onPeerJoin, onPeerLeave: this.onPeerLeave })
         
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.CREATE, this.onObjectCreate)
-        this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.UPDATE, this.onObjectUpdate)
-        this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.GROUP, this.onObjectGroup)
-        this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.MOVE, this.onObjectMove)
-        this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.DESTROY, this.onObjectDestroy)
+        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.UPDATE, this.onObjectUpdate)
+        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.GROUP, this.onObjectGroup)
+        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.MOVE, this.onObjectMove)
+        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.DESTROY, this.onObjectDestroy)
 
         if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD)
             this.terrain = new Terrain(this.conjure, this.world.group, this.realmData.getWorldSettings())
@@ -179,18 +178,18 @@ export default class Realm
         for(let feature of this.features)
             await feature.load()
         
-        for(let object of await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_OBJECTS, { realmID: this.realmID }))
-        {
-            await this.loadObject(object)
-        }
+        // for(let object of await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_OBJECTS, { realmID: this.realmID }))
+        // {
+        //     await this.loadObject(object)
+        // }
         this.loading = false
     }
 
     async leave()
     {
         this.getObjectManager().destroyAllObjects()
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_LEAVE, { network: this.realmID })
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_UNSUBSCRIBE, { realmID: this.realmID })
+        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_LEAVE, { network: this.realmID })
+        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_UNSUBSCRIBE, { realmID: this.realmID })
         if(this.terrain)
         {
             this.terrain.destroy()
@@ -239,12 +238,12 @@ export default class Realm
 
     sendData(protocol, content)
     {
-        this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_DATA, { network: this.realmID, protocol, content });
+        // this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_DATA, { network: this.realmID, protocol, content });
     }
 
     sendTo(protocol, content, peerID)
     {
-        this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_TO, { network: this.realmID, protocol, content, peerID });
+        // this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_TO, { network: this.realmID, protocol, content, peerID });
     }
 
     getObjectManager()
