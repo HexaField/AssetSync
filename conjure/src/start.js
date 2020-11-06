@@ -4,8 +4,8 @@ import { server } from '@AssetSync/WorldSync'
 export async function runApp() {
 
     console.log('Starting server...')
-    const { default: game } = await import('./app/index.js')
-    server(game)
+    const { default: conjure } = await import('./conjure/index.js')
+    server(conjure)
 
     // server stuff    
 }

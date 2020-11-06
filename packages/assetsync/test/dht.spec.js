@@ -21,9 +21,11 @@ async function createPeers() {
     return peers
 }
 
+const peers = await createPeers()
+
 test.serial('can put and get to DHT', async (t) => {
 
-    const peers = await createPeers()
+    t.timeout(60 * 1000)
 
     const key = Math.random().toString(36)
     const val = Math.random().toString(36)
@@ -34,9 +36,13 @@ test.serial('can put and get to DHT', async (t) => {
             await peers[0].dhtPlugin.put(key, val)
         })
 
+        peers[1].dhtPlugin.on('dht:add', (entry) => console.log(entry.key, entry.value))
+
         peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
-            await delay(250) // wait for entry to propagate
-            resolve(await peers[1].dhtPlugin.get(key))
+            // await delay(500) // wait for entry to propagate
+            // const result = await peers[1].dhtPlugin.get(key)
+            // await delay(10000)
+            // resolve(result)
         })
 
     }).then((result) => {

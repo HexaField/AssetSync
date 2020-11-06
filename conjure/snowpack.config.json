@@ -19,7 +19,12 @@
     ]
   ],
   "installOptions": {
-    "namedExports": [],
+    "treeshake": true,
+    "namedExports": [
+        "@enable3d/ammo-physics",
+        "enable3d",
+        "omggif"
+    ],
     "polyfillNode": true
   }
 }
