@@ -12,14 +12,17 @@ async function startApp() {
         canvas: isNode ? undefined : document.getElementById('canvas'),
         config: {
             assetSync: false,
-            urlParams: getParams(location.href)
+            urlParams: getParams(location.href),
+            touchDevice: Boolean('ontouchstart' in window)
         }
     })
     if(!isNode) {
-        // worldSync._peerSync.
-
-
-
+        worldSync._peerSync.addEventListener('requestPointerLock', () => { 
+            worldSync._peerSync.canvas.requestPointerLock()
+        })
+        worldSync._peerSync.addEventListener('exitPointerLock', () => { 
+           document.exitPointerLock()
+        })
     }
 }
 startApp()

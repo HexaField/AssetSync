@@ -1,0 +1,1 @@
+import{PayIdClient as e}from"https://cdn.skypack.dev/xpring-js";import"../../../../../../web_modules/big-integer.js";export default class t{async initialise(){await this.initXpring()}async initXpring(){this.payIdClient=new e}async makePayment(n,i,a){return!0}}

@@ -5,6 +5,9 @@
   },
   "plugins": [
     [
+      "@snowpack/plugin-optimize"
+    ],
+    [
       "snowpack-plugin-import-map", {
         "imports": {
           "three": "https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U/min/three.js"

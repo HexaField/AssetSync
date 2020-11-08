@@ -15,6 +15,8 @@ export async function server(startGame) {
             
             worldSync.clientWidth = data.width
             worldSync.clientHeight = data.height
+            worldSync.innerWidth = data.width
+            worldSync.innerHeight = data.height
 
         })
 
@@ -26,6 +28,8 @@ export async function server(startGame) {
                 worldSync.config = data.config
                 worldSync.clientWidth = data.width
                 worldSync.clientHeight = data.height
+                worldSync.innerWidth = data.width
+                worldSync.innerHeight = data.height
 
                 worldSync.ownerDocument = worldSync
                 worldSync.domElement = worldSync

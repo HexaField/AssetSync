@@ -1,0 +1,1 @@
+export default class a{constructor(t,e){this.profile=t,this.name=e,this.data={}}async initialise(){}getSchema(){return{}}getData(){return this.data}getName(){return this.name}setData(t){this.data=t}toJson(){return""}readFromJson(t){}getRealmIDs(){return[]}}

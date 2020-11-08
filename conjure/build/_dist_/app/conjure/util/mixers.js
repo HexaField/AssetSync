@@ -1,0 +1,1 @@
+import{AnimationMixer as t}from"https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U/min/three.js";export default class r{constructor(){this._mixers=[],this.mixers={create:e=>this.animationMixer(e),add:e=>this._mixers.push(e),get:()=>this._mixers,update:e=>this._mixers.forEach(i=>i.update(e/1e3))}}animationMixer(e){const i=new t(e);return this.mixers.add(i),i}}
