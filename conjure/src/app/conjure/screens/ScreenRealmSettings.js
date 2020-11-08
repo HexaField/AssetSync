@@ -1,7 +1,7 @@
 import ScreenBase from './ScreenBase'
 import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementJSONTree from './elements/ScreenElementJSONTree'
-import { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from '../world/realm/RealmData'
+import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../world/realm/RealmData'
 import RealmData from '../world/realm/RealmData'
 
 export default class ScreenRealmSettings extends ScreenBase
@@ -59,11 +59,6 @@ export default class ScreenRealmSettings extends ScreenBase
                 iconURL: {
                     type: this.fromService ? 'static' : 'text',
                     label: 'Icon',
-                },
-                visibility: {
-                    type: this.isCreating ? 'list' : 'static',
-                    label: 'Visibility',
-                    items: Object.values(REALM_VISIBILITY)
                 },
                 whitelist: {
                     type: 'json',
@@ -134,17 +129,19 @@ export default class ScreenRealmSettings extends ScreenBase
 
     async createRealm()
     {
-        //replace with dht
+        // replace with dht
         // if(this.isCreating)
         // {
         //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: this.data.getData(), pin: true })
-        //     console.log('Successfully made realm!')
+        //     console.log('Successfully made realm!', this.data)
         //     this.screenManager.showScreen(this.screenManager.screenRealms)
         //     this.data = undefined // must reset data
         // }
         // else
         // {
+        //     this.data.getData().timestamp = Date.now()
         //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_REALM, this.data.getData())
+        //     this.screenManager.conjure.getWorld().forceReloadCurrentRealm()
         // }
     }
 
@@ -160,9 +157,7 @@ export default class ScreenRealmSettings extends ScreenBase
         if(!this.data) return
         if(!item.owner) return
         this.fromService = true
-        this.data.getData().id = item.id
-        this.data.getData().name = item.name
-        this.data.getData().iconURL = item.iconURL
+        this.data = new RealmData(item)
         this.data.getData().whitelist.type = REALM_WHITELIST.SERVICE
         this.jsonTree.setSchema(this.getSchema())
         this.jsonTree.updateTree(this.data.getData(), this.updateData)

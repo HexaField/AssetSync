@@ -2,9 +2,10 @@ import * as THREE from 'three'
 import Terrain from './Terrain'
 import FeatureArtGallery from '../features/FeatureArtGallery'
 import FeatureLobby from '../features/FeatureLobby'
-import { REALM_WORLD_GENERATORS, REALM_VISIBILITY, REALM_WHITELIST } from './RealmData'
+import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from './RealmData'
 import Platform from '../Platform'
 import ObjectManager from './ObjectManager'
+import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 
 export const GLOBAL_REALMS = {
@@ -12,7 +13,6 @@ export const GLOBAL_REALMS = {
         id: 'Lobby',
         name: 'Lobby',
         timestamp: 0,
-        visibility: REALM_VISIBILITY.GLOBAL,
         worldSettings: {
             features: ['Lobby'],
             worldGeneratorType: REALM_WORLD_GENERATORS.NONE
@@ -20,9 +20,8 @@ export const GLOBAL_REALMS = {
     },
     GALLERY: {
         id: 'Gallery',
-        name: 'SuperRare Ethereum Gallery',
+        name: 'Art Gallery',
         timestamp: 0,
-        visibility: REALM_VISIBILITY.GLOBAL,
         worldData: {
             playsAudio: true
         },
@@ -35,7 +34,6 @@ export const GLOBAL_REALMS = {
         id: 'Campfire',
         name: 'Campfire',
         timestamp: 0,
-        visibility: REALM_VISIBILITY.GLOBAL,
         worldData: {
             playsAudio: true
         },
@@ -156,6 +154,14 @@ export default class Realm
                     this.features.push(f)
                     break
                 }
+                
+                case 'Discord': {
+                    let f = new FeatureDiscord(this)
+                    this.terrain = new Platform(this.conjure, this.world.group)
+                    await f.preload()
+                    this.features.push(f)
+                    break
+                }
 
                 default: break
             }
@@ -190,12 +196,13 @@ export default class Realm
         this.getObjectManager().destroyAllObjects()
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_LEAVE, { network: this.realmID })
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_UNSUBSCRIBE, { realmID: this.realmID })
+        
         if(this.terrain)
-        {
             this.terrain.destroy()
-        }
+
         for(let feature of this.features)
-            feature.unload()
+            await feature.unload()
+        
         this.world.group.remove(this.group)
         console.log('successfully left realm')
     }

@@ -23,6 +23,10 @@ async function startApp() {
         worldSync._peerSync.addEventListener('exitPointerLock', () => { 
            document.exitPointerLock()
         })
+        worldSync._peerSync.addEventListener('open', (...args) => { 
+           window.open(...args)
+        })
+        
     }
 }
 startApp()

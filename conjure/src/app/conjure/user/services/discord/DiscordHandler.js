@@ -50,7 +50,7 @@ export default class DiscordHandler
         this.oauth = new DiscordOauth2({
             clientId: this.clientId,
             clientSecret: this.clientSecret,
-            redirectUri: window.location.href+"success.html",
+            redirectUri: location.origin + "/success.html",
         });
 
         this.url = this.oauth.generateAuthUrl({

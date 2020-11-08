@@ -1,5 +1,5 @@
-import ProfileService from './ProfileService'
-import PayIDHandler from './payid/PayIDHandler'
+import ProfileService from '../ProfileService'
+import PayIDHandler from './PayIDHandler'
 
 export default class ProfileServicePayID extends ProfileService
 {  

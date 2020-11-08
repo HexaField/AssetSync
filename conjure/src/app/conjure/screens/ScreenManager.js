@@ -39,9 +39,9 @@ export default class ScreenManager
         this.hideLastOpenScreen = this.hideLastOpenScreen.bind(this) // for text entry screen callback
 
         // TODO: rename this to explore mode HUD and add conjure mode HUD
-        this.hudGlobal = new HUDGlobal(this, { name:'Global', width:2, height:1 });
-        this.hudExplore = new HUDExploreMode(this, { name:'Explore', width:2, height:1 });
-        this.hudConjure = new HUDConjureMode(this, { name:'Conjure', width:2, height:1 });
+        this.hudGlobal = new HUDGlobal(this, { name:'Global', width: 2.75, height:1 });
+        this.hudExplore = new HUDExploreMode(this, { name:'Explore', width: 2.75, height:1 });
+        this.hudConjure = new HUDConjureMode(this, { name:'Conjure', width: 2.75, height:1 });
         this.hudGlobal.showScreen(false)
         this.hudExplore.showScreen(false)
         this.hudConjure.showScreen(false)

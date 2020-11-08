@@ -64,10 +64,7 @@ class Conjure
         await this.create()
 
         const animate = () => {
-            if (this.resizeRendererToDisplaySize(this.renderer)) {
-              this.camera.aspect = this.inputElement.clientWidth / this.inputElement.clientHeight;
-              this.camera.updateProjectionMatrix();
-            }
+            this.resizeRendererToDisplaySize(this.renderer)
             this.update()
             requestAnimationFrame(animate)
         };
@@ -93,7 +90,7 @@ class Conjure
     getFont(font) { return this.getFonts().getFont(font) }
     getDefaultFont() { return this.fonts.getDefault() }
     getProfile() { return this.profile }
-    async getDataHandler(protocol, data) { return await this.inputElement.request(protocol, data) }
+    // async getDataHandler(protocol, data) { return await this.inputElement.request(protocol, data) }
     getGlobalHUD() { return this.screenManager.hudGlobal }
     getAudioManager() { return this.audioManager }
     getLoadingScreen() { return this.loadingScreen }
@@ -174,7 +171,7 @@ class Conjure
         );
 
         this.cameraFollow = new THREE.Group()
-        this.cameraFollow.position.setZ(-0.25)
+        this.cameraFollow.position.setZ(-0.35)
         this.debugBall = new THREE.Mesh(new THREE.SphereBufferGeometry(0.1), new THREE.MeshBasicMaterial())
         this.debugBall.receiveShadow = false
         this.debugBall.castShadow = false
@@ -298,7 +295,6 @@ class Conjure
         switch(mode)
         {
             default: case CONJURE_MODE.LOADING:
-                this.postProcessing.clear()
                 this.loadingScreen.active = true
                 this.controlManager.enableCurrentControls(false)
                 this.screenManager.hideHud()
@@ -389,12 +385,23 @@ class Conjure
     resizeCanvas(width, height)
     {
         if(!width || !height) return
+
+        const aspect = width / height
+        console.log(aspect)
+        
+        this.camera.aspect = aspect
+        this.camera.updateProjectionMatrix()
+        
+        this.loadingScreen.camera.aspect = aspect
+        this.loadingScreen.camera.updateProjectionMatrix()
+        
         this.renderer.setSize(width, height, false)
+
         // this.loadingScreen.renderer.setSize(width, height, false)
         // this.rendererCSS.setSize(width, height, false)
         this.postProcessing.composer.setSize(width, height, false)
         if(this.screenManager)
-            this.screenManager.resizeScreens(width / height)
+            this.screenManager.resizeScreens(aspect)
         // this.postProcessing.effectFXAA.uniforms['resolution'].value.set(1 / this.canvas.width, 1 / this.canvas.height)
     }
 }

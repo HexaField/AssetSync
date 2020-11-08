@@ -11,7 +11,8 @@ export class TextureLoader extends Loader
 		
 		const texture = new CanvasTexture();
 
-		const loader = new ImageBitmapLoader( this.manager );
+        const loader = new ImageBitmapLoader( this.manager );
+        loader.setOptions({ imageOrientation: 'flipY' })
 		loader.setCrossOrigin( this.crossOrigin );
 		loader.setPath( this.path );
 

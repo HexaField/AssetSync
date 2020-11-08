@@ -28,9 +28,9 @@ export default class ScreenServices extends ScreenBase
 
     addServices()
     {
-        for(let service of Object.keys(this.serviceManager.services))
+        for(let service of Object.values(this.serviceManager.services))
         {
-            let serviceButton = new ScreenElementButton(this, this.servicesScrollPanel, { width: this.buttonWidth, height: this.buttonHeight, text: service });
+            let serviceButton = new ScreenElementButton(this, this.servicesScrollPanel, { width: this.buttonWidth, height: this.buttonHeight, text: service.name });
             serviceButton.setOnClickCallback(this.selectService, serviceButton)
             this.servicesScrollPanel.registerItem(serviceButton)
         }

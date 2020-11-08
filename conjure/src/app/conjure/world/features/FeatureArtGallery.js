@@ -61,6 +61,8 @@ export default class FeatureArtGallery extends Feature
                 mesh.rotateY(Math.PI)
         }
         this.loadArtwork()
+        this.realm.conjure.getLoadingScreen().setText('WARNING!\n\nThis realm displays artwork from an external gallery and may feature adult material.\nIf you not an adult, please close the window or explore another realm.') 
+        await this.realm.conjure.getLoadingScreen().awaitInput()
     }
 
     async load()
@@ -70,6 +72,12 @@ export default class FeatureArtGallery extends Feature
     async unload()
     {
         this.room.destroy()
+        for(let piece of this.pieces)
+        {
+            if(piece.element && piece.element.remove)
+                piece.element.remove()
+            piece.mesh.material.dispose()
+        }
     }
 
     update(updateArgs)
@@ -79,107 +87,118 @@ export default class FeatureArtGallery extends Feature
     async loadArtwork()
     {
         abiDecoder.addABI(this.superrareABI);
-        let txlist = await(await fetch('https://cors-anywhere.herokuapp.com/https://api.etherscan.io/api?module=account&action=txlist&address=0xb932a70a57673d89f4acffbe830e8ed7f75fb9e0&startblock=0&endblock=latest&page=1&sort=desc&offset=100')).json();
+        let txlist = await(await fetch((location.href.includes('localhost') ? 'https://cors-anywhere.herokuapp.com/' : '') + 'https://api.etherscan.io/api?module=account&action=txlist&address=0xb932a70a57673d89f4acffbe830e8ed7f75fb9e0&startblock=0&endblock=latest&page=1&sort=desc&offset=100')).json();
         if(!txlist.result) return
-        let i = 0;
+        this.loadedPieces = 0;
+        this.timer = Date.now()
         for(let txn of txlist.result)
         {
-            let now = Date.now()
             let input = abiDecoder.decodeMethod(txn.input)
             if(!input || !input.params) continue
             
             if(input.name === 'addNewToken')
             {
-                // let hash = input.params[0].value.split('/').slice(-1).pop()
-                let metadata = await(await fetch(input.params[0].value)).json()
-                if(Number(metadata.media.size) > 100 * 1000 * 1000) // limit each piece to 100Mb
-                    continue
-                let type = metadata.media.mimeType.toString()
-                // console.log(type, metadata)
-                if(type.includes('gltf-binary'))
-                {
-                    let model = await this.realm.conjure.load.gltf(metadata.media.uri)
-                    if(!model || !model.scene) continue
-                    this.pieces[i].mesh.material.visible = false
-                    this.pieces[i].mesh.add(model.scene)
-                }
-                else 
-                {
-                    let dimensions = metadata.media.dimensions.split('x')
+                let i = this.loadedPieces
+                this.loadPiece(input, i).then((error) => {
+                    if(error)
+                        console.log('Artwork number', i, 'failed with error"', error, '"')
+                })
+                this.loadedPieces++;
+                if(this.loadedPieces >= this.piecesCount) return
+            }
+                
+        }
+    }
 
-                    if(type.includes('mp4'))
+    async loadPiece(input, i) 
+    {
+        // let hash = input.params[0].value.split('/').slice(-1).pop()
+        let metadata = await(await fetch(input.params[0].value)).json()
+        if(Number(metadata.media.size) > 100 * 1000 * 1000) // limit each piece to 100Mb
+            return 'file too big'
+        let type = metadata.media.mimeType.toString()
+        // console.log(type, metadata)
+        if(type.includes('gltf-binary'))
+        {
+            let model = await this.realm.conjure.load.gltf(metadata.media.uri)
+            if(!model || !model.scene) 
+                return 'invalid gltf file'
+            this.pieces[i].mesh.material.visible = false
+            this.pieces[i].mesh.add(model.scene)
+        }
+        else 
+        {
+            let dimensions = metadata.media.dimensions.split('x')
+
+            if(type.includes('mp4'))
+            {
+                return;
+                let video = document.createElement( 'video' );
+                this.pieces[i].element = video
+                video.crossOrigin = "anonymous";
+                video.loop = true
+                // video.src = metadata.media.uri;
+                // video.load()
+                this.pieces[i].mesh.material.map = new THREE.VideoTexture(video)
+                this.realm.conjure.getAudioManager().createFromMediaSource(video, this.pieces[i].mesh)
+                this.pieces[i].mesh.userData.media = video
+
+                var req = new XMLHttpRequest();
+                req.open('GET', metadata.media.uri, true);
+                req.responseType = 'blob';
+
+                req.onload = (result) => {
+                    if (result.target.status === 200 && video)
                     {
-                        continue
-                        let video = document.createElement( 'video' );
-                        video.crossOrigin = "anonymous";
-                        video.loop = true
-                        // video.src = metadata.media.uri;
-                        // video.load()
-                        this.pieces[i].mesh.material.map = new THREE.VideoTexture(video)
-                        this.realm.conjure.getAudioManager().createFromMediaSource(video, this.pieces[i].mesh)
-                        this.pieces[i].mesh.userData.media = video
-
-                        var req = new XMLHttpRequest();
-                        req.open('GET', metadata.media.uri, true);
-                        req.responseType = 'blob';
-
-                        req.onload = (result) => {
-                            if (result.target.status === 200)
-                            {
-                                let videoBlob = result.target.response;
-                                let vid = URL.createObjectURL(videoBlob);
-                                video.src = vid;
-                                video.play();
-                                video.volume = 0
-                            }
-                        }
-                        req.onerror = function() {
-                            console.log('Failed to get video at', metadata.media.uri)
-                        }
-                        req.send();
-                    }
-                    else if(type.includes('gif'))
-                    {
-                        continue
-                        this.pieces[i].mesh.material.map = await this.gifLoader.load(metadata.media.uri)
-                    }
-                    else if(type.includes('png') || type.includes('jpg') || type.includes('jpeg'))
-                    {
-                        this.pieces[i].mesh.material.map = await this.realm.conjure.load.texture(metadata.media.uri)
-                    }
-                    else
-                    {
-                        console.log('ArtGallery: Received unsupported file type:', type)
-                        continue
-                    }
-
-                    this.pieces[i].mesh.material.transparent = type.includes('png')
-
-                    let aspectRatio = Number(dimensions[0]) / Number(dimensions[1])
-
-                    if(aspectRatio > 1)
-                        this.pieces[i].mesh.geometry.scale(aspectRatio, 1, 1)
-                    if(aspectRatio < 1)
-                    {
-                        this.pieces[i].createdBy.group.position.setY(-aspectRatio * 1.75)
-                        this.pieces[i].name.group.position.setY(aspectRatio * 1.75)
-                        this.pieces[i].description.group.position.setY(aspectRatio * 2)
-                        this.pieces[i].mesh.geometry.scale(1, aspectRatio, 1)
+                        let videoBlob = result.target.response;
+                        let vid = URL.createObjectURL(videoBlob);
+                        video.src = vid;
+                        video.play();
+                        video.volume = 0
                     }
                 }
-                this.pieces[i].createdBy.setText(metadata.createdBy.trim())
-                this.pieces[i].name.setText(metadata.name.trim() + ', ' + metadata.yearCreated.trim() + ', ' + Math.round(Number(metadata.media.size) / (1024 * 1024)) + 'Mb')
-                this.pieces[i].description.setText(this.explodeString(metadata.description.trim().replace('\n', ''), 100))
-                
-                this.pieces[i].mesh.material.map.generateMipmaps = false;
-                this.pieces[i].mesh.material.map.wrapS = this.pieces[i].mesh.material.map.wrapT = THREE.ClampToEdgeWrapping;
-                this.pieces[i].mesh.material.map.minFilter = THREE.LinearFilter;
-                
-                i++;
-                console.log('Artwork number', i, 'of type', type, 'took', Date.now()-now, 'ms to load ')
-                if(i >= this.piecesCount) return
+                req.onerror = () => {
+                    console.log('Artwork number', i, 'failed with error"', 'Failed to get video at', metadata.media.uri, '"')
+                }
+                req.send();
+            }
+            else if(type.includes('gif'))
+            {
+                return;
+                this.pieces[i].mesh.material.map = await this.gifLoader.load(metadata.media.uri)
+            }
+            else if(type.includes('png') || type.includes('jpg') || type.includes('jpeg'))
+            {
+                this.pieces[i].mesh.material.map = await this.realm.conjure.load.texture(metadata.media.uri)
+            }
+            else
+            {
+                return 'ArtGallery: Received unsupported file type:' + type
+            }
+
+            this.pieces[i].mesh.material.transparent = type.includes('png')
+
+            let aspectRatio = Number(dimensions[0]) / Number(dimensions[1])
+
+            if(aspectRatio > 1)
+                this.pieces[i].mesh.geometry.scale(aspectRatio, 1, 1)
+            if(aspectRatio < 1)
+            {
+                this.pieces[i].createdBy.group.position.setY(-aspectRatio * 1.75)
+                this.pieces[i].name.group.position.setY(aspectRatio * 1.75)
+                this.pieces[i].description.group.position.setY(aspectRatio * 2)
+                this.pieces[i].mesh.geometry.scale(1, aspectRatio, 1)
             }
         }
+        this.pieces[i].createdBy.setText(metadata.createdBy.trim())
+        this.pieces[i].name.setText(metadata.name.trim() + ', ' + metadata.yearCreated.trim() + ', ' + Math.round(Number(metadata.media.size) / (1024 * 1024)) + 'Mb')
+        this.pieces[i].description.setText(this.explodeString(metadata.description.trim().replace('\n', ''), 100))
+        
+        this.pieces[i].mesh.material.map.generateMipmaps = false;
+        this.pieces[i].mesh.material.map.wrapS = this.pieces[i].mesh.material.map.wrapT = THREE.ClampToEdgeWrapping;
+        this.pieces[i].mesh.material.map.minFilter = THREE.LinearFilter;
+      
+        console.log('Artwork number', i, 'of type', type, 'took', Date.now()-this.timer, 'ms to load ')
     }
 
     createPainting(pos)

@@ -6,7 +6,7 @@ export default class Platform
     constructor(conjure, parentGroup, args = {})
     {
         this.conjure = conjure
-        this.platformSize = args.size || 50;
+        this.platformSize = args.size || 250;
         this.pos = args.pos || new THREE.Vector3();
         this.parentGroup = parentGroup
 

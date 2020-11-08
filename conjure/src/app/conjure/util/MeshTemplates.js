@@ -33,3 +33,24 @@ export function easyMaterial(args = {})
 {
     return new THREE.MeshBasicMaterial(args)
 }
+
+export function createLineGeometry(a, b)
+{
+    let geom = new THREE.BufferGeometry().setFromPoints([a, b]);
+    return geom
+}
+
+export function createCircleGeometry(radius, segments)
+{
+    let curve = new THREE.EllipseCurve(
+        0,  0,
+        radius, radius,
+        0,  2 * Math.PI,
+        false,
+        0
+    )
+    let points = curve.getPoints(segments || radius * 32);
+    let geom = new THREE.BufferGeometry().setFromPoints(points);
+    geom.rotateX(Math.PI / 2)
+    return geom
+}

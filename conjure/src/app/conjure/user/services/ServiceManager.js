@@ -1,10 +1,8 @@
-// import ProfileServiceDiscord from "./ProfileServiceDiscord"
+// import ProfileServiceDiscord from "./discord/ProfileServiceDiscord"
 // import ProfileServicePayID from "./ProfileServicePayID"
 
-export default class ServiceManager
-{  
-    constructor(conjure)
-    {
+export default class ServiceManager {
+    constructor(conjure) {
         this.conjure = conjure
         this.services = {}
 
@@ -12,10 +10,9 @@ export default class ServiceManager
         // this.addService(new ProfileServicePayID(this))
     }
 
-    getServiceAsJson()
-    {
+    getServiceAsJson() {
         let servicesJson = {}
-        for(let service of Object.keys(this.services))
+        for (let service of Object.keys(this.services))
             servicesJson[service] = this.services[service].toJson()
         return servicesJson
     }
@@ -32,76 +29,62 @@ export default class ServiceManager
     // }
 
 
-    addService(service)
-    {
+    addService(service) {
         this.services[service.getName()] = service
     }
 
-    linkService(serviceName)
-    {
+    linkService(serviceName) {
         this.services[serviceName].link()
     }
 
-    unlinkService(serviceName)
-    {
+    unlinkService(serviceName) {
         this.services[serviceName].unlink()
     }
 
-    getServiceLinked(serviceName)
-    {
-        return this.services[serviceName].getIsLinked()
+    getServiceLinked(serviceName) {
+        return this.services[serviceName].getAuthenticated()
     }
 
-    getService(serviceName)
-    {
+    getService(serviceName) {
         return this.services[serviceName]
     }
 
-    refreshServices()
-    {
+    refreshServices() {
         this.conjure.getScreens().screenServices.selectService()
     }
 
-    async initialiseServices()
-    {
-        for(let service of Object.values(this.services))
-        {
-            await service.initialise()
+    async initialiseServices() {
+        for (let service of Object.values(this.services)) {
+            if (await service.initialise())
+                service.isInitialised = true
         }
         this.conjure.getScreens().screenServices.addServices()
     }
 
-    async getPotentialRealms()
-    {
+    async getPotentialRealms() {
         let potentialRealmsFound = []
-        for(let service of Object.values(this.services))
-        {
-            potentialRealmsFound.push(...await service.getRealmsIDs())
+        for (let service of Object.values(this.services)) {
+            potentialRealmsFound.push(...await service.getRealms())
         }
         return potentialRealmsFound
     }
 
-    async getRealmsFromConnectedServices()
-    {
+    async getRealmsFromConnectedServices() {
         let realmsFound = []
-        for(let service of Object.values(this.services))
-        {
-            let ids = await service.getRealmsIDs()
-            for(let i in ids)
-            {
+        for (let service of Object.values(this.services)) {
+            let ids = await service.getRealms()
+            for (let i in ids) {
                 // replace with dht
-                // let realm = await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALM, ids[i].id)
-                // if(realm)
-                //     realmsFound.push(realm)
+                // if (await this.conjure.getDataHandler().getRealm(ids[i].id))
+                //     if (realm) realmsFound.push(ids[i])
             }
         }
         return realmsFound
     }
 
-    setServicesFromDatabase(data)
-    {
-        for(let service of Object.keys(data))
-            if(this.getService(service))
+    setServicesFromDatabase(data) {
+        for (let service of Object.keys(data))
+            if (this.getService(service))
                 this.getService(service).readFromJson(data[service])
     }
 }

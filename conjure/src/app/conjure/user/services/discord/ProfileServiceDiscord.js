@@ -1,5 +1,5 @@
-import DiscordHandler from './discord/DiscordHandler'
-import ProfileService from './ProfileService'
+// import DiscordHandler from './DiscordOauthHandler'
+import ProfileService from '../ProfileService'
 
 export default class ProfileServiceDiscord extends ProfileService
 {  
@@ -7,14 +7,15 @@ export default class ProfileServiceDiscord extends ProfileService
     {
         super(profile, 'Discord')
         this.link = this.link.bind(this)
-        this.isLinked = false
-        this.discordHandler = new DiscordHandler(this)
     }
 
     async initialise()
     {
         await super.initialise()
-        await this.discordHandler.tryConnect();
+
+        this.discordHandler = new DiscordOauthHandler(this)
+        if(await this.discordHandler.initialise())
+            this.guilds = await this.getGuilds()
     }
 
     getSchema()
@@ -22,7 +23,7 @@ export default class ProfileServiceDiscord extends ProfileService
         return {
             linkButton: {
                 type: 'button',
-                buttonText: this.getIsLinked() ? 'Unlink' : 'Link',
+                buttonText: this.getAuthenticated() ? 'Unlink' : 'Link',
                 ignoreLabel: true,
                 callback: this.link,
             }
@@ -31,28 +32,17 @@ export default class ProfileServiceDiscord extends ProfileService
 
     link()
     {
-        if(this.getIsLinked())
+        if(!this.discordHandler) 
+            return
+        if(this.getAuthenticated())
             this.discordHandler.logOut()
         else
             this.discordHandler.logInToDiscord()
     }
 
-    getIsLinked()
-    {
-        return this.isLinked
-    }
-    
-    setLinked(linked)
-    {
-        this.isLinked = linked
-        if(!linked)
-            this.data = {}
-        this.profile.refreshServices()
-    }
-
     toJson()
     {
-        if(this.isLinked)
+        if(this.isAuthenticated)
             return this.data
         return super.toJson()
     }
@@ -64,19 +54,25 @@ export default class ProfileServiceDiscord extends ProfileService
 
     async getGuilds()
     {
-        if(!this.isLinked) return []
+        if(!this.discordHandler || !this.isAuthenticated) return []
         return await this.discordHandler.getUserGuilds()
     }
 
-    async getRealmsIDs()
+    async getRealms()
     {
-        if(!this.guilds) 
+        if(!this.guilds || this.guilds.length === 0) 
             this.guilds = await this.getGuilds()
         let guilds = JSON.parse(JSON.stringify(this.guilds))
         for(let guild of guilds)
         {
             guild.iconURL = 'https://cdn.discordapp.com/icons/' + guild.id + '/'+ guild.icon + '.png'
-            guild.id = this.getName() +'-'+ guild.id
+            guild.worldData = {
+                guildID: guild.id
+            }
+            guild.id = 'Discord-' + guild.id
+            guild.worldSettings = {
+                features: ['Discord']
+            }
         }
         return guilds
     }

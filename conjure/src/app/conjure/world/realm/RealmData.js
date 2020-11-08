@@ -3,17 +3,13 @@ export const REALM_WORLD_GENERATORS = {
     INFINITE_WORLD: 'Infinite World',
 }
 
-export const REALM_VISIBILITY = {
-    PUBLIC: 'Public',
-    GLOBAL: 'Global',
-    PRIVATE: 'Private'
-}
-
 export const REALM_WHITELIST = {
     NONE: 'None',
     SERVICE: 'Service',
     PASSCODE: 'Passcode'
 }
+
+import _ from 'lodash'
 
 export default class RealmData
 {  
@@ -30,16 +26,19 @@ export default class RealmData
             name: params.name || this.getName() || 'New Realm',
             timestamp: now,
             iconURL: params.iconURL || this.getIconURL(),
-            visibility: params.visibility || REALM_VISIBILITY.PRIVATE,
-            whitelist: params.whitelist || {
+            global: Boolean(params.global),
+            whitelist: params.whitelist ? {
+                type: params.whitelist.type || REALM_WHITELIST.NONE,
+                ids: params.whitelist.ids || []
+            } : {
                 type: REALM_WHITELIST.NONE,
                 ids: []
             },
             worldData: params.worldData || {},
-            worldSettings: params.worldSettings || {
-                features: params.features || [],
+            worldSettings: Object.assign({}, params.worldSettings || {
+                features: params.features  && params.features.length ? params.features : [],
                 worldGeneratorType: REALM_WORLD_GENERATORS.INFINITE_WORLD 
-            },
+            }, params.worldSettings ? _.clone(params.worldSettings) : {})
         }
     }
 

@@ -38,6 +38,8 @@ export default class ScreenRealms extends ScreenBase
         this.createButton = new ScreenElementButton(this, this, { y: -this.height/2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Create Realm' });
         this.createButton.setOnClickCallback(this.createRealm)
         this.registerElement(this.createButton)
+
+        this.getRealms()
     }
 
     showScreen(active)
@@ -50,8 +52,7 @@ export default class ScreenRealms extends ScreenBase
 
     async getRealms()
     {
-        this.realms = []
-        this.realms.push(...await this.screenManager.conjure.getWorld().getRealmsAndPinned())
+        this.realms = await this.screenManager.conjure.getWorld().getRealmsAndPinned()
         this.displayRealms()
     }
 

@@ -5,12 +5,28 @@ export default class ProfileService
         this.profile = profile
         this.name = name
         this.data = {}
+        this.isAuthenticated = false
     }
 
     async initialise()
     {
+        return true
         // console.log('Initialised service ' + this.name)
+    }    
+    
+    getAuthenticated()
+    {
+        return this.isAuthenticated
     }
+
+    setAuthenticated(authenticated)
+    {
+        this.isAuthenticated = authenticated
+        if(!authenticated)
+            this.data = {}
+        this.profile.refreshServices()
+    }
+
 
     getSchema()
     {
@@ -43,5 +59,5 @@ export default class ProfileService
     // { id, name } 
     // optional is 
     // { iconURL }
-    getRealmIDs() { return [] }
+    async getRealms() { return [] }
 }

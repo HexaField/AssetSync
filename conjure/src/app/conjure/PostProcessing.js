@@ -35,12 +35,7 @@ export default class PostProcessing
         this.addBloom();
         this.addOutlines();
     }
-
-    clear()
-    {
-        this.conjure.renderer.clear(true, true, true);
-    }
-
+    
     render()
     {
         this.conjure.renderer.clear();
