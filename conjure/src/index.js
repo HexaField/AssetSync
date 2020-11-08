@@ -9,12 +9,17 @@ async function startApp() {
     const worldSync = await WorldSync({ 
         serverFile: '_dist_/start.js', 
         serverFunc: runApp,
-        // client: await(await import('./client/index.js')).default,
         canvas: isNode ? undefined : document.getElementById('canvas'),
         config: {
             assetSync: false,
             urlParams: getParams(location.href)
         }
     })
+    if(!isNode) {
+        // worldSync._peerSync.
+
+
+
+    }
 }
 startApp()

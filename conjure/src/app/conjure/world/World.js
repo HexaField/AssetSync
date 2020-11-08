@@ -244,14 +244,15 @@ export default class World
         }
         if(this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
         {
-            let intersections = this.conjure.worldRaycaster.intersectObjects(this.conjure.getAudioManager().getSources(), true);
-            if(intersections.length > 0 && intersections[0].distance < interactDistance)
-            {
-                interact = true;
-                this.conjure.screenManager.hudExplore.interact.setObject(intersections[0].object, INTERACT_TYPES.VIDEO);
-            }
-            if(!interact)
-                this.conjure.screenManager.hudExplore.interact.setObject();
+            // TODO: this uses the old audio manager to find audio sources, should add a worker-side list of media elements and use that instead
+            // let intersections = this.conjure.worldRaycaster.intersectObjects(this.conjure.getAudioManager().getSources(), true);
+            // if(intersections.length > 0 && intersections[0].distance < interactDistance)
+            // {
+            //     interact = true;
+            //     this.conjure.screenManager.hudExplore.interact.setObject(intersections[0].object, INTERACT_TYPES.VIDEO);
+            // }
+            // if(!interact)
+            //     this.conjure.screenManager.hudExplore.interact.setObject();
         }
         // if(this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
         // {

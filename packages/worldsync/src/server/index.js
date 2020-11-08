@@ -19,23 +19,24 @@ export async function server(startGame) {
         })
 
         await new Promise((resolve) => {
-            worldSync.addEventListener('start', (data) => {
+            worldSync.addEventListener('start', async (data) => {
 
                 worldSync.devicePixelRatio = data.devicePixelRatio
                 worldSync.canvas = data.canvas
                 worldSync.config = data.config
+                worldSync.clientWidth = data.width
+                worldSync.clientHeight = data.height
 
                 worldSync.ownerDocument = worldSync
                 worldSync.domElement = worldSync
                 self.global = worldSync
                 self.document = worldSync
                 self.window = worldSync
-    
+
                 resolve()
 
             })
         })
-
 
 
         startGame({ assetSync: worldSync.config.assetSync ? await startAssetSync(worldSync) : undefined, worldSync: worldSync })

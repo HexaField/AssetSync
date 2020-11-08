@@ -278,7 +278,7 @@ export default class AvatarControls
     
     lock()
     {
-        if(document.hasFocus())
+        // if(document.hasFocus())
 		this.domElement.requestPointerLock();
 	}
 

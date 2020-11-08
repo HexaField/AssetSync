@@ -3,12 +3,13 @@ import { number } from './util/number';
 
 export default class AudioManager
 {
-    constructor(conjure)
+    constructor()
     {
-        this.conjure = conjure
         this.buffers = {}
         this.sounds = []
         this.sources = []
+
+        this.camera = new THREE.Camera()
     }
 
     getSources()
@@ -26,22 +27,24 @@ export default class AudioManager
         return this.audioListener !== undefined
     }
 
-    async create(waitForInput)
+    setCameraPosition(pos) {
+        this.camera.position.copy(pos)
+    }
+
+    // todo
+    setCameraArguments(args) {
+        // this.camera.position.copy(pos)
+    }
+
+    async create()
     {
         if(this.getHasContext()) return
-
-        if(waitForInput)
-        {
-            this.conjure.getLoadingScreen().setText('WARNING!\n\nThis realm automatically plays audio.\nPlease click to continue.') 
-            await this.conjure.getLoadingScreen().awaitInput()
-        }
-        console.log(window.AudioContext, self.AudioContext)
 
         // window.AudioContext = self.AudioContext
         this.audioListener = new THREE.AudioListener();
         
         await this.audioListener.context.resume()
-        this.conjure.camera.add(this.audioListener);
+        this.camera.add(this.audioListener);
         this.setMasterVolume(1.0)
 
         this.audioLoader = new THREE.AudioLoader();

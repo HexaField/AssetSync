@@ -10,10 +10,11 @@ export default class LoadingScreen
         this.active = false
         this.passcodeCallback = undefined
         
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: conjure.canvas })
-        this.renderer.setClearColor( 0x000000, 0.0);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(window.clientWidth, window.clientHeight, false);
+        this.renderer = conjure.renderer
+        // this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: conjure.canvas })
+        // this.renderer.setClearColor( 0x000000, 0.0);
+        // this.renderer.setPixelRatio(window.devicePixelRatio);
+        // this.renderer.setSize(window.clientWidth, window.clientHeight, false);
 
         this.camera = new THREE.PerspectiveCamera( 80, window.clientWidth / window.clientHeight, 0.1, 100 );
     

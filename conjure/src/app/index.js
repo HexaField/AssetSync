@@ -8,12 +8,12 @@ export default async function (args) {
     new App(args)
 }
 
-
 class App extends EventDispatcher {
     constructor({ assetSync, worldSync }) {
 
         super()
 
+        worldSync.addFunction('requestPointerLock')
         worldSync.addFunction('exitPointerLock')
         worldSync.addFunction('hasFocus')
         

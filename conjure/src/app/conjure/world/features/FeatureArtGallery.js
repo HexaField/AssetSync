@@ -45,7 +45,7 @@ export default class FeatureArtGallery extends Feature
         this.realm.conjure.loadingScreen.setText('Creating gallery...')
         console.log('Creating gallery...')
 
-        this.loadingTex = await this.realm.conjure.load.texture(this.realm.conjure.assetURL + 'assets/icons/loading.png')
+        this.loadingTex = await this.realm.conjure.load.texture('/assets/icons/loading.png')
 
         console.log('Creating pieces...')
         for(let i = 0; i < this.piecesCount; i++)
@@ -109,6 +109,7 @@ export default class FeatureArtGallery extends Feature
 
                     if(type.includes('mp4'))
                     {
+                        continue
                         let video = document.createElement( 'video' );
                         video.crossOrigin = "anonymous";
                         video.loop = true
@@ -139,6 +140,7 @@ export default class FeatureArtGallery extends Feature
                     }
                     else if(type.includes('gif'))
                     {
+                        continue
                         this.pieces[i].mesh.material.map = await this.gifLoader.load(metadata.media.uri)
                     }
                     else if(type.includes('png') || type.includes('jpg') || type.includes('jpeg'))

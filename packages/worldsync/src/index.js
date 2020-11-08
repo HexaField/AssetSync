@@ -65,22 +65,22 @@ class WorldSync {
         if (isNode) { 
 
             // start a local server
-            this._peerSync = new SocketSync()    
-            this._peerSync.initialiseServer()
+            // this._peerSync = new SocketSync()    
+            // this._peerSync.initialiseServer()
             this._server = args.serverFunc(this)
 
         } else {
 
             // try and find a local node to offload the server
-            this._peerSync = new SocketSync()
-            this._connectedToNode = await this._peerSync.initialiseClient()
+            // this._peerSync = new SocketSync()
+            // this._connectedToNode = await this._peerSync.initialiseClient()
             
-            if(this._connectedToNode) {
+            // if(this._connectedToNode) {
                 
-                console.log('Found local node, starting server interface...')
-                // this._server = args.serverFunc(this) // we shouldn't need to run the server at all if its running on an external node
+            //     console.log('Found local node, starting server interface...')
+            //     // this._server = args.serverFunc(this) // we shouldn't need to run the server at all if its running on an external node
 
-            } else {
+            // } else {
 
                 if(window.Worker) {
                     // override socketsync with worker since we're running everything in the browser
@@ -101,10 +101,19 @@ class WorldSync {
                 
                     this._peerSync.start = (canvas, config) => {
                         if (canvas.transferControlToOffscreen) { // make sure our browser supports offscreencanvas
-                
+                            
                             const offscreen = canvas.transferControlToOffscreen()
                             this._peerSync.canvas = canvas
-                            this._peerSync.sendEvent({ type: 'start', canvas: offscreen, devicePixelRatio: window.devicePixelRatio, config }, [offscreen])
+                            this._peerSync.sendEvent({ 
+                                    type: 'start', 
+                                    canvas: offscreen, 
+                                    devicePixelRatio: window.devicePixelRatio, 
+                                    width: window.innerWidth,
+                                    height: window.innerHeight,
+                                    config
+                                },
+                                [offscreen]
+                            )
                             this._peerSync.sendSize()
                             window.addEventListener('resize', this._peerSync.sendSize)
                 
@@ -117,6 +126,7 @@ class WorldSync {
                             })
                         }
                     }
+
                     if(args.config && args.config.assetSync) {
                         this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
                     }
@@ -127,7 +137,7 @@ class WorldSync {
                     this._server = args.serverFunc(this)
                 }
 
-            }
+            // }
 
             if(args.client)
                 this._client = args.client(this)

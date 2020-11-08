@@ -113,15 +113,13 @@ class Conjure
         await this.fonts.addFont('System', '/assets/fonts/system.json')
         this.fonts.setDefault('Helvetiker')
 
+        this.initScene()
 
         const { default: LoadingScreen } = await import('./LoadingScreen.js')
         this.loadingScreen = new LoadingScreen(this)
         this.loadingScreen.create()
-        this.loadingScreen.setText('Initialising...')
 
-        this.initScene()
-        this.initCamera()
-        this.initRenderer()
+        this.loadingScreen.setText('Initialising...')
 
         this.mouseRaycaster = new THREE.Raycaster()
         this.worldRaycaster = new THREE.Raycaster()
@@ -134,56 +132,10 @@ class Conjure
         this.input = new Input(this)
     }
 
-    initRenderer()
-    {
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: this.canvas })
-        this.renderer.setPixelRatio(window.devicePixelRatio)
-
-        this.renderer.outputEncoding = THREE.sRGBEncoding
-        this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-        this.renderer.toneMapping = THREE.ReinhardToneMapping
-
-        this.renderer.setClearColor( 0x000000, 1.0)
-
-        // this.rendererCSS = new CSS3DRenderer({alpha: true, antialias: true})
-        // this.rendererCSS.setSize( window.innerWidth, window.innerHeight )
-        // // this.rendererCSS.domElement.style.position = 'absolute'
-        // this.rendererCSS.domElement.style.outline = 'none' // required
-        // this.rendererCSS.domElement.style.top = 0
-        // this.rendererCSS.domElement.style.zIndex = 10000
-        // document.body.appendChild(this.rendererCSS.domElement);
-        // document.body.removeChild(this.renderer.domElement);
-        // this.rendererCSS.domElement.appendChild(this.renderer.domElement);
-    }
-
-    initCamera()
-    {
-        this.camera = new THREE.PerspectiveCamera(
-          60,
-          window.clientWidth / window.clientHeight,
-          0.1,
-          10000,
-        );
-
-        this.cameraFollow = new THREE.Group()
-        this.cameraFollow.position.setZ(-0.25)
-        this.debugBall = new THREE.Mesh(new THREE.SphereBufferGeometry(0.1), new THREE.MeshBasicMaterial())
-        this.debugBall.receiveShadow = false
-        this.debugBall.castShadow = false
-        this.cameraFollow.add(this.debugBall)
-        this.camera.add(this.cameraFollow)
-
-        this.cameraTrack = new THREE.Group()
-        this.scene.add(this.cameraTrack)
-
-        this.cameraScreenAttach = new THREE.Group()
-        this.cameraScreenAttach.scale.set(0.2, 0.2, 0.2)
-        this.scene.add(this.cameraScreenAttach)
-    }
-
     initScene()
     {
+
+        // === SCENE === //
         this.scene = new THREE.Scene()
         this.scene.fog = new THREE.FogExp2( 0x344242, 0.001 );
         
@@ -211,6 +163,43 @@ class Conjure
         this.dirLight.shadow.camera.top = d
         this.dirLight.shadow.camera.bottom = d * -1
         this.scene.add(this.dirLight)
+
+        // === CAMERA === //
+
+        this.camera = new THREE.PerspectiveCamera(
+          60,
+          window.clientWidth / window.clientHeight,
+          0.1,
+          10000,
+        );
+
+        this.cameraFollow = new THREE.Group()
+        this.cameraFollow.position.setZ(-0.25)
+        this.debugBall = new THREE.Mesh(new THREE.SphereBufferGeometry(0.1), new THREE.MeshBasicMaterial())
+        this.debugBall.receiveShadow = false
+        this.debugBall.castShadow = false
+        this.cameraFollow.add(this.debugBall)
+        this.camera.add(this.cameraFollow)
+
+        this.cameraTrack = new THREE.Group()
+        this.scene.add(this.cameraTrack)
+
+        this.cameraScreenAttach = new THREE.Group()
+        this.cameraScreenAttach.scale.set(0.2, 0.2, 0.2)
+        this.scene.add(this.cameraScreenAttach)
+
+        // === RENDER === //
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: this.canvas })
+        this.renderer.setPixelRatio(window.devicePixelRatio)
+        this.renderer.setSize(window.clientWidth, window.clientHeight, false)
+
+        this.renderer.outputEncoding = THREE.sRGBEncoding
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        this.renderer.toneMapping = THREE.ReinhardToneMapping
+
+        this.renderer.setClearColor( 0x000000, 1.0)
     }
 
     async preload()
@@ -268,8 +257,8 @@ class Conjure
         this.resizeCanvas() // trigger this to set up screen anchors
         this.screenManager.hudGlobal.showScreen(true)
         
-        const { default: AudioManager } = await import('./AudioManager.js')
-        this.audioManager = new AudioManager(this)
+        const { default: AudioWrapper } = await import('./AudioWrapper.js')
+        this.audioManager = new AudioWrapper(this)
         this.screenManager.hudGlobal.audioControls.setAudioManager(this.audioManager)
 
         this.loadingScreen.setText('Loading World...')
@@ -303,7 +292,7 @@ class Conjure
         if(this.conjureMode === mode)  return
         if(this.conjureMode === CONJURE_MODE.LOADING && mode !== CONJURE_MODE.LOADING)
         {
-            this.loadingScreen.renderer.clear(true)
+            // this.loadingScreen.renderer.clear(true)
         }
         this.conjureMode = mode
         switch(mode)
@@ -401,7 +390,7 @@ class Conjure
     {
         if(!width || !height) return
         this.renderer.setSize(width, height, false)
-        this.loadingScreen.renderer.setSize(width, height, false)
+        // this.loadingScreen.renderer.setSize(width, height, false)
         // this.rendererCSS.setSize(width, height, false)
         this.postProcessing.composer.setSize(width, height, false)
         if(this.screenManager)

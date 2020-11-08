@@ -67,7 +67,7 @@ export default class ControlManager
 
     getPointerLock()
     {
-        if(!document.hasFocus()) return
+        // if(!document.hasFocus()) return
         if(this.conjure.getScreens().hudExplore.active || (this.conjure.getScreens().hudConjure.active && this.currentControlScheme === CONTROL_SCHEME.FLY))
             this.domElement.requestPointerLock()
     }
