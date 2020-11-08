@@ -10,8 +10,7 @@
         "start:node": "nodemon --trace-warnings src/index.js",
         "build": "snowpack build"
     },
-    "dependencies": {
-    },
+    "dependencies": {},
     "devDependencies": {
         "@forlagshuset/simple-fs": "^0.4.0",
         "@snowpack/plugin-babel": "^2.1.0",

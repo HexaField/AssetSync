@@ -1,6 +1,6 @@
 import { THREE } from 'enable3d'
 import * as DiscordOauth2 from 'discord-oauth2'
-import crypto from 'crypto'
+// import crypto from 'crypto'
 
 export default class DiscordOauthHandler
 {  
