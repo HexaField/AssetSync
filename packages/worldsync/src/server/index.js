@@ -2,7 +2,7 @@ import { isBrowser, isWebWorker } from '@AssetSync/common'
 import { receiveWorker } from '@AssetSync/WorkerSync'
 import { startAssetSync } from './create-assetsync.js'
 
-export async function server(startGame) {
+export async function server(startGame, worldSyncMain) {
 
     if (isWebWorker)
     {
@@ -54,6 +54,6 @@ export async function server(startGame) {
         // for now, just fake some stuff
         const assetSync = await startAssetSync()
         // window.canvas = worldSync.canvas
-        // startGame(assetSync, window)
+        startGame({ assetSync, worldSync: worldSyncMain })
     }
 }

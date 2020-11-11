@@ -1,4 +1,4 @@
-import { THREE, ExtendedMesh } from 'enable3d'
+import * as THREE from 'three'
 import { number } from '../../util/number'
 import { REALM_PROTOCOLS } from './Realm'
 

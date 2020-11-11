@@ -1,4 +1,4 @@
-import { THREE, ExtendedObject3D, ExtendedMesh, ExtendedGroup } from 'enable3d'
+import * as THREE from 'three'
 import TextRenderer3D from '../../screens/text/TextRenderer3D';
 
 export default class StructurePortal
@@ -10,7 +10,7 @@ export default class StructurePortal
         this.portalHeight = params.portalHeight || 1; // Y
         this.portalLength = params.portalLength || 1; // Z
 
-        this.group = new ExtendedGroup();
+        this.group = new THREE.Group();
         parentGroup.add(this.group);
         this.group.position.set(params.position.x, params.position.y, params.position.z)
 
@@ -18,7 +18,7 @@ export default class StructurePortal
 
         this.portalEntered = false
 
-        this.portal = new ExtendedMesh(new THREE.BoxBufferGeometry(this.portalWidth, this.portalLength, this.portalHeight),  this.portalMaterial)
+        this.portal = new THREE.Mesh(new THREE.BoxBufferGeometry(this.portalWidth, this.portalLength, this.portalHeight),  this.portalMaterial)
         this.group.add(this.portal);
         this.portal.name = 'portal-' + params.realmData.id
 

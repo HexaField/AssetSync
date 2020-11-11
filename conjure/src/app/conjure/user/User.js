@@ -1,4 +1,5 @@
-import { THREE, ExtendedObject3D } from 'enable3d'
+import * as THREE from 'three'
+import { ExtendedObject3D } from 'enable3d'
 import { REALM_PROTOCOLS } from '../world/realm/Realm'
 // import { easySphere, easyOrigin } from '../util/MeshTemplates';
 
@@ -145,6 +146,7 @@ export default class User
             }
         }.bind(this));
 
+        /*
         this.sword = await this.conjure.load.gltf('sword')
         this.sword.scene.position.set(0, 0, 0)
         this.sword.scene.children[0].scale.set(0.75, 0.75, 0.75)
@@ -163,12 +165,12 @@ export default class User
         this.sword.scene.rotateX(Math.PI / 24)
         // this.sword.scene.rotateY(-Math.PI / 8)
         this.sword.scene.rotateZ(-Math.PI / 12)
-
+*/
 
         this.setAction('idle', 0.1);
         this.turnedTooMuch = false;
         this.onCreate();
-        this.conjure.getControls().controlsEnabled = true
+        // this.conjure.controlManager.controlsEnabled = true
     }
 
     attachToBone(object, bone)

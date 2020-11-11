@@ -5,9 +5,8 @@ import { getParams } from './urldecoder.js'
 
 async function startApp() {
 
-    console.log(window)
     const worldSync = await WorldSync({ 
-        serverFile: '_dist_/start.js', 
+        // serverFile: '_dist_/start.js', 
         serverFunc: runApp,
         canvas: isNode ? undefined : document.getElementById('canvas'),
         config: {
@@ -16,7 +15,11 @@ async function startApp() {
             touchDevice: Boolean('ontouchstart' in window)
         }
     })
-    if(!isNode) {
+    if(worldSync._isRunningInWorker) {
+
+        const { MediaHandler } = await import('./media/MediaHandler.js')
+        const mediaHandler = new MediaHandler(worldSync)
+
         worldSync._peerSync.addEventListener('requestPointerLock', () => { 
             worldSync._peerSync.canvas.requestPointerLock()
         })
@@ -25,6 +28,9 @@ async function startApp() {
         })
         worldSync._peerSync.addEventListener('open', (...args) => { 
            window.open(...args)
+        })
+        worldSync._peerSync.addRequestOpcode('media', async (args) => {
+            return await mediaHandler.handle(args)
         })
         
     }

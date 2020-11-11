@@ -1,12 +1,22 @@
 import * as THREE from 'three'
 import { number } from './util/number';
 
-export default class AudioManager
+export class AudioWrapper
 {
     constructor(conjure)
     {
         this.conjure = conjure
         this.worldSync = conjure.worldSync
+    }
+
+    async makeRequest(func, ...args) {
+        return await this.worldSync.makeRequest('media', { 
+            type: 'sound',
+            request: {
+                func, 
+                args
+            }
+        })
     }
 
     async create(waitForInput)
@@ -16,37 +26,34 @@ export default class AudioManager
             this.conjure.getLoadingScreen().setText('WARNING!\n\nThis realm automatically plays audio.\nPlease click to continue.') 
             await this.conjure.getLoadingScreen().awaitInput()
         }
+
+        return await this.makeRequest('create', waitForInput)
         
     }
 
     async load(label, url)
     {
-        
+        return await this.makeRequest('load', label, url)
     }
 
-    createFromMediaSource(mediaElement, mesh, args = {})
+    async createFromMediaSource(mediaElement, mesh, args = {})
     {
-        
+        return await this.makeRequest('createFromMediaSource', mediaElement, mesh, args)
     }
     
     // { loop, volume, refDistance,  }
-    play(buffer, args = {})
+    play(label, args = {})
     {
-        
+        this.makeRequest('play', label, args)
     }
 
     setMasterVolume(amount)
     {
-        
+        this.makeRequest('setMasterVolume', number(amount))
     }
 
-    async toggleMute()
+    toggleMute()
     {
-
+        this.makeRequest('toggleMute')
     }
-
-    update() {
-        // send cam pos and changes
-    }
-
 }

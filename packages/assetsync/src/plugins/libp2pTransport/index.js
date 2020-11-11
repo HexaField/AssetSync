@@ -8,6 +8,7 @@ export class Libp2pPlugin extends TransportBase {
         super(options)
         this._libp2p = options.libp2p
         this._pluginName = 'CORE_Libp2pTransportPlugin'
+        this.dht = undefined
     }
 
     async start(args = {}) {
@@ -37,6 +38,8 @@ export class Libp2pPlugin extends TransportBase {
         this.getTransport().on('peer:discovery', (...args) => {
             this.emit('peer:discovery', ...args)
         })
+
+        this.dht = this._libp2p.dht
         
         return true
     }

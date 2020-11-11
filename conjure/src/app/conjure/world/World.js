@@ -1,4 +1,4 @@
-import { THREE, ExtendedGroup } from 'enable3d'
+import * as THREE from 'three'
 import Realm, { REALM_PROTOCOLS, GLOBAL_REALMS } from './realm/Realm.js'
 import User from '../user/User.js'
 import UserRemote from '../user/UserRemote.js'
@@ -6,7 +6,6 @@ import { CONJURE_MODE } from '../Conjure.js'
 import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
 import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST } from './realm/RealmData.js'
 import _ from 'lodash'
-// import { SERVER_PROTOCOLS } from '../../data/DataHandler';
 
 export default class World
 {
@@ -15,9 +14,9 @@ export default class World
         this.conjure = conjure
         this.scene = this.conjure.scene
 
-        this.realmHandler = conjure.server.realms
+        this.realmHandler = conjure.realms
 
-        this.group = new ExtendedGroup()
+        this.group = new THREE.Group()
         this.scene.add(this.group)
 
         this.user = new User(conjure);
@@ -65,8 +64,8 @@ export default class World
         for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
             realms[realm.id] = new RealmData(realm).getData()
 
-        // for(let realm of await this.conjure.getDataHandler().getRealms())  
-        //     realms[realm.id] = new RealmData(realm).getData()
+        for(let realm of await this.conjure.realms.getRealms())  
+            realms[realm.id] = new RealmData(realm).getData()
 
         for(let realm of this.globalRealms)
         {
@@ -83,13 +82,13 @@ export default class World
         for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
             realms[realm.id] = { realmData: new RealmData(realm).getData(), pinned: false }
         
-        // for(let pinned of await this.conjure.getDataHandler().getRealms())
-        // {
-        //     if(realms[pinned.id])
-        //         realms[pinned.id].pinned = true
-        //     else
-        //         realms[pinned.id] = { realmData: new RealmData(pinned).getData(), pinned: true }
-        // }
+        for(let pinned of await this.conjure.realms.getRealms())
+        {
+            if(realms[pinned.id])
+                realms[pinned.id].pinned = true
+            else
+                realms[pinned.id] = { realmData: new RealmData(pinned).getData(), pinned: true }
+        }
 
         for(let realm of this.globalRealms)   
             realms[realm.id] = { realmData: realm, pinned: 'global' }
@@ -103,7 +102,7 @@ export default class World
             if(id === realm.id)
                 return realm
         
-        // return await this.conjure.getDataHandler().getRealm(id)
+        return await this.conjure.realms.getRealm(id)
     }
 
     async preloadGlobalRealms()
@@ -113,7 +112,7 @@ export default class World
             const realmData = new RealmData(realm).getData()
             realmData.global = true
             this.globalRealms.push(realmData)
-            // await this.conjure.getDataHandler().pinRealm({data: realmData, pin: true })
+            await this.conjure.realms.pinRealm(realmData, true)
         }
     }
 
@@ -344,7 +343,7 @@ export default class World
             this.onUserLeave(peerID)
         }
         this.users.push(new UserRemote(this.conjure, data.username, peerID))
-        global.CONSOLE.log(data.username + ' has joined')
+        window.CONSOLE.log(data.username + ' has joined')
     }
     
     
@@ -363,7 +362,7 @@ export default class World
         for(let u = 0; u < this.users.length; u++)
             if(peerID === this.users[u].peerID)
             {
-                global.CONSOLE.log(this.users[u].username + ' has left')
+                window.CONSOLE.log(this.users[u].username + ' has left')
                 // this.conjure.physics.destroy(this.users[u].group.body)
                 this.scene.remove(this.users[u].group)
                 this.users.splice(u, 1);

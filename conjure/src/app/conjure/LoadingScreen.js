@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import ThreeEditableText from 'three-typeable-text'
+import { CONJURE_MODE } from './Conjure'
 
 export default class LoadingScreen
 {
@@ -30,6 +31,10 @@ export default class LoadingScreen
                 }
             }
         }, false )
+
+        this.conjure.on('conjure:mode', (mode) => {
+            this.active = mode === CONJURE_MODE.LOADING
+        })
     }
 
     setPasscodeCallback(callback)

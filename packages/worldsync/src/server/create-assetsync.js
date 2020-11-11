@@ -19,7 +19,7 @@ export async function startAssetSync(proxy) {
     let assetSync = new AssetSync()
     let networkPlugin, dhtPlugin
 
-    if (isWebWorker) {
+    if (isWebWorker && proxy) {
 
         networkPlugin = new RemoteNetworkPlugin()
         networkPlugin.setTarget(proxy)

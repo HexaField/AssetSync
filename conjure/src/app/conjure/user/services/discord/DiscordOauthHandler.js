@@ -1,4 +1,4 @@
-import { THREE } from 'enable3d'
+import * as THREE from 'three'
 import * as DiscordOauth2 from 'discord-oauth2'
 // import crypto from 'crypto'
 

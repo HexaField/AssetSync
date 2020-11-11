@@ -1,4 +1,5 @@
 // import { REALM_PROTOCOLS } from "../world/realm/Realm.js"
+import { generateUUID } from '@AssetSync/common'
 import ServiceManager from './services/ServiceManager.js'
 
 export default class Profile
@@ -19,7 +20,7 @@ export default class Profile
     makeDefaultProfile()
     {
         this.profileData = {
-            id: Date.now(),
+            id: generateUUID(),
             username: 'New User ' + Math.round(Math.random() * 10000)
         }
     }
@@ -32,14 +33,13 @@ export default class Profile
     setUsername(newName)
     {
         this.profileData.username = newName
-        this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.UPDATE, { username: this.getUsername() })
+        // this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.UPDATE, { username: this.getUsername() })
     }
 
     createProfile()
     {
         if(this.isLoaded) return
         this.saveProfile()
-        this.sendToPeers()
         this.setProfileLoaded(true)
     }
 
@@ -50,37 +50,13 @@ export default class Profile
         this.setProfileLoaded(false)
     }
 
-    sendToPeers()
-    {
-        // this.conjure.getWorld().sendData(REALM_PROTOCOLS.PROFILE.PROPAGATE, this.getProfile())
-    }
-
-    loadFromPeer(data)
-    {
-        if(data.timestamp < this.lastUpdated) return
-        this.lastUpdated = data.timestamp
-        console.log(data.data)
-        if(data.data.profile)
-            this.setProfileFromDatabase(data.data.profile)
-        if(data.data.services)
-            this.getServiceManager().setServicesFromDatabase(data.data.services)
-    }
-
-    // requestFromPeer(id)
-    // {
-    //     this.conjure.getWorld().sendData(REALM_PROTOCOLS.PROFILE.REQUEST, id)
-    // }
-
     async loadFromDatabase()
     {
-        return
-        // replace with dht
-        // let data = await this.conjure.getDataHandler(SERVER_PROTOCOLS.LOAD_PROFILE)
+        let data = await this.conjure.profiles.get()
 
         if(!data || data.timestamp < this.lastUpdated || !data.data) return
         this.lastUpdated = data.timestamp
 
-        console.log('loadFromDatabase', data)
         if(data.data.profile)
             this.setProfileFromDatabase(data.data.profile)
         if(data.data.services)
@@ -90,7 +66,7 @@ export default class Profile
     saveProfile()
     {
         // replace with dht
-        // this.conjure.getDataHandler(SERVER_PROTOCOLS.SAVE_PROFILE, { profile: this.profileData, services: this.getServiceManager().getServiceAsJson() })
+        this.conjure.profiles.put({ profile: this.profileData, services: this.getServiceManager().getServiceAsJson() })
     }
 
     setProfileFromDatabase(data)

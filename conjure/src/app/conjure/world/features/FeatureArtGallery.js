@@ -5,6 +5,7 @@ import StructureRoom from '../structures/StructureRoom'
 import TextRenderer3D from '../../screens/text/TextRenderer3D';
 import { Sky } from 'three/examples/jsm/objects/Sky.js';
 import GifLoader from '../../util/three-gif-loader/gif-loader';
+import { encode, decode } from '../../util/base64-arraybuffer.js'
 
 //https://stackoverflow.com/questions/12586353/three-js-texture-to-datatexture
 export default class FeatureArtGallery extends Feature
@@ -132,9 +133,7 @@ export default class FeatureArtGallery extends Feature
 
             if(type.includes('mp4'))
             {
-                return;
                 let video = document.createElement( 'video' );
-                this.pieces[i].element = video
                 video.crossOrigin = "anonymous";
                 video.loop = true
                 // video.src = metadata.media.uri;
@@ -148,7 +147,7 @@ export default class FeatureArtGallery extends Feature
                 req.responseType = 'blob';
 
                 req.onload = (result) => {
-                    if (result.target.status === 200 && video)
+                    if (result.target.status === 200)
                     {
                         let videoBlob = result.target.response;
                         let vid = URL.createObjectURL(videoBlob);
@@ -157,14 +156,13 @@ export default class FeatureArtGallery extends Feature
                         video.volume = 0
                     }
                 }
-                req.onerror = () => {
-                    console.log('Artwork number', i, 'failed with error"', 'Failed to get video at', metadata.media.uri, '"')
+                req.onerror = function() {
+                    console.log('Failed to get video at', metadata.media.uri)
                 }
                 req.send();
             }
             else if(type.includes('gif'))
             {
-                return;
                 this.pieces[i].mesh.material.map = await this.gifLoader.load(metadata.media.uri)
             }
             else if(type.includes('png') || type.includes('jpg') || type.includes('jpeg'))

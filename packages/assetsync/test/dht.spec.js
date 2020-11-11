@@ -23,7 +23,8 @@ async function createPeers() {
 
 const peers = await createPeers()
 
-test.serial('can put and get to DHT', async (t) => {
+// skipped until dht implemented
+test.serial.skip('can put and get to DHT', async (t) => {
 
     t.timeout(60 * 1000)
 

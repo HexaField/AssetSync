@@ -1,7 +1,10 @@
 import { isWebWorker } from '@AssetSync/common'
 import { server } from '@AssetSync/WorldSync'
 
-export async function runApp() {
+if(isWebWorker)
+    runWorker()
+
+async function runWorker() {
 
     console.log('Starting server...')
     const { default: app } = await import('./app/index.js')
@@ -9,5 +12,12 @@ export async function runApp() {
 
     // server stuff    
 }
-if(isWebWorker)
-    runApp()
+
+export async function runApp(worldSync) {
+
+    console.log('Starting server...')
+    const { default: app } = await import('./app/index.js')
+    server(app, worldSync)
+
+    // server stuff    
+}

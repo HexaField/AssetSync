@@ -1,4 +1,4 @@
-import { THREE, ExtendedGroup } from 'enable3d'
+import * as THREE from 'three'
 export default class Fonts
 {  
     constructor()

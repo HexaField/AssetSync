@@ -1,5 +1,5 @@
 
-import { THREE, ExtendedObject3D } from 'enable3d'
+import * as THREE from 'three'
 import TextRenderer3D from '../screens/text/TextRenderer3D';
 export default class Platform
 {  
@@ -14,7 +14,7 @@ export default class Platform
         this.worldNameText = new TextRenderer3D(this.conjure, this.parentGroup, { text: args.platformLabel || '', width: 5, scale: 10 });
         this.worldNameText.group.position.set(0, 5, 0);
 
-        this.floor = new ExtendedObject3D()
+        this.floor = new THREE.Group()
         this.floor.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(this.platformSize, this.platformSize), new THREE.MeshBasicMaterial({ visible: false })));
         this.floor.rotateX(Math.PI / 2)
         this.floor.position.copy(this.pos)

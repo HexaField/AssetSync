@@ -106,9 +106,9 @@ export default class Realm
 
     async preload()
     {
-        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
-        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_JOIN, { network: this.realmID, onMessage: this.receiveDataFromPeer, onPeerJoin: this.onPeerJoin, onPeerLeave: this.onPeerLeave })
+        // this.network = await this.conjure.realms.(SERVER_PROTOCOLS.NETWORK_JOIN, { network: this.realmID, onMessage: this.receiveDataFromPeer, onPeerJoin: this.onPeerJoin, onPeerLeave: this.onPeerLeave })
         
+        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.CREATE, this.onObjectCreate)
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.UPDATE, this.onObjectUpdate)
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.GROUP, this.onObjectGroup)

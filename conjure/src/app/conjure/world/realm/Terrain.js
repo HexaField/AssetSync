@@ -1,4 +1,4 @@
-import { THREE, ExtendedObject3D } from 'enable3d'
+import * as THREE from 'three'
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js'
 import { POSTPROCESSING } from '../../PostProcessing';
 import { createGeometry, createMaterial } from '../../util/wireframe/'
@@ -9,7 +9,7 @@ export default class Terrain
     {
         let time = Date.now()
         this.conjure = conjure
-        this.terrainObject = new ExtendedObject3D();
+        this.terrainObject = new THREE.Group();
         this.parentGroup = parentGroup
 
         this.vec3 = new THREE.Vector3();
@@ -64,7 +64,7 @@ export default class Terrain
         this.conjure.physics.add.existing(this.terrainObject, { shape:'concaveMesh', mass:0 });
         this.terrainObject.body.setAngularFactor(0, 0, 0);
         this.terrainObject.body.setLinearFactor(0, 0, 0);
-        // global.CONSOLE.log('Terrain took ', (Date.now() - time), 'ms to generate')
+        // window.CONSOLE.log('Terrain took ', (Date.now() - time), 'ms to generate')
     }
 
     generateHeight( width, length, heightScale)

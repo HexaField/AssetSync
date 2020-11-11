@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Store, get as getIDBItem, set as setIDBItem, keys as keysIDBItem, del as delIDBItem, clear as clearIDBItem } from 'idb-keyval';
-import { CONTROL_SCHEME } from './controls/ControlManager'
+import EventEmitter from 'events'
+import { isWebWorker } from '@AssetSync/common'
 
 export const CONJURE_MODE = {
     LOADING: 'Loading',
@@ -11,27 +12,24 @@ export const CONJURE_MODE = {
 
 export async function startConjure(data)
 {
-    if(!data)
-        console.error('ERROR at conjure start, missing data')
-
-    const { default: Ammo } = await import('./util/ammo.worker.js')
-    
+    const { default: Ammo } = await import('./util/ammo.worker.js')   
     Ammo();
+    
     new Conjure(data)
 }
 
-class Conjure
+class Conjure extends EventEmitter
 {
-    constructor(server)
+    constructor({ assetSync, assets, profiles, realms, worldSync })
     {
-        console.log(server)
-
-        this.server = server
-
-        this.canvas = server.worldSync.canvas
-        this.inputElement = server.worldSync
-        this.dataHandler = server.assetSync
-        this.urlParams = server.worldSync.config.urlParams
+        super()
+        
+        this.assets = assets
+        this.profiles = profiles
+        this.realms = realms
+        this.worldSync = worldSync
+        this.canvas = worldSync.canvas
+        this.urlParams = worldSync.config.urlParams
         
         this.start()
     }
@@ -74,8 +72,8 @@ class Conjure
 
     resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
-        const width = window.clientWidth;
-        const height = window.clientHeight;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
         const needResize = canvas.width !== width || canvas.height !== height;
         if (needResize) {
             this.resizeCanvas(width, height);
@@ -90,18 +88,14 @@ class Conjure
     getFont(font) { return this.getFonts().getFont(font) }
     getDefaultFont() { return this.fonts.getDefault() }
     getProfile() { return this.profile }
-    // async getDataHandler(protocol, data) { return await this.inputElement.request(protocol, data) }
     getGlobalHUD() { return this.screenManager.hudGlobal }
     getAudioManager() { return this.audioManager }
     getLoadingScreen() { return this.loadingScreen }
     
-    async ipfsGet(url) { return await this.dataHandler.ipfsGet(url) }
-
     async init()
     {
         this.clock = new THREE.Clock()
-        global.THISFRAME = Date.now()
-        this.loadTimer = global.THISFRAME
+        this.loadTimer =  Date.now()
         this.conjureMode = CONJURE_MODE.LOADING
 
         const { default: Fonts } = await import('./screens/text/Fonts.js')
@@ -207,13 +201,16 @@ class Conjure
         
         const { default: Loaders } = await import('./util/loaders.js')
         this.load = new Loaders(this.cache, this.textureAnisotropy)
+        // this.resizeCanvas()
         this.loadingScreen.setText('Downloading assets...') 
             
         await this.load.preload('playerModel', '/assets/models/ybot_anims.glb')
-        await this.load.preload('sword', '/assets/models/chevalier/scene.gltf')
+        // await this.load.preload('sword', '/assets/models/chevalier/scene.gltf')
         await this.load.preload('default_realm', '/assets/icons/default_realm.png')
-        await this.load.preload('speaker', '/assets/icons/pin_full.png')
+        await this.load.preload('pin_full', '/assets/icons/pin_full.png')
         await this.load.preload('pin_empty', '/assets/icons/pin_empty.png')
+        await this.load.preload('speaker', '/assets/icons/speaker.png')
+        await this.load.preload('speakermute', '/assets/icons/speakermute.png')
 
         await this.load.preload('missing_texture', '/assets/textures/missing_texture.png')
         await this.load.preload('menger_texture', '/assets/textures/menger_texture.png')
@@ -251,11 +248,19 @@ class Conjure
         const { default: ScreenManager } = await import('./screens/ScreenManager.js')
         this.screenManager = new ScreenManager(this)
 
-        this.resizeCanvas() // trigger this to set up screen anchors
+        // this.resizeCanvas() // trigger this to set up screen anchors
         this.screenManager.hudGlobal.showScreen(true)
         
-        const { default: AudioWrapper } = await import('./AudioWrapper.js')
-        this.audioManager = new AudioWrapper(this)
+        if(isWebWorker) {
+            const { AudioWrapper } = await import('./AudioWrapper.js')
+            this.audioManager = new AudioWrapper(this)
+            
+            const { VideoWrapper } = await import('./VideoWrapper.js')
+            this.videoWrapper = new VideoWrapper(this)
+        } else {
+            const { AudioManager } = await import('./AudioManager.js')
+            this.audioManager = new AudioManager(this)
+        }
         this.screenManager.hudGlobal.audioControls.setAudioManager(this.audioManager)
 
         this.loadingScreen.setText('Loading World...')
@@ -269,7 +274,7 @@ class Conjure
         this.setConjureMode(CONJURE_MODE.WAITING)
 
         this.world.loadDefault()
-        global.CONSOLE.showNotification('Press (R) to reset if your avatar gets stuck\nPress escape to reveal the mouse and access settings.', 3)
+        window.CONSOLE.showNotification('Press (R) to reset if your avatar gets stuck\nPress escape to reveal the mouse and access settings.', 3)
 
         // this.loadInfo = document.getElementById( 'loadInfo' )
         // this.loadInfo.hidden = true
@@ -286,40 +291,10 @@ class Conjure
 
     setConjureMode(mode)
     {
-        if(this.conjureMode === mode)  return
-        if(this.conjureMode === CONJURE_MODE.LOADING && mode !== CONJURE_MODE.LOADING)
-        {
-            // this.loadingScreen.renderer.clear(true)
-        }
+        if(this.conjureMode === mode) 
+            return
         this.conjureMode = mode
-        switch(mode)
-        {
-            default: case CONJURE_MODE.LOADING:
-                this.loadingScreen.active = true
-                this.controlManager.enableCurrentControls(false)
-                this.screenManager.hideHud()
-
-            break;
-            
-            case CONJURE_MODE.WAITING: 
-                this.loadingScreen.active = false
-                this.controlManager.setControlScheme(CONTROL_SCHEME.NONE)
-
-            break;
-
-            case CONJURE_MODE.EXPLORE: 
-                this.loadingScreen.active = false
-                this.controlManager.setControlScheme(CONTROL_SCHEME.AVATAR)
-                this.screenManager.showHud()
-
-            break;
-
-            case CONJURE_MODE.CONJURE:
-                this.loadingScreen.active = false
-                this.controlManager.setControlScheme(CONTROL_SCHEME.ORBIT)
-                this.screenManager.showHud()
-            break;
-        }
+        this.emit('conjure:mode', mode)
     }
     
     update()
@@ -387,11 +362,10 @@ class Conjure
         if(!width || !height) return
 
         const aspect = width / height
-        console.log(aspect)
         
         this.camera.aspect = aspect
         this.camera.updateProjectionMatrix()
-        
+
         this.loadingScreen.camera.aspect = aspect
         this.loadingScreen.camera.updateProjectionMatrix()
         

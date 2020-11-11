@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { CONJURE_MODE } from '../Conjure'
+
 import { OrbitControls } from "./OrbitControls"
 import { TransformControls } from "./TransformControls"
 import FlyControls from './FlyControls'
@@ -17,10 +19,10 @@ export default class ControlManager
     constructor(conjure)
     {
         this.conjure = conjure;
-        this.world = conjure.getWorld();
+        this.world = conjure.world
         this.scene = conjure.scene;
         this.camera = conjure.camera;
-        this.domElement = conjure.inputElement;
+        this.domElement = conjure.canvas;
         
         this.controlsEnabled = false;
 
@@ -40,8 +42,6 @@ export default class ControlManager
         this.vec3 = new THREE.Vector3();
         this.hasPointerLock = false
 
-        this.pointerLockChange = this.pointerLockChange.bind(this)
-
         this.conjure.input.addKey('FOCUS', 'f');
         this.conjure.input.addKey('EDIT_CONTROLS', '1');
         this.conjure.input.addKey('FLY_CONTROLS', '2');
@@ -51,7 +51,15 @@ export default class ControlManager
         this.conjure.input.addKey('LEFT', 'a');
         this.conjure.input.addKey('RIGHT', 'd');
         this.conjure.input.addKey('JUMP', 'SPACEBAR');
-        document.addEventListener('pointerlockchange', this.pointerLockChange)
+
+        this.conjure.on('conjure:mode', (mode) => {
+            switch(mode) {
+                default: case CONJURE_MODE.LOADING: this.enableCurrentControls(false); break;
+                case CONJURE_MODE.WAITING: this.setControlScheme(CONTROL_SCHEME.NONE); break;
+                case CONJURE_MODE.EXPLORE: this.setControlScheme(CONTROL_SCHEME.AVATAR); break;
+                case CONJURE_MODE.CONJURE: this.setControlScheme(CONTROL_SCHEME.ORBIT); break;
+            }
+        })
     }
 
     buildTransformControls()
@@ -67,26 +75,13 @@ export default class ControlManager
 
     getPointerLock()
     {
-        // if(!document.hasFocus()) return
         if(this.conjure.getScreens().hudExplore.active || (this.conjure.getScreens().hudConjure.active && this.currentControlScheme === CONTROL_SCHEME.FLY))
             this.domElement.requestPointerLock()
-    }
-
-    pointerLockChange(event)
-    {
-        let hasLock = document.pointerLockElement === this.domElement || document.mozPointerLockElement === this.domElement
-        if(hasLock !== this.hasPointerLock)
-            this.hasPointerLock = hasLock
     }
 
     getPointerLockState()
     {
         return this.hasPointerLock
-    }
-
-    pointerLockError()
-    {
-        // console.log('Control Manager: Could not get pointer lock');
     }
 
     toggleConjureControls()
@@ -106,7 +101,6 @@ export default class ControlManager
 
     enableCurrentControls(enable)
     {
-        // console.log(this.currentControlScheme, enable)
         this.controlsEnabled = enable
         switch(this.currentControlScheme)
         {
@@ -232,7 +226,7 @@ export default class ControlManager
             this.enableControls(false)
             return
         }
-        if(updateArgs.input.isPressed('MOUSELEFT', true) && !global.CONSOLE.getIsMouseOverhudElement())
+        if(updateArgs.input.isPressed('MOUSELEFT', true) && !window.CONSOLE.getIsMouseOverhudElement())
             this.getPointerLock()
         // if(updateArgs.input.isPressed('HOME'))
         // {

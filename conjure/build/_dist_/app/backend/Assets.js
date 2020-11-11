@@ -1,1 +1,1 @@
-export default class e{constructor(t,s){this.assetSync=t,this.type=s}async get(t){return await this.assetSync.dhtPlugin.get(this.type+"/"+t)}async put(t,s){return await this.assetSync.dhtPlugin.put(this.type+"/"+t,s)}}
+export default class e{constructor(t,s){this.assetSync=t,this.type="assets"}async get(t){return await this.assetSync.dhtPlugin.get(this.type+"/"+t)}async put(t,s){return await this.assetSync.dhtPlugin.put(this.type+"/"+t,s)}}

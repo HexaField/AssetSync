@@ -1,4 +1,4 @@
-import { isNode, EventDispatcher } from '@AssetSync/common'
+import { isNode, EventDispatcher, isWebWorker } from '@AssetSync/common'
 
 import Assets from './backend/Assets.js'
 import Realms from './backend/Realms.js'
@@ -12,11 +12,6 @@ class App extends EventDispatcher {
     constructor({ assetSync, worldSync }) {
 
         super()
-
-        worldSync.addFunction('requestPointerLock')
-        worldSync.addFunction('exitPointerLock')
-        worldSync.addFunction('hasFocus')
-        
         this.assetSync = assetSync
         this.worldSync = worldSync
 
@@ -25,20 +20,25 @@ class App extends EventDispatcher {
 
     async start() {
 
-        this.assets = new Assets(this.assetSync, 'asset')
+        this.assets = new Assets(this.assetSync)
         this.realms = new Realms(this.assetSync)
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
 
         // TODO: eventually add support for physics, graphics, audio from node
         if (!isNode) {
+            if (isWebWorker) {
+                worldSync.addFunction('requestPointerLock')
+                worldSync.addFunction('exitPointerLock')
+                worldSync.addFunction('hasFocus')
+            }
             this.loadConjure()
         }
     }
 
     async loadConjure() {
-        const { startConjure } = await  import('./conjure/Conjure.js')
+        const { startConjure } = await import('./conjure/Conjure.js')
         startConjure(this)
     }
-    
+
 }

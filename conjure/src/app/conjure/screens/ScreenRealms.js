@@ -92,17 +92,15 @@ export default class ScreenRealms extends ScreenBase
 
     async pin(realmData)
     {
-        // replace with dht
-        // for(let realm of await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.GET_REALMS)) // get all stored realms
-        // {
-        //     if(realm.id === realmData.realmData.id)
-        //     {
-        //         console.log(realmData)
-        //         await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: realmData.realmData, pin: !realmData.pinned })
-        //         this.getRealms()
-        //         return
-        //     }
-        // }
+        for(let realm of await this.screenManager.conjure.getRealms()) // get all stored realms
+        {
+            if(realm.id === realmData.realmData.id)
+            {
+                await this.screenManager.conjure.pinRealm(realmData.realmData, !realmData.pinned)
+                this.getRealms()
+                return
+            }
+        }
     }
     
     async joinRealm(id)

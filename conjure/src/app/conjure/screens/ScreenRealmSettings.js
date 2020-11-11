@@ -130,19 +130,19 @@ export default class ScreenRealmSettings extends ScreenBase
     async createRealm()
     {
         // replace with dht
-        // if(this.isCreating)
-        // {
-        //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.PIN_REALM, { data: this.data.getData(), pin: true })
-        //     console.log('Successfully made realm!', this.data)
-        //     this.screenManager.showScreen(this.screenManager.screenRealms)
-        //     this.data = undefined // must reset data
-        // }
-        // else
-        // {
-        //     this.data.getData().timestamp = Date.now()
-        //     await this.screenManager.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_REALM, this.data.getData())
-        //     this.screenManager.conjure.getWorld().forceReloadCurrentRealm()
-        // }
+        if(this.isCreating)
+        {
+            await this.screenManager.conjure.realms.pinRealm(this.data.getData(), true)
+            console.log('Successfully made realm!', this.data)
+            this.screenManager.showScreen(this.screenManager.screenRealms)
+            this.data = undefined // must reset data
+        }
+        else
+        {
+            this.data.getData().timestamp = Date.now()
+            await this.screenManager.conjure.realms.updateRealm(this.data.getData())
+            this.screenManager.conjure.getWorld().forceReloadCurrentRealm()
+        }
     }
 
     async selectFromList()

@@ -2,7 +2,7 @@ export default class Assets {
 
     constructor(assetSync, type) {
         this.assetSync = assetSync
-        this.type = type
+        this.type = 'assets'
     }
 
     async get(key) {

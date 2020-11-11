@@ -108,8 +108,8 @@ export default class AssetManager
         this.defaultGeometry = new THREE.BoxBufferGeometry(1, 1);
         this.defaultGeometryAssetHash = await this.saveAsset(ASSET_TYPE.GEOMETRY, this.defaultGeometry.uuid, this.defaultGeometry, 'Default');
         
-        this.defaultMesh = (await this.conjure.load.gltf('sword')).scene;
-        this.defaultMeshAssetHash = await this.saveAsset(ASSET_TYPE.STRUCTURE, this.defaultMesh.uuid, this.defaultMesh, 'Chevalier');
+        // this.defaultMesh = (await this.conjure.load.gltf('sword')).scene;
+        // this.defaultMeshAssetHash = await this.saveAsset(ASSET_TYPE.STRUCTURE, this.defaultMesh.uuid, this.defaultMesh, 'Chevalier');
     }
 
     // this is where you check to see if duplicate assets already exist

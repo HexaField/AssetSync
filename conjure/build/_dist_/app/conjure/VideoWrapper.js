@@ -1,0 +1,1 @@
+export class VideoWrapper{constructor(e){this.conjure=e,this.worldSync=e.worldSync}async makeRequest(e,...t){return await this.worldSync.makeRequest("media",{type:"video",request:{func:e,args:[...t]}})}async createVideo(e){return await this.makeRequest("createVideo",e)}}

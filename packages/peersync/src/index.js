@@ -1,4 +1,4 @@
-import { isWebWorker, simplifyObject, Requester, EventDispatcher } from '@AssetSync/common'
+import { getCircularReplacer, simplifyObject, Requester, EventDispatcher } from '@AssetSync/common'
 
 /**  <message> {
  *      handle: ''
@@ -73,8 +73,8 @@ export class PeerSync extends EventDispatcher {
     }
 
     async makeRequest(opcode, data) {
-        if (typeof data === 'object' && !Array.isArray(data))
-            data = simplifyObject(data)
+        // if (typeof data === 'object' && !Array.isArray(data))
+        //     data = getCircularReplacer(data)
         return await this.requester.request(opcode, data)
     }
 

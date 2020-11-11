@@ -1,14 +1,14 @@
 import * as THREE from 'three'
+import { number } from './util/number';
 
 export class AudioManager
 {
-    constructor()
+    constructor(conjure)
     {
+        this.conjure = conjure
         this.buffers = {}
         this.sounds = []
         this.sources = []
-
-        this.camera = new THREE.Camera()
     }
 
     getSources()
@@ -26,24 +26,21 @@ export class AudioManager
         return this.audioListener !== undefined
     }
 
-    setCameraPosition(pos) {
-        this.camera.position.copy(pos)
-    }
-
-    // todo
-    setCameraArguments(args) {
-        // this.camera.position.copy(pos)
-    }
-
-    async create()
+    async create(waitForInput)
     {
         if(this.getHasContext()) return
+
+        if(waitForInput)
+        {
+            this.conjure.getLoadingScreen().setText('WARNING!\n\nThis realm automatically plays audio.\nPlease click to continue.') 
+            await this.conjure.getLoadingScreen().awaitInput()
+        }
 
         // window.AudioContext = self.AudioContext
         this.audioListener = new THREE.AudioListener();
         
         await this.audioListener.context.resume()
-        this.camera.add(this.audioListener);
+        this.conjure.camera.add(this.audioListener);
         this.setMasterVolume(1.0)
 
         this.audioLoader = new THREE.AudioLoader();
@@ -67,25 +64,23 @@ export class AudioManager
     {
         if(!this.audioListener) return
 
-        let sound = args.positional ? new THREE.PositionalAudio(this.audioListener) : new THREE.Audio(this.audioListener);
-        
+        let sound = new THREE.PositionalAudio(this.audioListener)
         sound.setMediaElementSource(mediaElement)
         sound.setVolume(args.volume === undefined ? 1 : args.volume);
         sound.setRefDistance(args.refDistance === undefined ? 20 : args.refDistance);
-        // mesh.userData.sound = sound
-        // mesh.add(sound)
+        mesh.userData.sound = sound
 
-        // this.sources.push(mesh)
+        this.sources.push(mesh)
     }
     
     // { loop, volume, refDistance,  }
-    play(label, args = {})
+    play(buffer, args = {})
     {
-        if(!this.audioListener || !this.buffers[label]) return
+        if(!this.audioListener || !this.buffers[buffer]) return
         
         let sound = args.positional ? new THREE.PositionalAudio(this.audioListener) : new THREE.Audio(this.audioListener);
         
-        sound.setBuffer(this.buffers[label]);
+        sound.setBuffer(this.buffers[buffer]);
         sound.setLoop(Boolean(args.loop));
         sound.setVolume(args.volume === undefined ? 1 : args.volume);
         if(args.positional)
@@ -103,7 +98,7 @@ export class AudioManager
     setMasterVolume(amount)
     {
         if(!this.audioListener) return
-        this.audioListener.setMasterVolume(amount)
+        this.audioListener.setMasterVolume(number(amount))
         this.updateSources()
     }
 

@@ -1,4 +1,5 @@
-import { THREE, JoyStick } from 'enable3d'
+import * as THREE from 'three'
+import { JoyStick } from 'enable3d'
 import Keybindings from './Keybindings';
 import Pinput from './util/pinput'
 

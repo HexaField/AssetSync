@@ -58,6 +58,7 @@ class WorldSync {
 
     constructor() {
         this._connectedToNode = false
+        this._isRunningInWorker = false
     }
 
     async start(args = {}) {
@@ -82,7 +83,7 @@ class WorldSync {
 
             // } else {
 
-                if(window.Worker) {
+                if(args.serverFile && window.Worker) {
                     // override socketsync with worker since we're running everything in the browser
                     // starts the server in a worker from the specified file
                     this._peerSync = await createWorker(args.serverFile)
@@ -90,6 +91,8 @@ class WorldSync {
                     await new Promise((resolve) => {
                         this._peerSync.addEventListener('init', resolve)
                     })
+
+                    this._isRunningInWorker = true
                     
                     this._peerSync.sendSize = () => {
                         this._peerSync.sendEvent({
@@ -133,8 +136,26 @@ class WorldSync {
                     this._peerSync.start(args.canvas, args.config)
                     
                 } else {
-                    console.log('ERROR: browser does not support WebWorker')
+                    // console.log('ERROR: browser does not support WebWorker')
                     this._server = args.serverFunc(this)
+                    this.canvas = args.canvas
+                    this.config = args.config
+                    
+                    this.clientWidth = canvas.clientWidth
+                    this.clientHeight = canvas.clientHeight
+
+                    window.addEventListener('resize', (event) => {
+                        this.clientWidth = canvas.clientWidth
+                        this.clientHeight = canvas.clientHeight
+                    })
+
+                    this.addEventListener = (event, listener) => {
+                        canvas.addEventListener(event, listener)
+                    }
+                    
+                    this.removeEventListener = (event, listener) => {
+                        canvas.removeEventListener(event, listener)
+                    }
                 }
 
             // }

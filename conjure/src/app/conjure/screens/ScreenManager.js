@@ -74,6 +74,14 @@ export default class ScreenManager
 
         this.openScreens = [];
         this.mouseOver = false;
+
+        this.conjure.on('conjure:mode', (mode) => {
+            switch(mode) { 
+                default: case CONJURE_MODE.WAITING: break;
+                case CONJURE_MODE.LOADING: this.hideHud(); break;
+                case CONJURE_MODE.EXPLORE: case CONJURE_MODE.CONJURE: this.showHud(); break;
+            }
+        })
     }
 
     createScreen(screen)

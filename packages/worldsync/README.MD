@@ -77,3 +77,6 @@ createWorldSync({
 *todo*
 - sirikata
 - p2p game worlds paper
+
+### To Do
+- add event function polyfills to offscreencanvas in worker to pipe events to worker proxy `canvas.addEventListener()`

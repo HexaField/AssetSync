@@ -17,15 +17,20 @@ export class DHTPlugin extends PluginBase {
 
     async start(args = {}) {
         await super.start(args)
-        this._transportPlugin._dht.on('dht:added', (...args) => {
+        
+        if(!this._transportPlugin.dht) 
+            return false
+        
+        this._transportPlugin.dht.on('dht:added', (...args) => {
             this.emit('dht:added', ...args)
         })
-        this._transportPlugin._dht.on('dht:changed', (...args) => {
+        this._transportPlugin.dht.on('dht:changed', (...args) => {
             this.emit('dht:changed', ...args)
         })
-        this._transportPlugin._dht.on('dht:removed', (...args) => {
+        this._transportPlugin.dht.on('dht:removed', (...args) => {
             this.emit('dht:removed', ...args)
         })
+        
         return true
     }
 

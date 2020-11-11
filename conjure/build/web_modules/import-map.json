@@ -7,6 +7,7 @@
     "big-integer": "./big-integer.js",
     "discord-oauth2": "./discord-oauth2.js",
     "enable3d": "./enable3d.js",
+    "events": "./events.js",
     "idb-keyval": "./idb-keyval.js",
     "lodash": "./lodash.js",
     "omggif": "./omggif.js",

@@ -27,7 +27,7 @@ export default class HUDGlobal extends ScreenBase
         this.audioControls = new HUDElementAudioControls(this)
         this.hudElements.push(this.audioControls)
 
-        global.CONSOLE = this
+        window.CONSOLE = this
 
         this.autoHidden = false
     }
