@@ -10,6 +10,8 @@ export { RemoteDHTPlugin } from './plugins/dht/remote.js'
 export { StoragePlugin } from './plugins/storage/index.js'
 export { SyncedDatabasePlugin } from './plugins/syncedDatabase/index.js'
 
+export { ConnectionPlugin } from './plugins/connection/index.js'
+
 export default class AssetSync {
 
     constructor() {
