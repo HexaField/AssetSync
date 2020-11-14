@@ -1,6 +1,6 @@
 import { PluginBase } from '../../PluginBase.js'
-import Peer from 'https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js'
-import { generateUUID } from '@AssetSync/common'
+import Peer from 'simple-peer'
+import EventEmitter from 'events'
 
 export class ConnectionPlugin extends PluginBase {
 
@@ -8,76 +8,123 @@ export class ConnectionPlugin extends PluginBase {
         super(options)
         this._pluginName = 'CORE_ConnectionPlugin'
         this._transportPlugin = options.transportPlugin
-
-        this.peer = new Peer()
-        this.peerID = this.peer.id
+        this._peerOptions = options.peerOptions
 
         this.connections = {}
     }
 
     async start(args = {}) {
         await super.start(args)
-        
         return true
     }
 
-    // TODO this needs to be fixed
     async stop(args = {}) {
         await super.stop(args)
-
         return true
     }
 
-    async connect(id) {
-        
-        const uuid = generateUUID()
-
-        await new Promise((resolve) => {
-            const conn = this.peer.connect('another-peers-id', { label: uuid })
-            conn.on('open', () => {
+    async createConnection(label, initiator) {
+        const peer = new Peer(Object.assign({}, { initiator }, this._peerOptions))
+        const peerData = await new Promise((resolve) => {
+            if(!initiator) {
                 resolve()
-            })
-            conn.on('data', (data) => {
-                // Will print 'hi!'
-                this.emit('message', uuid, data)
-            })
-            conn.on('close', () => {
-                this.emit('close')
-            })
-            conn.on('error', () => {
-                this.emit('close')
+            }
+            peer.on('signal', (data) => {
+                resolve(data)
             })
         })
-        
-        this.connections[uuid] = conn
 
-        return uuid
-    }
-
-    async disconnect(peerName) {
-        await new Promise((resolve) => {
-            this.connections[peerName].close()
-            this.connections[peerName].on('close', () => {
-                resolve()
-            })
-            this.connections[peerName].on('error', () => {
-                resolve()
-            })
+        const connection = new PeerConnection({ 
+            label,
+            peer,
+            peerData
         })
-        delete this.connections[peerName]
+
+        connection.on('destroyed', () => {
+            if(this.connections[label])
+                delete this.connections[label]
+        })
+
+        this.connections[label] = connection
+
+        return connection
     }
 
-    getConnection(peerName) {
-        return this.connections[peerName]
+    getConnection(label) {
+        return this.connections[label]
     }
 
-    sendMessage(peerName, data) {
-        if(this.connections[peerName])
-            this.connections[peerName].send(data)
-    }
-
-    broadcastMessage(data) {
+    sendToAll(data) {
         for(let peer of Object.values(this.connections))
             peer.send(data)
+    }
+
+    sendToPeer(data, peer) {
+        this.connections[peer].send(data)
+    }
+}
+
+class PeerConnection extends EventEmitter {
+    constructor({ label, peer, peerData }) {
+        super()
+        this.label = label
+        this.peer = peer
+        this.peerData = peerData
+    }
+
+    async signal(peerData) {
+        await new Promise((resolve) => {
+            this.peer.signal(peerData)
+            this.peer.on('signal', (data) => {
+                this.peerData = data
+                resolve()
+            })
+        })
+    }
+
+    async connect(peerData) {
+        return await new Promise((resolve, reject) => {
+            if(!this.peerData) {
+                reject('Error! No signal yet!')
+            }
+            this.peer.signal(peerData)
+            this.peer.on('connect', () => {
+                resolve(true)
+            })
+            this.peer.on('data', (data) => {
+                this.emit('message', new Uint8Array(data))
+            })
+            this.peer.on('close', () => {
+                console.log('Connection closed')
+                this.emit('destroyed')
+                resolve()
+            })
+            this.peer.on('error', () => {
+                console.log('Connection error')
+                this.emit('destroyed')
+                resolve()
+            })
+        })
+    }
+
+    async disconnect() {
+        await new Promise((resolve) => {
+            this.peer.close()
+            this.peer.on('close', () => {
+                console.log('Connection closed')
+                resolve()
+            })
+            this.peer.on('error', () => {
+                console.log('Connection error')
+                resolve()
+            })
+        })
+        this.emit('destroyed')
+    }
+
+    send(data) {
+        if(data.constructor !== Uint8Array)
+            throw new Error('Must send data as Uint8Array. Got instead:', typeof data)
+        this.peer.send(data)
     }
 }

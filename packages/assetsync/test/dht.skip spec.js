@@ -1,7 +1,7 @@
 import test from 'ava'
+
 import createLibp2p from './dht/create-libp2p.js'
 import Peer from './dht/peer.js'
-
 import delay from 'delay'
 // import CID from 'cids'
 // import all from 'it-all'

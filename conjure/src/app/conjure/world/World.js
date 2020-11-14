@@ -39,6 +39,12 @@ export default class World
         this.globalRealms = []
         this.spawnLocation = new THREE.Vector3(0, 2, 0)
         this.lastRealmID = 'Lobby'
+
+        this.onUserJoin = this.onUserJoin.bind(this)
+        this.onUserLeave = this.onUserLeave.bind(this)
+        // this.onUserUpdate = this.onUserUpdate.bind(this)
+        // this.onUserMove = this.onUserMove.bind(this)
+        // this.onUserAnimation = this.onUserAnimation.bind(this)
     }
 
     async loadDefault()
@@ -161,13 +167,19 @@ export default class World
         await this.realm.preload()
         await this.realm.load()
 
+        this.realm.on(REALM_PROTOCOLS.USER.JOIN, this.onUserJoin)
+        this.realm.on(REALM_PROTOCOLS.USER.LEAVE, this.onUserLeave)
+        // this.realm.on(REALM_PROTOCOLS.USER.UPDATE, this.onUserUpdate)
+        // this.realm.on(REALM_PROTOCOLS.USER.MOVE, this.onUserMove)
+        // this.realm.on(REALM_PROTOCOLS.USER.ANIMATION, this.onUserAnimation)
+
         let spawn = realmData.getData().worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
         this.user.teleport(spawn.x, spawn.y, spawn.z)
         
-        this.realm.sendData(REALM_PROTOCOLS.USER.JOIN, {
-            username: this.conjure.getProfile().getUsername()
-        })
+        // this.realm.sendData(REALM_PROTOCOLS.USER.JOIN, {
+        //     username: this.conjure.getProfile().getUsername()
+        // })
 
         this.conjure.setConjureMode(CONJURE_MODE.EXPLORE)
         return true
@@ -300,21 +312,6 @@ export default class World
         }
     }
 
-    receiveDataFromPeer(data, peerID)
-    {
-        /// send through a list of objects that are your copy
-        // if(data.protocol !== REALM_PROTOCOLS.USER.MOVE) console.log('parsing data from user', data)
-        switch(data.protocol) {
-            case REALM_PROTOCOLS.HEARTBEAT: this.onUserUpdate({}, peerID); break;
-            case REALM_PROTOCOLS.USER.JOIN: this.onUserJoin(data.content, peerID); break;
-            case REALM_PROTOCOLS.USER.UPDATE: this.onUserUpdate(data.content, peerID); break;
-            case REALM_PROTOCOLS.USER.MOVE: this.onUserMove(data.content, peerID); break;
-            case REALM_PROTOCOLS.USER.LEAVE: this.onUserLeave(peerID); break;
-            case REALM_PROTOCOLS.USER.ANIMATION: this.onUserAnimation(data.content, peerID); break;
-            default: break;
-        }
-    }
-
     async sendData(protocol, data)
     {
         if(this.realm)
@@ -342,7 +339,7 @@ export default class World
         {
             this.onUserLeave(peerID)
         }
-        this.users.push(new UserRemote(this.conjure, data.username, peerID))
+        this.users.push(new UserRemote(this.conjure, data, peerID))
         window.CONSOLE.log(data.username + ' has joined')
     }
     
@@ -371,39 +368,39 @@ export default class World
     }
 
     // acts as heartbeat too
-    onUserUpdate(data, peerID)
-    {
-        let exists = false
-        for(let u = 0; u < this.users.length; u++)
-            if(peerID === this.users[u].peerID)
-            {
-                this.users[u].updateInfo(data);
-                exists = true
-                break
-            }
-        if(!exists)
-            this.onUserJoin(data, peerID); // need to retire this eventually
-    }
+    // onUserUpdate(data, peerID)
+    // {
+    //     let exists = false
+    //     for(let u = 0; u < this.users.length; u++)
+    //         if(peerID === this.users[u].peerID)
+    //         {
+    //             this.users[u].updateInfo(data);
+    //             exists = true
+    //             break
+    //         }
+    //     // if(!exists)
+    //     //     this.onUserJoin(data, peerID); // need to retire this eventually
+    // }
 
-    onUserAnimation(data, peerID)
-    {
-        for(let u of this.users)
-            if(peerID === u.peerID)
-            {
-                u.setAction(data.name, data.fadeTime, data.once, data.startTime)
-                break
-            }
-    }
+    // onUserAnimation(data, peerID)
+    // {
+    //     for(let u of this.users)
+    //         if(peerID === u.peerID)
+    //         {
+    //             u.setAction(data.name, data.fadeTime, data.once, data.startTime)
+    //             break
+    //         }
+    // }
     // TODO: figure out the role of peerID since we use discord id to auth for now - we really need a user UUID
-    onUserMove(data, peerID)
-    {
-        for(let u of this.users)
-            if(peerID === u.peerID)
-            {
-                u.setPhysics(data.physics);
-                break
-            }
-    }
+    // onUserMove(data, peerID)
+    // {
+    //     for(let u of this.users)
+    //         if(peerID === u.peerID)
+    //         {
+    //             u.setPhysics(data.physics);
+    //             break
+    //         }
+    // }
 
     getObjects()
     {

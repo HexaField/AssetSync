@@ -25,7 +25,6 @@ class App extends EventDispatcher {
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
 
-        // TODO: eventually add support for physics, graphics, audio from node
         if (!isNode) {
             if (isWebWorker) {
                 worldSync.addFunction('requestPointerLock')

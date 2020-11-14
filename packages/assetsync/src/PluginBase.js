@@ -1,5 +1,4 @@
 import EventEmitter from "events"
-import clone from "lodash.clonedeep"
 
 const BASE_OPTIONS = {
     enableLogging: true

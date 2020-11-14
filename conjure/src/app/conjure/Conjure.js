@@ -24,6 +24,7 @@ class Conjure extends EventEmitter
     {
         super()
         
+        this.assetSync = assetSync
         this.assets = assets
         this.profiles = profiles
         this.realms = realms

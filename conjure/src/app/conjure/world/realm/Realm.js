@@ -7,6 +7,7 @@ import Platform from '../Platform'
 import ObjectManager from './ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
+import EventEmitter from 'events'
 
 export const GLOBAL_REALMS = {
     LOBBY: {
@@ -48,10 +49,12 @@ export const REALM_PROTOCOLS = {
     HEARTBEAT: 'heartbeat',
     USER: {
         JOIN: 'user.join',
-        UPDATE: 'user.update',
-        MOVE: 'user.move',
         LEAVE: 'user.leave',
-        ANIMATION: 'user.animation',
+        // CONNECT: 'user.connect',
+        // DISCONNECT: 'user.disconnect',
+        // UPDATE: 'user.update',
+        // MOVE: 'user.move',
+        // ANIMATION: 'user.animation',
     },
     OBJECT: {
         CREATE: 'object.create',
@@ -69,10 +72,11 @@ export const REALM_PROTOCOLS = {
     },
 }
 
-export default class Realm
+export default class Realm extends EventEmitter
 {  
     constructor(world, realmData)
     {   
+        super()
         this.world = world
         this.conjure = this.world.conjure
 
@@ -84,10 +88,6 @@ export default class Realm
 
         this.realmData = realmData
         this.realmID = realmData.getID()
-
-        this.receiveDataFromPeer = this.receiveDataFromPeer.bind(this)
-        this.onPeerJoin = this.onPeerJoin.bind(this)
-        this.onPeerLeave = this.onPeerLeave.bind(this)
 
         this.onObjectCreate = this.onObjectCreate.bind(this)
         this.onObjectUpdate = this.onObjectUpdate.bind(this)
@@ -104,9 +104,35 @@ export default class Realm
         this.networkProtocolCallbacks = {}
     }
 
+    sendData(protocol, content)
+    {
+        this.conjure.assetSync.connectionPlugin.sendToAll({ protocol, content })
+    }
+
+    sendTo(protocol, content, peerID)
+    {
+        this.conjure.assetSync.connectionPlugin.sendToPeer({ protocol, content }, peerID)
+    }
+
     async preload()
     {
-        // this.network = await this.conjure.realms.(SERVER_PROTOCOLS.NETWORK_JOIN, { network: this.realmID, onMessage: this.receiveDataFromPeer, onPeerJoin: this.onPeerJoin, onPeerLeave: this.onPeerLeave })
+        this.network = await this.conjure.assetSync.networkPlugin.joinNetwork(this.realmID)
+
+        this.network.on('onMessage', (opcode, content, from) => {
+            console.log(opcode, content, from)
+            this.emit(opcode, content, from)
+        })
+
+        this.network.on('onPeerJoin', (peerID) => {
+            console.log('User ', peerID, ' has join the realm')
+            this.network.sendToPeer(REALM_PROTOCOLS.USER.JOIN, this.conjure.assetSync.connectionPlugin.peerID, peerID)
+        })
+        
+        this.network.on('onPeerLeave', (peerID) => {
+            console.log('User ', peerID, ' has left the realm')
+            this.world.onUserLeave(peerID)
+        })
+            
         
         // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.CREATE, this.onObjectCreate)
@@ -115,11 +141,11 @@ export default class Realm
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.MOVE, this.onObjectMove)
         // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.DESTROY, this.onObjectDestroy)
 
-        if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD)
+        if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
             this.terrain = new Terrain(this.conjure, this.world.group, this.realmData.getWorldSettings())
+        }
         
-        if(this.realmData.getData().worldData.playsAudio)
-        {
+        if(this.realmData.getData().worldData.playsAudio) {
            await this.conjure.getAudioManager().create(true)
         }
 
@@ -168,17 +194,6 @@ export default class Realm
         }
     }
 
-    addNetworkProtocolCallback(protocol, callback)
-    {
-        this.networkProtocolCallbacks[protocol] = callback
-    }
-
-    removeNetworkProtocolCallback(protocol)
-    {
-        if(this.networkProtocolCallbacks[protocol])
-            delete this.networkProtocolCallbacks[protocol]
-    }
-
     async load()
     {
         for(let feature of this.features)
@@ -194,7 +209,7 @@ export default class Realm
     async leave()
     {
         this.getObjectManager().destroyAllObjects()
-        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_LEAVE, { network: this.realmID })
+        await this.conjure.assetSync.networkPlugin.leaveNetwork(this.realmID)
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_UNSUBSCRIBE, { realmID: this.realmID })
         
         if(this.terrain)
@@ -216,41 +231,6 @@ export default class Realm
     {
         for(let i of this.features)
             i.update(args)
-    }
-
-    // ------- //
-    // NETWORK //
-    // ------- //
-
-    receiveDataFromPeer(data, from)
-    {
-        if(this.networkProtocolCallbacks[data.protocol])
-            this.networkProtocolCallbacks[data.protocol](data.content, from) 
-        else
-            this.world.receiveDataFromPeer(data, from)
-    }
-
-    
-    onPeerJoin(peerID)
-    {
-        console.log('User ', peerID, ' has join the realm')
-        this.sendData(REALM_PROTOCOLS.USER.JOIN, { username: this.conjure.getProfile().getUsername() || '' }, peerID)
-    }
-
-    onPeerLeave(peerID)
-    {
-        console.log('User ', peerID, ' has left the realm')
-        this.world.onUserLeave(peerID)
-    }
-
-    sendData(protocol, content)
-    {
-        // this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_DATA, { network: this.realmID, protocol, content });
-    }
-
-    sendTo(protocol, content, peerID)
-    {
-        // this.conjure.getDataHandler(SERVER_PROTOCOLS.NETWORK_SEND_TO, { network: this.realmID, protocol, content, peerID });
     }
 
     getObjectManager()

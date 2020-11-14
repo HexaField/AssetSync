@@ -5,12 +5,12 @@ import { REALM_PROTOCOLS } from '../world/realm/Realm'
 
 export default class User
 {
-    constructor(conjure)
+    constructor(conjure, isRemote)
     {
         this.vec = new THREE.Vector3();
         this.quat = new THREE.Quaternion();
         this.euler = new THREE.Euler();
-        this.isRemote = false;
+        this.isRemote = isRemote;
         
         this.conjure = conjure;
         this.scene = conjure.scene;
