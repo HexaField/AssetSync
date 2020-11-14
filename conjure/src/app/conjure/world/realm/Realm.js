@@ -48,7 +48,7 @@ export const GLOBAL_REALMS = {
 export const REALM_PROTOCOLS = {
     HEARTBEAT: 'heartbeat',
     USER: {
-        JOIN: 'user.join',
+        SIGNAL: 'user.signal',
         LEAVE: 'user.leave',
         // CONNECT: 'user.connect',
         // DISCONNECT: 'user.disconnect',
@@ -106,12 +106,12 @@ export default class Realm extends EventEmitter
 
     sendData(protocol, content)
     {
-        this.conjure.assetSync.connectionPlugin.sendToAll({ protocol, content })
+        this.conjure.assetSync.connectionPlugin.sendToAll(new Uint8Array(JSON.stringify({ protocol, content })))
     }
 
     sendTo(protocol, content, peerID)
     {
-        this.conjure.assetSync.connectionPlugin.sendToPeer({ protocol, content }, peerID)
+        this.conjure.assetSync.connectionPlugin.sendToPeer(new Uint8Array(JSON.stringify({ protocol, content })), peerID)
     }
 
     async preload()
@@ -119,13 +119,41 @@ export default class Realm extends EventEmitter
         this.network = await this.conjure.assetSync.networkPlugin.joinNetwork(this.realmID)
 
         this.network.on('onMessage', (opcode, content, from) => {
-            console.log(opcode, content, from)
+            // console.log(opcode, content, from)
             this.emit(opcode, content, from)
         })
 
-        this.network.on('onPeerJoin', (peerID) => {
+        this.network.on('onPeerJoin', async (peerID) => {
+            
             console.log('User ', peerID, ' has join the realm')
-            this.network.sendToPeer(REALM_PROTOCOLS.USER.JOIN, this.conjure.assetSync.connectionPlugin.peerID, peerID)
+            
+            const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
+            const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
+            
+            console.log('isInitiator', isInitiator)
+
+            conn.on('ready', () => {
+                console.log('Connected to peer', peerID)
+            })
+
+            if(isInitiator) {
+                this.network.sendToPeer('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
+            }
+
+            this.on('connection.signal.' + peerID, async (signalData, from) => {
+                if(from !== peerID)
+                    return
+                conn.signal(signalData)
+                if(!isInitiator) {
+                    conn.on('signal', () => {
+                        this.network.sendToPeer('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
+                    })
+                }
+            })
+
+            conn.on('message', (message) => {
+                console.log(Buffer.from(message).toString())
+            })
         })
         
         this.network.on('onPeerLeave', (peerID) => {

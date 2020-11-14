@@ -127,4 +127,8 @@ export class NetworkPlugin extends PluginBase {
     async getPeers(networkID) {
         return this._networks[networkID].getPeers()
     }
+
+    getPeerID() {
+        return this._transportPlugin.getPeerID()
+    }
 }
