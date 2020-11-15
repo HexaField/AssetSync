@@ -1,5 +1,5 @@
 import ScreenBase from './ScreenBase';
-import { REALM_PROTOCOLS } from '../world/realm/Realm';
+import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas';
 import ScreenElementButton from './elements/ScreenElementButton';
 
 export default class ScreenUserInteract extends ScreenBase
@@ -33,7 +33,7 @@ export default class ScreenUserInteract extends ScreenBase
         this.user = user;
         this.screenTitle.setText('Interacting with ' + user.username)
         this.screenManager.screenUserPay.setUser(user)
-        this.screenManager.conjure.getWorld().realm.sendTo(REALM_PROTOCOLS.PROFILE.SERVICE.PAYID.REQUESTID, '', user.peerID)
+        this.screenManager.conjure.getWorld().realm.sendTo(NETWORKING_OPCODES.PROFILE.SERVICE.PAYID.REQUESTID, '', user.peerID)
     }
 
     showScreen(active)

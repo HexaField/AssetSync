@@ -56,6 +56,10 @@ export class ConnectionPlugin extends PluginBase {
         return connection
     }
 
+    closeConnection(label) {
+        this.connections[label].disconnect()
+    }
+
     getConnection(label) {
         return this.connections[label]
     }
@@ -110,7 +114,6 @@ class PeerConnection extends EventEmitter {
 
     async disconnect() {
         if(!this.connected) return
-        this.connected = false
         await new Promise((resolve) => {
             this.peer.close()
             this.peer.on('close', () => {
@@ -122,6 +125,7 @@ class PeerConnection extends EventEmitter {
                 resolve()
             })
         })
+        this.connected = false
         this.emit('destroyed')
     }
 

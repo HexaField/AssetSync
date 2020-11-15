@@ -1,4 +1,4 @@
-// import { REALM_PROTOCOLS } from "../world/realm/Realm.js"
+// import { NETWORKING_OPCODES } from "../world/realm/NetworkingSchemas.js"
 import { generateUUID } from '@AssetSync/common'
 import ServiceManager from './services/ServiceManager.js'
 
@@ -33,7 +33,7 @@ export default class Profile
     setUsername(newName)
     {
         this.profileData.username = newName
-        // this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.UPDATE, { username: this.getUsername() })
+        // this.conjure.getWorld().sendData(NETWORKING_OPCODES.USER.UPDATE, { username: this.getUsername() })
     }
 
     createProfile()

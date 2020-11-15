@@ -12,23 +12,23 @@ const USER_OPCODES = {
 
 export default class UserRemote extends User
 {
-    constructor(conjure, connectionID, peerID)
+    constructor(conjure, username, peerID)
     {
         super(conjure, true)
-        this.connectionID = connectionID // peerjs
+        // this.connectionID = connectionID // peerjs
         this.peerID = peerID // libp2p
         
         this.velocity = new THREE.Vector3()
-        
-        console.log(connectionID, peerID)
 
-        this.connection = this.conjure.assetSync.connectionPlugin.connect(connectionID)
-        this.conjure.assetSync.connectionPlugin.on('connection', (id) => {
-            this.connection.send([USER_OPCODES.CONNECT, this.conjure.getProfile().getUsername()])
-        })
-        this.connection.on('message:' + connectionID, (data) => {
-            console.log(data)
-        })
+        this.group.name = username
+        this.username = username
+
+        this.nameplate = new TextRenderer3D(conjure, this.group, { text: username })
+        this.nameplate.group.position.setY(2)
+        this.nameplate.group.rotation.set(0, Math.PI, 0)
+        this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
+        this.timeoutLimit = 3 * 60 // if don't receive a heartbeat for 3 seconds, die
+        this.timeoutCount = 0
     }
 
     onCreate()
@@ -39,15 +39,6 @@ export default class UserRemote extends User
 
     updateInfo(data)
     {
-        // this.group.name = username
-        // this.username = username
-
-        // this.nameplate = new TextRenderer3D(conjure, this.group, { text: username })
-        // this.nameplate.group.position.setY(2)
-        // this.nameplate.group.rotation.set(0, Math.PI, 0)
-        // this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
-        // this.timeoutLimit = 3 * 60 // if don't receive a heartbeat for 3 seconds, die
-        // this.timeoutCount = 0
 
         this.timeoutCount = 0
         if(data.username)
@@ -74,9 +65,9 @@ export default class UserRemote extends User
     setPhysics(physics)
     {
         this.timeoutCount = 0
-        this.group.position.set(physics.p.x, physics.p.y, physics.p.z)
-        this.group.quaternion.set(physics.r._x, physics.r._y, physics.r._z, physics.r._w)
-        this.velocity.set(physics.v.x, physics.v.y, physics.v.z)
+        this.group.position.set(physics.position.x, physics.position.y, physics.position.z)
+        this.group.quaternion.set(physics.rotation._x, physics.rotation._y, physics.rotation._z, physics.rotation._w)
+        this.velocity.set(physics.velocity.x, physics.velocity.y, physics.velocity.z)
         // this.group.body.needUpdate = true
     }
 

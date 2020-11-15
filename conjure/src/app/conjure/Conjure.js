@@ -242,6 +242,9 @@ class Conjure extends EventEmitter
         const { default: Profile } = await import('./user/Profile.js')
         this.profile = new Profile(this)
 
+        const { NetworkingSchemas } = await import ('./world/realm/NetworkingSchemas')
+        this.networkingSchemas = new NetworkingSchemas()
+
         const { default: World } = await import('./world/World.js')
         this.world = new World(this)
         const { default: ControlManager } = await import('./controls/ControlManager.js')

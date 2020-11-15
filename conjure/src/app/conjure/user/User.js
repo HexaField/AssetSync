@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { ExtendedObject3D } from 'enable3d'
-import { REALM_PROTOCOLS } from '../world/realm/Realm'
+import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas'
 // import { easySphere, easyOrigin } from '../util/MeshTemplates';
 
 export default class User
@@ -377,7 +377,7 @@ export default class User
         this.getMovementLock()
         this.group.animation.play(name, fadeTime * 1000, !Boolean(once));
         if(!this.isRemote)
-            this.conjure.getWorld().sendData(REALM_PROTOCOLS.USER.ANIMATION, { name, fadeTime, once, startTime });
+            this.conjure.getWorld().sendData(NETWORKING_OPCODES.USER.ANIMATION, { name, fadeTime, once, startTime });
     }
 
     getMovementLock()

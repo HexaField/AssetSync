@@ -1,7 +1,7 @@
 
 import * as THREE from 'three'
 import ScreenElementText from '../elements/ScreenElementText';
-import { REALM_PROTOCOLS } from '../../world/realm/Realm';
+import { NETWORKING_OPCODES } from '../../world/realm/NetworkingSchemas';
 
 export const INTERACT_TYPES = {
     NONE: 'none',
@@ -60,7 +60,7 @@ export default class HUDInteract
             {
                 this.screen.screenManager.screenUserPay.setUser(this.object)
                 this.screen.screenManager.showScreen(this.screen.screenManager.screenUserPay)
-                this.screen.screenManager.conjure.getWorld().realm.sendTo(REALM_PROTOCOLS.PROFILE.SERVICE.PAYID.REQUESTID, '', this.object.peerID)
+                this.screen.screenManager.conjure.getWorld().realm.sendTo(NETWORKING_OPCODES.PROFILE.SERVICE.PAYID.REQUESTID, '', this.object.peerID)
             }
             if(this.type === INTERACT_TYPES.OBJECT && this.object.userData.payID)
             {

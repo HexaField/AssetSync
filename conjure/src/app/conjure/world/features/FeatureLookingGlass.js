@@ -273,7 +273,7 @@ AND ECONOMIC EPOCHAL SHIFTS.`)
 
         this.realm.world.user.swordMesh.material.visible = true
         this.realm.world.user.hasSword = true
-        for(let user of this.realm.world.users)
+        for(let user of Object.values(this.realm.world.remoteUsers))
         {
             user.swordMesh.material.visible = true
             user.hasSword = true

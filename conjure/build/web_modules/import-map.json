@@ -3,6 +3,7 @@
     "@AssetSync/WorldSync": "./@AssetSync/WorldSync.js",
     "@AssetSync/common": "./@AssetSync/common.js",
     "@enable3d/ammo-physics": "./@enable3d/ammo-physics.js",
+    "@geckos.io/typed-array-buffer-schema": "./@geckos.io/typed-array-buffer-schema.js",
     "abi-decoder": "./abi-decoder.js",
     "big-integer": "./big-integer.js",
     "discord-oauth2": "./discord-oauth2.js",

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import Realm, { REALM_PROTOCOLS, GLOBAL_REALMS } from './realm/Realm.js'
+import { NETWORKING_OPCODES } from './realm/NetworkingSchemas'
+import Realm, { GLOBAL_REALMS } from './realm/Realm.js'
 import User from '../user/User.js'
 import UserRemote from '../user/UserRemote.js'
 import { CONJURE_MODE } from '../Conjure.js'
@@ -20,12 +21,12 @@ export default class World
         this.scene.add(this.group)
 
         this.user = new User(conjure);
-        this.users = [];
+        this.remoteUsers = {};
 
         this.lastUserUpdate = {};
 
         this.savePeriod = 5; // save every 5 seconds
-        this.updatesPerSecond = 20; // update peers every 1/xth of a second 
+        this.updatesPerSecond = 60; // update peers every 1/xth of a second 
         this.updateCount = 0;
         this.updateCountMax = 60 / this.updatesPerSecond;
 
@@ -42,9 +43,9 @@ export default class World
 
         this.onUserJoin = this.onUserJoin.bind(this)
         this.onUserLeave = this.onUserLeave.bind(this)
-        // this.onUserUpdate = this.onUserUpdate.bind(this)
-        // this.onUserMove = this.onUserMove.bind(this)
-        // this.onUserAnimation = this.onUserAnimation.bind(this)
+        this.onUserUpdate = this.onUserUpdate.bind(this)
+        this.onUserMove = this.onUserMove.bind(this)
+        this.onUserAnimation = this.onUserAnimation.bind(this)
     }
 
     async loadDefault()
@@ -167,17 +168,17 @@ export default class World
         await this.realm.preload()
         await this.realm.load()
 
-        this.realm.on(REALM_PROTOCOLS.USER.JOIN, this.onUserJoin)
-        this.realm.on(REALM_PROTOCOLS.USER.LEAVE, this.onUserLeave)
-        // this.realm.on(REALM_PROTOCOLS.USER.UPDATE, this.onUserUpdate)
-        // this.realm.on(REALM_PROTOCOLS.USER.MOVE, this.onUserMove)
-        // this.realm.on(REALM_PROTOCOLS.USER.ANIMATION, this.onUserAnimation)
+        this.realm.on(NETWORKING_OPCODES.USER.JOIN, this.onUserJoin)
+        this.realm.on(NETWORKING_OPCODES.USER.LEAVE, this.onUserLeave)
+        // this.realm.on(NETWORKING_OPCODES.USER.UPDATE, this.onUserUpdate)
+        this.realm.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
+        // this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
         let spawn = realmData.getData().worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
         this.user.teleport(spawn.x, spawn.y, spawn.z)
         
-        // this.realm.sendData(REALM_PROTOCOLS.USER.JOIN, {
+        // this.realm.sendData(NETWORKING_OPCODES.USER.JOIN, {
         //     username: this.conjure.getProfile().getUsername()
         // })
 
@@ -240,20 +241,20 @@ export default class World
         
         let interact = false;
         let interactDistance = this.interactMaxDistance;
-        for(let user in this.users)
+        for(let remoteUser of Object.values(this.remoteUsers))
         {
-            if(this.users[user].timedOut) continue
+            if(remoteUser.timedOut) continue
 
-            this.users[user].update(updateArgs)
-            if(this.users[user] && this.users[user].group) // make sure we havent destroyed user in update loop
+            remoteUser.update(updateArgs)
+            if(remoteUser && remoteUser.group) // make sure we havent destroyed user in update loop
                 if(!interact && this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
                 {
-                    let intersections = this.conjure.worldRaycaster.intersectObject(this.users[user].group, true);
+                    let intersections = this.conjure.worldRaycaster.intersectObject(remoteUser.group, true);
                     if(intersections.length > 0 && intersections[0].distance < interactDistance)
                     {
                         interactDistance = intersections[0].distance;
                         interact = true;
-                        this.conjure.screenManager.hudExplore.interact.setObject(this.users[user], INTERACT_TYPES.USER);
+                        this.conjure.screenManager.hudExplore.interact.setObject(remoteUser, INTERACT_TYPES.USER);
                     }
                 }
         }
@@ -296,18 +297,16 @@ export default class World
         if(this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
         {
             if(!deltaUpdate)
-                this.sendData(REALM_PROTOCOLS.HEARTBEAT, {})
+                this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
             let payload = {
-                physics: {
-                    p:this.user.group.getWorldPosition(this.vec3),
-                    r:this.user.group.getWorldQuaternion(this.quat),
-                    v:this.user.group.body.velocity,
-                }
+                position: this.user.group.getWorldPosition(this.vec3),
+                rotation: this.user.group.getWorldQuaternion(this.quat),
+                velocity: this.user.group.body.velocity,
             }
             if(deltaUpdate || !_.isEqual(this.lastUserUpdate, payload))
             {
                 this.lastUserUpdate = payload;
-                this.sendData(REALM_PROTOCOLS.USER.MOVE, payload);
+                this.sendData(NETWORKING_OPCODES.USER.MOVE, payload);
             }
         }
     }
@@ -328,79 +327,54 @@ export default class World
 
     onUserJoin(data, peerID)
     {
-        let exists = false;
-        for(let user of this.users)
-            if(peerID === user.peerID)
-            {
-                exists = true;
-                break
-            }
-        if(exists)
-        {
-            this.onUserLeave(peerID)
-        }
-        this.users.push(new UserRemote(this.conjure, data, peerID))
+        if(this.remoteUsers[peerID]) return
+        
+        this.remoteUsers[peerID] = new UserRemote(this.conjure, data, peerID)
         window.CONSOLE.log(data.username + ' has joined')
     }
     
     
     destroyAllRemoteUsers()
     {
-        for(let u = 0; u < this.users.length; u++)
+        for(let remoteUser of Object.values(this.remoteUsers))
         {
             // this.conjure.physics.destroy(this.users[u].group.body)
-            this.scene.remove(this.users[u].group)
-            this.users.splice(u, 1);
+            this.scene.remove(remoteUser.group)
+            delete this.remoteUsers[remoteUser.peerID]
         }
     }
 
     onUserLeave(peerID)
     {
-        for(let u = 0; u < this.users.length; u++)
-            if(peerID === this.users[u].peerID)
-            {
-                window.CONSOLE.log(this.users[u].username + ' has left')
-                // this.conjure.physics.destroy(this.users[u].group.body)
-                this.scene.remove(this.users[u].group)
-                this.users.splice(u, 1);
-                break
-            }
+        if(!this.remoteUsers[peerID]) return
+        
+        window.CONSOLE.log(this.remoteUsers[peerID].username + ' has left')
+        // this.conjure.physics.destroy(this.users[u].group.body)
+        this.scene.remove(this.remoteUsers[peerID].group)
+        delete this.remoteUsers[peerID]
     }
 
     // acts as heartbeat too
-    // onUserUpdate(data, peerID)
-    // {
-    //     let exists = false
-    //     for(let u = 0; u < this.users.length; u++)
-    //         if(peerID === this.users[u].peerID)
-    //         {
-    //             this.users[u].updateInfo(data);
-    //             exists = true
-    //             break
-    //         }
-    //     // if(!exists)
-    //     //     this.onUserJoin(data, peerID); // need to retire this eventually
-    // }
+    onUserUpdate(data, peerID)
+    {
+        if(!this.remoteUsers[peerID]) return
+        
+        this.remoteUsers[peerID].updateInfo(data);
+    }
 
-    // onUserAnimation(data, peerID)
-    // {
-    //     for(let u of this.users)
-    //         if(peerID === u.peerID)
-    //         {
-    //             u.setAction(data.name, data.fadeTime, data.once, data.startTime)
-    //             break
-    //         }
-    // }
-    // TODO: figure out the role of peerID since we use discord id to auth for now - we really need a user UUID
-    // onUserMove(data, peerID)
-    // {
-    //     for(let u of this.users)
-    //         if(peerID === u.peerID)
-    //         {
-    //             u.setPhysics(data.physics);
-    //             break
-    //         }
-    // }
+    onUserAnimation(data, peerID)
+    {
+        if(!this.remoteUsers[peerID]) return
+        
+        this.remoteUsers[peerID].setAction(data.name, data.fadeTime, data.once, data.startTime)
+    }
+    
+    onUserMove(data, peerID)
+    {
+        if(!this.remoteUsers[peerID]) return
+        
+        this.remoteUsers[peerID].setPhysics(data)
+    }
 
     getObjects()
     {

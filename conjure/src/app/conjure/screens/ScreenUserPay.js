@@ -2,7 +2,7 @@ import ScreenBase from './ScreenBase';
 import ScreenElementText from './elements/ScreenElementText'
 import ScreenElementTextBox from './elements/ScreenElementTextBox'
 import ScreenElementButton from './elements/ScreenElementButton'
-import { REALM_PROTOCOLS } from '../world/realm/Realm';
+import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas';
 import ScreenElementLabelled from './elements/ScreenElementLabelled';
 
 export default class ScreenUserPay extends ScreenBase
@@ -76,7 +76,7 @@ export default class ScreenUserPay extends ScreenBase
         this.textMyPayidBalance.setText('Loading...')
         this.onPayCallback = (() => {
             console.log('here we gooooooo!!!!!')
-            this.screen.screenManager.conjure.getWorld().realm.sendData(REALM_PROTOCOLS.REALM.TRONIFY)
+            this.screen.screenManager.conjure.getWorld().realm.sendData(NETWORKING_OPCODES.REALM.TRONIFY)
             this.screen.screenManager.conjure.getWorld().realm.tron()
             object.visible = false
         })

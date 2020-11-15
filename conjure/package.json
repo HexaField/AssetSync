@@ -13,6 +13,7 @@
     "dependencies": {},
     "devDependencies": {
         "@forlagshuset/simple-fs": "^0.4.0",
+        "@geckos.io/typed-array-buffer-schema": "^1.0.2",
         "@snowpack/plugin-babel": "^2.1.0",
         "@snowpack/plugin-optimize": "^0.2.5",
         "@tweenjs/tween.js": "^18",

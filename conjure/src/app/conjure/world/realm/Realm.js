@@ -8,6 +8,7 @@ import ObjectManager from './ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 import EventEmitter from 'events'
+import { NETWORKING_OPCODES } from './NetworkingSchemas'
 
 export const GLOBAL_REALMS = {
     LOBBY: {
@@ -45,33 +46,6 @@ export const GLOBAL_REALMS = {
     },
 }
 
-export const REALM_PROTOCOLS = {
-    HEARTBEAT: 'heartbeat',
-    USER: {
-        SIGNAL: 'user.signal',
-        LEAVE: 'user.leave',
-        // CONNECT: 'user.connect',
-        // DISCONNECT: 'user.disconnect',
-        // UPDATE: 'user.update',
-        // MOVE: 'user.move',
-        // ANIMATION: 'user.animation',
-    },
-    OBJECT: {
-        CREATE: 'object.create',
-        UPDATE: 'object.update',
-        GROUP: 'object.group',
-        MOVE: 'object.move',
-        DESTROY: 'object.destroy',
-        REQUESTPRIMARY: 'object.requestprimary',
-        ACCEPTPRIMARY: 'object.acceptprimary',
-        TRANSFORM: {
-            START: 'object.transform.start',
-            UPDATE: 'object.transform.update',
-            END: 'object.transform.end',
-        },
-    },
-}
-
 export default class Realm extends EventEmitter
 {  
     constructor(world, realmData)
@@ -104,14 +78,14 @@ export default class Realm extends EventEmitter
         this.networkProtocolCallbacks = {}
     }
 
-    sendData(protocol, content)
+    sendData(opcode, content)
     {
-        this.conjure.assetSync.connectionPlugin.sendToAll(new Uint8Array(JSON.stringify({ protocol, content })))
+        this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
     }
 
-    sendTo(protocol, content, peerID)
+    sendTo(opcode, content, peerID)
     {
-        this.conjure.assetSync.connectionPlugin.sendToPeer(new Uint8Array(JSON.stringify({ protocol, content })), peerID)
+        this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
     }
 
     async preload()
@@ -133,7 +107,10 @@ export default class Realm extends EventEmitter
             console.log('isInitiator', isInitiator)
 
             conn.on('ready', () => {
-                console.log('Connected to peer', peerID)
+                console.log('Direct connection establish to', peerID)
+                this.sendData(NETWORKING_OPCODES.USER.JOIN, {
+                    username: this.conjure.getProfile().getUsername()
+                })
             })
 
             if(isInitiator) {
@@ -151,8 +128,9 @@ export default class Realm extends EventEmitter
                 }
             })
 
-            conn.on('message', (message) => {
-                console.log(Buffer.from(message).toString())
+            conn.on('message', buffer => {
+                const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
+                this.emit(opcode, content, peerID)
             })
         })
         
@@ -163,11 +141,11 @@ export default class Realm extends EventEmitter
             
         
         // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
-        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.CREATE, this.onObjectCreate)
-        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.UPDATE, this.onObjectUpdate)
-        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.GROUP, this.onObjectGroup)
-        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.MOVE, this.onObjectMove)
-        // this.addNetworkProtocolCallback(REALM_PROTOCOLS.OBJECT.DESTROY, this.onObjectDestroy)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.UPDATE, this.onObjectUpdate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
 
         if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
             this.terrain = new Terrain(this.conjure, this.world.group, this.realmData.getWorldSettings())
@@ -326,7 +304,7 @@ export default class Realm extends EventEmitter
         {
             this.objectManager.addObject(object)
             json = await this.objectToJSON(object);
-            this.sendData(REALM_PROTOCOLS.OBJECT.CREATE, { uuid: databaseObject.uuid, data:json });
+            this.sendData(NETWORKING_OPCODES.OBJECT.CREATE, { uuid: databaseObject.uuid, data:json });
         }
     }
 
@@ -437,7 +415,7 @@ export default class Realm extends EventEmitter
             if(success)
             {
                 this.objectManager.destroyObject(obj);
-                this.sendData(REALM_PROTOCOLS.OBJECT.DESTROY, obj.uuid, true);
+                this.sendData(NETWORKING_OPCODES.OBJECT.DESTROY, obj.uuid, true);
             }
             else
             {
@@ -448,7 +426,7 @@ export default class Realm extends EventEmitter
         else
         {
             let topParent = this.objectManager.getTopGroupObject(obj)
-            this.sendData(REALM_PROTOCOLS.OBJECT.UPDATE, topParent, true);
+            this.sendData(NETWORKING_OPCODES.OBJECT.UPDATE, topParent, true);
             this.objectManager.destroyObject(obj, { isChild: true });
             await this.updateObject(topParent)
         }

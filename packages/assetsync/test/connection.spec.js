@@ -1,8 +1,7 @@
 import test from 'ava'
 import Peer from './connection/peer.js'
 import wrtc from 'wrtc'
-import { BufferSchema, Model } from '@geckos.io/typed-array-buffer-schema'
-import { float64 } from '@geckos.io/typed-array-buffer-schema'
+import { BufferSchema, Model, float64 } from '@geckos.io/typed-array-buffer-schema'
 
 const peer1 = new Peer({ wrtc: wrtc })
 await peer1.start()

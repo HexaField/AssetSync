@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { number } from '../../util/number'
-import { REALM_PROTOCOLS } from './Realm'
+import { NETWORKING_OPCODES } from './NetworkingSchemas'
 
 export const PHYSICS_TYPES = {
     NONE: 'None',
@@ -106,7 +106,7 @@ export default class ObjectManager
 
         this.conjure.getScreens().screenObjectsHierarchy.updateObjects();
         if(!ignoreNetwork)
-            this.conjure.getWorld().sendData(REALM_PROTOCOLS.OBJECT.UPDATE, {newParentUUID: newParent.UUID, newChildUUID: newObject.UUID}) // shouldn't need to use this as the two updateObjects should take care of this
+            this.conjure.getWorld().sendData(NETWORKING_OPCODES.OBJECT.UPDATE, {newParentUUID: newParent.UUID, newChildUUID: newObject.UUID}) // shouldn't need to use this as the two updateObjects should take care of this
     }
 
     getObject(obj)
