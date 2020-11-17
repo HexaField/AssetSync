@@ -187,11 +187,9 @@ export default class Realm extends EventEmitter
                 if(from !== peerID)
                     return
                 conn.signal(signalData)
-                if(!isInitiator) {
-                    conn.on('signal', () => {
-                        this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
-                    })
-                }
+                conn.on('signal', () => {
+                    this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
+                })
             })
 
             conn.on('message', buffer => {

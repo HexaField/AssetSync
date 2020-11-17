@@ -94,8 +94,8 @@ class PeerConnection extends EventEmitter {
             this.emit('destroyed')
         })
 
-        this.peer.on('error', () => {
-            console.log('Connection error')
+        this.peer.on('error', (error) => {
+            console.log('Connection error', error)
             this.emit('destroyed')
         })
 
@@ -122,8 +122,8 @@ class PeerConnection extends EventEmitter {
                 console.log('Connection closed')
                 resolve()
             })
-            this.peer.on('error', () => {
-                console.log('Connection error')
+            this.peer.on('error', (error) => {
+                console.log('Connection error', error)
                 resolve()
             })
         })

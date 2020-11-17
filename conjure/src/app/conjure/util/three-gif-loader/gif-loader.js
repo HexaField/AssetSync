@@ -9,7 +9,7 @@ export default class GifLoader {
     this.crossOrigin = 'anonymous';
   }
 
-  async load(url, onLoad, onProgress, onError) {
+  async load(url, onLoad, onProgress = () => {}, onError = () => {}) {
     const texture = new GifTexture();
 
     const loader = new FileLoader(this.manager);

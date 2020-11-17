@@ -12,18 +12,19 @@ const USER_OPCODES = {
 
 export default class UserRemote extends User
 {
-    constructor(conjure, username, peerID)
+    constructor(conjure, data, peerID)
     {
         super(conjure, true)
         // this.connectionID = connectionID // peerjs
         this.peerID = peerID // libp2p
         
         this.velocity = new THREE.Vector3()
+        console.log(data)
 
-        this.group.name = username
-        this.username = username
+        this.username = data.username
+        this.group.name = data.username
 
-        this.nameplate = new TextRenderer3D(conjure, this.group, { text: username })
+        this.nameplate = new TextRenderer3D(conjure, this.group, { text: this.username })
         this.nameplate.group.position.setY(2)
         this.nameplate.group.rotation.set(0, Math.PI, 0)
         this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
