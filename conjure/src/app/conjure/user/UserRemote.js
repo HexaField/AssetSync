@@ -27,7 +27,7 @@ export default class UserRemote extends User
         this.nameplate.group.position.setY(2)
         this.nameplate.group.rotation.set(0, Math.PI, 0)
         this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
-        this.timeoutLimit = 3 * 60 // if don't receive a heartbeat for 3 seconds, die
+        this.timeoutLimit = 603 * 60 // if don't receive a heartbeat for 3 seconds, die
         this.timeoutCount = 0
     }
 

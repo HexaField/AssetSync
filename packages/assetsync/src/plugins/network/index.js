@@ -17,7 +17,7 @@ export class NetworkPlugin extends PluginBase {
                 this._networks[networkID].emit('onPeerLeave', peerID)
             },
             onMessage: (networkID, data, from) => { 
-                this._networks[networkID].emit('onMessage', data.opcode, data.content, from)
+                this._networks[networkID].emit('onMessage', data, from)
             }
         }
     }
@@ -68,7 +68,6 @@ export class NetworkPlugin extends PluginBase {
 
         // todo: make this a plugin
         this._networks[networkID] = this._transportPlugin.joinNetwork(networkID)
-        this._networks[networkID]
 
         this._networks[networkID].on('peer joined', (peerID) => { 
             this._networkEvents.onPeerJoin(networkID, peerID)
@@ -79,26 +78,9 @@ export class NetworkPlugin extends PluginBase {
         })
 
         this._networks[networkID].on('message', (message) => {
-            
             if (message.from === this._transportPlugin.getPeerID()) return
-
-            if (message.data === undefined || message.data === null) {
-                this.warn('Received bad buffer data', message.data, 'from peer', message.from)
-                return
-            }
-
-            let data = JSON.parse(message.data)
-            
-            this._networkEvents.onMessage(networkID, data, message.from)
+            this._networkEvents.onMessage(networkID, message.data.toString(), message.from)
         })
-
-        this._networks[networkID].sendToPeer = (opcode, content, peerID) => {
-            this._networks[networkID].sendTo(peerID, JSON.stringify({ opcode, content }))
-        }
-
-        this._networks[networkID].sendToAll = (opcode, content) => {
-            this._networks[networkID].broadcast(JSON.stringify({ opcode, content }))
-        }
 
         return this._networks[networkID]
     }
@@ -114,13 +96,13 @@ export class NetworkPlugin extends PluginBase {
         }
     }
 
-    async sendTo(networkID, opcode, content, peerID) {
-        await this._networks[networkID].sendToPeer(peerID, opcode, content)
+    async sendTo(networkID, data, peerID) {
+        await this._networks[networkID].sendTo(peerID, data)
         return true
     }
 
-    async sendData(networkID, opcode, content) {
-        await this._networks[networkID].sendToAll(opcode, content)
+    async broadcast(networkID, data) {
+        await this._networks[networkID].broadcast(data)
         return true
     }
 

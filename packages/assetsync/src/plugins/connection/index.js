@@ -30,6 +30,8 @@ export class ConnectionPlugin extends PluginBase {
     }
 
     async createConnection(label, initiator) {
+        if(this.connections[label] && this.connections[label].connected) 
+            return this.connections[label]
         const peer = new this.SimplePeer(Object.assign({}, { initiator }, this._peerOptions))
         const peerData = await new Promise((resolve) => {
             if(!initiator) {
@@ -130,7 +132,7 @@ class PeerConnection extends EventEmitter {
     }
 
     send(data) {
-        if(!this.connected) return
+        if(!data || !this.connected) return
         if(data.constructor !== Uint8Array)
             throw new Error('Must send data as Uint8Array. Got instead:', typeof data)
         this.peer.send(data)

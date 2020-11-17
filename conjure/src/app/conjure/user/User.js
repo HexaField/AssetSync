@@ -368,7 +368,7 @@ export default class User
     }
     
     // idle - walk - run - jump - runningJump - falling - land - landHard - landRoll - flip
-    setAction(name, fadeTime, once, startTime) // add in time
+    setAction(name, fadeTime, once = false, startTime = 0) // add in time
     {
         if(!this.group) return;
         if(name === this.currentAnimation) return;

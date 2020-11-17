@@ -3,11 +3,10 @@ import * as Schema from '@geckos.io/typed-array-buffer-schema'
 export const NETWORKING_OPCODES = {
     HEARTBEAT: 0,
     USER: {
-        JOIN: 100,
-        LEAVE: 101,
-        MOVE: 102,
-        // UPDATE: 103,
-        // ANIMATION: 104,
+        METADATA: 100,
+        MOVE: 101,
+        ANIMATION: 102,
+        // UPDATE: 104,
     },
 }
 
@@ -35,12 +34,19 @@ export class NetworkingSchemas {
         this.schemas = {}
         this.schemaIDs = {}
 
-        this.addSchema(NETWORKING_OPCODES.USER.JOIN, { username: Schema.string16 })
-        this.addSchema(NETWORKING_OPCODES.USER.LEAVE, { })
+        this.addSchema(NETWORKING_OPCODES.USER.METADATA, { 
+            username: Schema.string16
+        })
         this.addSchema(NETWORKING_OPCODES.USER.MOVE, { 
             position: SCHEMA_POSITION,
             rotation: SCHEMA_QUATERNION,
             velocity: SCHEMA_VELOCITY,
+        })
+        this.addSchema(NETWORKING_OPCODES.USER.ANIMATION, { 
+            name: Schema.string16,
+            fadeTime: Schema.float32,
+            once: Schema.uint8,
+            startTime: Schema.float32,
         })
     }
 
@@ -53,14 +59,17 @@ export class NetworkingSchemas {
 
     toBuffer(opcode, content) {
         if (!this.schemas[opcode]) {
-            return new Uint8Array([])
+            return
         }
         const data = new Uint8Array(this.schemas[opcode].model.toBuffer(content))
         return data
     }
 
-    fromBuffer(buffer) {
+    fromBuffer(buf) {
+        const buffer = new Uint8Array(buf)
+        if(buffer.length < 5) return {}
         const id = getSchemaIdFromBuffer(buffer.buffer)
+        if(!this.schemaIDs[id]) return {}
         const content = this.schemaIDs[id].model.fromBuffer(buffer.buffer)
         const opcode = this.schemaIDs[id].schema.name
         return { opcode, content }

@@ -41,9 +41,8 @@ export default class World
         this.spawnLocation = new THREE.Vector3(0, 2, 0)
         this.lastRealmID = 'Lobby'
 
-        this.onUserJoin = this.onUserJoin.bind(this)
+        this.onUserData = this.onUserData.bind(this)
         this.onUserLeave = this.onUserLeave.bind(this)
-        this.onUserUpdate = this.onUserUpdate.bind(this)
         this.onUserMove = this.onUserMove.bind(this)
         this.onUserAnimation = this.onUserAnimation.bind(this)
     }
@@ -168,11 +167,9 @@ export default class World
         await this.realm.preload()
         await this.realm.load()
 
-        this.realm.on(NETWORKING_OPCODES.USER.JOIN, this.onUserJoin)
-        this.realm.on(NETWORKING_OPCODES.USER.LEAVE, this.onUserLeave)
-        // this.realm.on(NETWORKING_OPCODES.USER.UPDATE, this.onUserUpdate)
+        this.realm.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
         this.realm.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
-        // this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
+        this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
         let spawn = realmData.getData().worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
@@ -305,8 +302,8 @@ export default class World
             }
             if(deltaUpdate || !_.isEqual(this.lastUserUpdate, payload))
             {
-                this.lastUserUpdate = payload;
                 this.sendData(NETWORKING_OPCODES.USER.MOVE, payload);
+                this.lastUserUpdate = payload;
             }
         }
     }
@@ -325,19 +322,21 @@ export default class World
 
     // TODO: if user joins with same discordID and diff peerID, need to figure out implications
 
-    onUserJoin(data, peerID)
+    onUserData(data, peerID)
     {
-        if(this.remoteUsers[peerID]) return
-        
-        this.remoteUsers[peerID] = new UserRemote(this.conjure, data, peerID)
-        window.CONSOLE.log(data.username + ' has joined')
+        if(this.remoteUsers[peerID]) {
+            this.remoteUsers[peerID].updateInfo(data);
+        }
+        else {
+            this.remoteUsers[peerID] = new UserRemote(this.conjure, data, peerID)
+            window.CONSOLE.log(data.username + ' has joined')
+        }
     }
     
     
     destroyAllRemoteUsers()
     {
-        for(let remoteUser of Object.values(this.remoteUsers))
-        {
+        for(let remoteUser of Object.values(this.remoteUsers)) {
             // this.conjure.physics.destroy(this.users[u].group.body)
             this.scene.remove(remoteUser.group)
             delete this.remoteUsers[remoteUser.peerID]
@@ -354,19 +353,11 @@ export default class World
         delete this.remoteUsers[peerID]
     }
 
-    // acts as heartbeat too
-    onUserUpdate(data, peerID)
-    {
-        if(!this.remoteUsers[peerID]) return
-        
-        this.remoteUsers[peerID].updateInfo(data);
-    }
-
     onUserAnimation(data, peerID)
     {
         if(!this.remoteUsers[peerID]) return
         
-        this.remoteUsers[peerID].setAction(data.name, data.fadeTime, data.once, data.startTime)
+        this.remoteUsers[peerID].setAction(data.name.trim(), data.fadeTime, data.once, data.startTime)
     }
     
     onUserMove(data, peerID)

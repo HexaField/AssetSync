@@ -47,8 +47,9 @@ export class SyncedDatabase extends EventEmitter {
             // this.network.sendTO(OPCODES_SYNCED_DATABASE.requestKeys)
         })
         this.network.on('onPeerLeave', (peerID) => {})
-        this.network.on('onMessage', (opcode, content, peerID) => {
-            // console.log('onMessage', opcode, content, peerID)
+        this.network.on('onMessage', (data, peerID) => {
+            console.log('onMessage', data, peerID)
+            const { opcode, content } = JSON.parse(data)
             this.emit(opcode, content, peerID)
         })
         
@@ -65,18 +66,18 @@ export class SyncedDatabase extends EventEmitter {
         // content = undefined (unused)
         this.on(OPCODES_SYNCED_DATABASE.requestKeys, async (content, peerID) => {
             // if (!this._isDatabaseUpToDate) return // we dont want to send outdated
-            this.network.sendToPeer(OPCODES_SYNCED_DATABASE.receiveKeys, this.getAllKeysAndTimestamps(), peerID)
+            this.network.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, this.getAllKeysAndTimestamps())
         })
 
         // content = [...{ key, timestamp }]
         this.on(OPCODES_SYNCED_DATABASE.receiveKeys, async (content, peerID) => {
             let entriesToRequest = this.getDifferences(content)
-            this.network.sendToPeer(OPCODES_SYNCED_DATABASE.requestEntries, entriesToRequest, peerID)
+            this.network.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestEntries, entriesToRequest)
         })
 
         // content = [...key]
         this.on(OPCODES_SYNCED_DATABASE.requestEntries, async (content, peerID) => {
-            this.network.sendToPeer(OPCODES_SYNCED_DATABASE.receiveEntries, this.getEntriesByKeys(content), peerID)
+            this.network.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveEntries, this.getEntriesByKeys(content))
         })
 
         // content = [...{ key, value }]
@@ -88,7 +89,7 @@ export class SyncedDatabase extends EventEmitter {
             // this._isDatabaseUpToDate = true // we need to add more checks with multiple peers to make sure database is actually up to date
         })
 
-        this.network.sendToAll(OPCODES_SYNCED_DATABASE.requestKeys)
+        this.network.broadcast(JSON.stringify({ opcode: OPCODES_SYNCED_DATABASE.requestKeys }))
     }
 
     async unsubscribe() {
@@ -100,7 +101,7 @@ export class SyncedDatabase extends EventEmitter {
         if (fromNetwork) {
             this.emit('entry:add', { key, value })
         } else {
-            this.network.sendToAll(OPCODES_SYNCED_DATABASE.addEntry, { key, value })
+            this.network.broadcast(JSON.stringify({ opcode: OPCODES_SYNCED_DATABASE.addEntry, content: { key, value } }))
         }
         await this.saveToDisk() // temp
         return true
@@ -114,7 +115,7 @@ export class SyncedDatabase extends EventEmitter {
         if (fromNetwork) {
             this.emit('entry:remove', { key })
         } else {
-            this.network.sendToAll(OPCODES_SYNCED_DATABASE.removeEntry, key)
+            this.network.broadcast(JSON.stringify({ opcode: OPCODES_SYNCED_DATABASE.removeEntry, content: key }))
         }
         await this.saveToDisk() // temp
         return true

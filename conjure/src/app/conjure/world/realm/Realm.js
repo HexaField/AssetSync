@@ -78,75 +78,8 @@ export default class Realm extends EventEmitter
         this.networkProtocolCallbacks = {}
     }
 
-    sendData(opcode, content)
-    {
-        this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
-    }
-
-    sendTo(opcode, content, peerID)
-    {
-        this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
-    }
-
     async preload()
     {
-        this.network = await this.conjure.assetSync.networkPlugin.joinNetwork(this.realmID)
-
-        this.network.on('onMessage', (opcode, content, from) => {
-            // console.log(opcode, content, from)
-            this.emit(opcode, content, from)
-        })
-
-        this.network.on('onPeerJoin', async (peerID) => {
-            
-            console.log('User ', peerID, ' has join the realm')
-            
-            const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
-            const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
-            
-            console.log('isInitiator', isInitiator)
-
-            conn.on('ready', () => {
-                console.log('Direct connection establish to', peerID)
-                this.sendData(NETWORKING_OPCODES.USER.JOIN, {
-                    username: this.conjure.getProfile().getUsername()
-                })
-            })
-
-            if(isInitiator) {
-                this.network.sendToPeer('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
-            }
-
-            this.on('connection.signal.' + peerID, async (signalData, from) => {
-                if(from !== peerID)
-                    return
-                conn.signal(signalData)
-                if(!isInitiator) {
-                    conn.on('signal', () => {
-                        this.network.sendToPeer('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
-                    })
-                }
-            })
-
-            conn.on('message', buffer => {
-                const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
-                this.emit(opcode, content, peerID)
-            })
-        })
-        
-        this.network.on('onPeerLeave', (peerID) => {
-            console.log('User ', peerID, ' has left the realm')
-            this.world.onUserLeave(peerID)
-        })
-            
-        
-        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.UPDATE, this.onObjectUpdate)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
-
         if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
             this.terrain = new Terrain(this.conjure, this.world.group, this.realmData.getWorldSettings())
         }
@@ -200,15 +133,85 @@ export default class Realm extends EventEmitter
         }
     }
 
+    sendData(opcode, content)
+    {
+        this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
+    }
+
+    sendTo(opcode, content, peerID)
+    {
+        this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
+    }
+
     async load()
     {
         for(let feature of this.features)
             await feature.load()
         
-        // for(let object of await this.conjure.getDataHandler(SERVER_PROTOCOLS.GET_OBJECTS, { realmID: this.realmID }))
-        // {
-        //     await this.loadObject(object)
-        // }
+        this.network = await this.conjure.assetSync.networkPlugin.joinNetwork(this.realmID)
+
+        this.network.on('message', (message) => {
+            
+            if (message.from === this.conjure.assetSync.networkPlugin.getPeerID()) return
+            
+            console.log(message)
+            if (message.data === undefined || message.data === null) {
+                this.warn('Received bad buffer data', message.data, 'from peer', message.from)
+                return
+            }
+            
+            const { opcode, content } = JSON.parse(message.data)
+
+            this.emit(opcode, content, message.from)
+        })
+
+        this.network.on('onPeerJoin', async (peerID) => {
+
+            const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
+            const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
+            
+            console.log('isInitiator', isInitiator)
+
+            conn.on('ready', () => {
+                console.log('Direct connection establish to', peerID)
+                this.sendTo(NETWORKING_OPCODES.USER.METADATA, {
+                    username: this.conjure.getProfile().getUsername()
+                }, peerID)
+            })
+
+            if(isInitiator) {
+                this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
+            }
+
+            this.on('connection.signal.' + peerID, async (signalData, from) => {
+                if(from !== peerID)
+                    return
+                conn.signal(signalData)
+                if(!isInitiator) {
+                    conn.on('signal', () => {
+                        this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
+                    })
+                }
+            })
+
+            conn.on('message', buffer => {
+                const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
+                this.emit(opcode, content, peerID)
+            })
+        })
+        
+        this.network.on('onPeerLeave', (peerID) => {
+            console.log('User ', peerID, ' has left the realm')
+            this.world.onUserLeave(peerID)
+        })
+            
+        
+        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.UPDATE, this.onObjectUpdate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
         this.loading = false
     }
 

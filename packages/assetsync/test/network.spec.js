@@ -32,17 +32,15 @@ test.serial('can find peers', t => {
 
 test.serial('can message peer', t => {
 
-    const opcode = Math.random().toString(36)
     const content = Math.random().toString(36)
 
-    peer1.network.sendToPeer(opcode, content, peer2ID)
+    peer1.network.sendTo(peer2ID, content)
     return new Promise((resolve) => {
-        peer2.on('onMessage', (opcode, content, peerID) => {
-            resolve({ opcode, content, peerID })
+        peer2.on('onMessage', (content, peerID) => {
+            resolve({ content, peerID })
         })
     }).then((result) => {
         t.is(result.peerID, peer1ID)
-        t.is(result.opcode, opcode)
         t.is(result.content, content)
     })
 })
@@ -50,17 +48,15 @@ test.serial('can message peer', t => {
 
 test.serial('can message all peers', t => {
 
-    const opcode = Math.random().toString(36)
     const content = Math.random().toString(36)
 
-    peer2.network.sendToAll(opcode, content)
+    peer2.network.broadcast(content)
     return new Promise((resolve) => {
-        peer1.on('onMessage', (opcode, content, peerID) => {
-            resolve({ opcode, content, peerID })
+        peer1.on('onMessage', (content, peerID) => {
+            resolve({ content, peerID })
         })
     }).then((result) => {
         t.is(result.peerID, peer2ID)
-        t.is(result.opcode, opcode)
         t.is(result.content, content)
     })
 })
