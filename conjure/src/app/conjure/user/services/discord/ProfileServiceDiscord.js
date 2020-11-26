@@ -1,4 +1,4 @@
-// import DiscordHandler from './DiscordOauthHandler'
+import DiscordOauthHandler from './DiscordOauthHandler'
 import ProfileService from '../ProfileService'
 
 export default class ProfileServiceDiscord extends ProfileService

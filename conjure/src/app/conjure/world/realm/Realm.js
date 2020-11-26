@@ -133,14 +133,12 @@ export default class Realm extends EventEmitter
         }
     }
 
-    sendData(opcode, content)
-    {
-        this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
+    sendData(opcode, content) {
+        this.network.broadcast(JSON.stringify({ opcode, content }))
     }
 
-    sendTo(opcode, content, peerID)
-    {
-        this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
+    sendTo(opcode, content, peerID) {
+        this.network.sendTo(peerID, JSON.stringify({ opcode, content }))
     }
 
     async load()
@@ -154,48 +152,67 @@ export default class Realm extends EventEmitter
             
             if (message.from === this.conjure.assetSync.networkPlugin.getPeerID()) return
             
-            console.log(message)
             if (message.data === undefined || message.data === null) {
                 this.warn('Received bad buffer data', message.data, 'from peer', message.from)
                 return
             }
             
             const { opcode, content } = JSON.parse(message.data)
-
             this.emit(opcode, content, message.from)
         })
 
         this.network.on('onPeerJoin', async (peerID) => {
+            // direct connection, but it don't werk
+            /*
+            const successfulDirectConnection = await new Promise(async (resolve) => {
+                
+                const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
+                const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
+                
+                console.log('isInitiator', isInitiator)
 
-            const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
-            const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
-            
-            console.log('isInitiator', isInitiator)
+                conn.on('ready', () => {
 
-            conn.on('ready', () => {
-                console.log('Direct connection establish to', peerID)
-                this.sendTo(NETWORKING_OPCODES.USER.METADATA, {
-                    username: this.conjure.getProfile().getUsername()
-                }, peerID)
-            })
+                    this.sendTo = (opcode, content, peerID) => {
+                        this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
+                    }
 
-            if(isInitiator) {
-                this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
-            }
+                    this.sendData = (opcode, content) => {
+                        this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
+                    }
 
-            this.on('connection.signal.' + peerID, async (signalData, from) => {
-                if(from !== peerID)
-                    return
-                conn.signal(signalData)
-                conn.on('signal', () => {
+                    resolve(true)
+                })
+
+                conn.on('error', () => resolve(false))
+                conn.on('close', () => resolve(false))
+
+                if(isInitiator) {
                     this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
+                }
+
+                this.on('connection.signal.' + peerID, async (signalData, from) => {
+                    if(from !== peerID)
+                        return
+                    conn.signal(signalData)
+                    conn.on('signal', () => {
+                        this.network.sendTo(peerID, JSON.stringify({ opcode: 'connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), content: conn.peerData }))
+                    })
+                })
+
+                conn.on('message', buffer => {
+                    const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
+                    this.emit(opcode, content, peerID)
                 })
             })
-
-            conn.on('message', buffer => {
-                const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
-                this.emit(opcode, content, peerID)
-            })
+            if(successfulDirectConnection)
+                console.log('Direct connection establish to', peerID)
+            else
+                console.log('Could not establish direct connection to', peerID, '. Falling back to libp2p.')
+            */
+            this.sendTo(NETWORKING_OPCODES.USER.METADATA, {
+                username: this.conjure.getProfile().getUsername()
+            }, peerID)            
         })
         
         this.network.on('onPeerLeave', (peerID) => {
