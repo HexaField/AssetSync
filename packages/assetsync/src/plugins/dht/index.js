@@ -11,20 +11,19 @@ export class DHTPlugin extends PluginBase {
         this._transportPlugin = options.transportPlugin
 
         this._data = {}
-
-        // this._dhtEvents = options.networkEvents || {}
     }
 
     async start(args = {}) {
         await super.start(args)
-
-        if (!this._transportPlugin.dht)
+        
+        this._dht = this._transportPlugin.getTransport()._dht
+        if (!this._dht)
             throw new Error('No dht found!')
 
-        this._transportPlugin.dht.onPut = (record, peerId) => {
+        this._dht.onPut = (record, peerId) => {
             this.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
         }
-        this._transportPlugin.dht.onRemoved = (record) => {
+        this._dht.onRemoved = (record) => {
             this.emit('removed', uint8ArrayToString(record.key), uint8ArrayToString(record.value))
         }
 
@@ -40,7 +39,7 @@ export class DHTPlugin extends PluginBase {
      */
     async get(key) {
         const keyArray = uint8ArrayFromString(key)
-        const result = await this._transportPlugin.dht.get(keyArray)
+        const result = await this._dht.get(keyArray)
         return uint8ArrayToString(result)
     }
 
@@ -50,6 +49,6 @@ export class DHTPlugin extends PluginBase {
      * @param {string} value 
      */
     async put(key, value, minPeers) {
-        return await this._transportPlugin.dht.put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
+        return await this._dht.put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
     }
 }

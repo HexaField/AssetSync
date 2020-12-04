@@ -27,7 +27,7 @@ export class SyncedDatabasePlugin extends PluginBase {
 
     async addDatabase(id)
     {
-        if(this._databases[id]) return
+        if(this._databases[id]) return this._databases[id]
         const database = new SyncedDatabase(String(id), this._options.networkPlugin, this._options.storagePlugin)
         await database.initialise()
         this._databases[id] = database

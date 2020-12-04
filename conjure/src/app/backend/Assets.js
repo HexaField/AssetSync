@@ -1,15 +1,14 @@
 export default class Assets {
 
-    constructor(assetSync, type) {
+    constructor(assetSync) {
         this.assetSync = assetSync
-        this.type = 'assets'
     }
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get(this.type + '/' + key)
+        return await this.assetSync.dhtPlugin.get('assets:' + key)
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put(this.type + '/' + key, value)
+        return await this.assetSync.dhtPlugin.put('assets:' + key, value)
     }
 }

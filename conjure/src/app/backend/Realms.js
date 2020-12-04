@@ -6,14 +6,20 @@ export default class Realms {
         // this is hardcoded to clean up old realms as we are in rapid development
         this.earliestRealmTime = 1599176386000
         this.databases = {}
+        this.databasePlugin = assetSync.syncedDatabasePlugin
     }
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get('realm/' + key)
+        return await this.assetSync.dhtPlugin.get('realm:' + key)
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put('realm/' + key, value)
+        return await this.assetSync.dhtPlugin.put('realm:' + key, value)
+    }
+
+    // from DHT
+    receive(realmData) {
+
     }
 
     async validateRealms() {
@@ -70,45 +76,41 @@ export default class Realms {
     }
 
     async addDatabase(id) {
-        if (this.databases[id]) return
-        this.databases[id] = new SyncedDatabase(this.dataHandler.getNetworkManager(), 'realms/' + String(id), this.dataHandler.getLocalFiles())
-        await this.databases[id].initialise()
+        await this.databasePlugin.addDatabase(id)
     }
 
     async removeDatabase(id) {
-        if (!this.databases[id]) return
-        await this.databases[id].close()
-        delete this.databases[id]
+        await this.databasePlugin.removeDatabase(id)
     }
 
     // todo: merge with addDatabase and fix
     async subscribe(realmID, additionCallback, removalCallback) {
-        // if (this.databases[realmID])
-        //     this.databases[realmID].registerCallbacks(additionCallback, removalCallback)
+        // if (this.databasePlugin.getDatabase(realmID))
+        //     this.databasePlugin.getDatabase(realmID).registerCallbacks(additionCallback, removalCallback)
     }
 
     async unsubscribe(realmID) {
-        if (this.databases[realmID])
-            this.databases[realmID].unregisterCallbacks()
+        if (this.databasePlugin.getDatabase(realmID))
+            this.databasePlugin.getDatabase(realmID).unregisterCallbacks()
     }
 
     async createObject(realmID, uuid, data) {
-        if (!this.databases[realmID]) return
-        return await this.databases[realmID].addEntry(uuid, data)
+        if (!this.databasePlugin.getDatabase(realmID)) return
+        return await this.databasePlugin.getDatabase(realmID).addEntry(uuid, data)
     }
 
     async updateObject(realmID, uuid, data) {
-        if (!this.databases[realmID]) return
-        return await this.databases[realmID].addEntry(uuid, data)
+        if (!this.databasePlugin.getDatabase(realmID)) return
+        return await this.databasePlugin.getDatabase(realmID).addEntry(uuid, data)
     }
 
     async destroyObject(realmID, uuid) {
-        if (!this.databases[realmID]) return
-        return await this.databases[realmID].removeEntry(uuid)
+        if (!this.databasePlugin.getDatabase(realmID)) return
+        return await this.databasePlugin.getDatabase(realmID).removeEntry(uuid)
     }
 
     async getObjects(realmID) {
-        if (!this.databases[realmID]) return []
-        return await this.databases[realmID].getAllValues()
+        if (!this.databasePlugin.getDatabase(realmID)) return []
+        return await this.databasePlugin.getDatabase(realmID).getAllValues()
     }
 }
