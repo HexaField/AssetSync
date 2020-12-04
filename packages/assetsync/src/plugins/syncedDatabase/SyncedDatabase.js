@@ -48,7 +48,7 @@ export class SyncedDatabase extends EventEmitter {
         })
         this.network.on('onPeerLeave', (peerID) => {})
         this.network.on('onMessage', (data, peerID) => {
-            console.log('onMessage', data, peerID)
+            // console.log('onMessage', data, peerID)
             const { opcode, content } = JSON.parse(data)
             this.emit(opcode, content, peerID)
         })

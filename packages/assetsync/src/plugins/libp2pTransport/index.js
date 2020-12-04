@@ -39,7 +39,7 @@ export class Libp2pPlugin extends TransportBase {
             this.emit('peer:discovery', ...args)
         })
 
-        this.dht = this._libp2p.dht
+        this.dht = this._libp2p._dht
         
         return true
     }

@@ -3,7 +3,8 @@ import WS from 'libp2p-websockets'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
 import SECIO from 'libp2p-secio'
-import KadDHT from 'libp2p-kad-dht'
+import KadDHT from '../../../common/src/libp2p-template/libp2pkaddht/libp2p-kad-dht/src/index.js'
+// import KadDHT from 'libp2p-kad-dht'
 import GossipSub from 'libp2p-gossipsub'
 import WebrtcStar from 'libp2p-webrtc-star'
 import wrtc from 'wrtc'
@@ -40,7 +41,7 @@ export default async function () {
                 kBucketSize: 10,
                 enabled: true,
                 randomWalk: {
-                    enabled: true,
+                    enabled: false,
                     interval: 300e3,
                     timeout: 10e3
                 }
@@ -48,6 +49,6 @@ export default async function () {
         }
     })
 
-    await node.start()
+    node.start()
     return node
 }

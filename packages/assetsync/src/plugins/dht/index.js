@@ -17,26 +17,21 @@ export class DHTPlugin extends PluginBase {
 
     async start(args = {}) {
         await super.start(args)
-        
-        if(!this._transportPlugin.dht) 
-            return false
-        
-        this._transportPlugin.dht.on('dht:added', (...args) => {
-            this.emit('dht:added', ...args)
-        })
-        this._transportPlugin.dht.on('dht:changed', (...args) => {
-            this.emit('dht:changed', ...args)
-        })
-        this._transportPlugin.dht.on('dht:removed', (...args) => {
-            this.emit('dht:removed', ...args)
-        })
-        
-        return true
+
+        if (!this._transportPlugin.dht)
+            throw new Error('No dht found!')
+
+        this._transportPlugin.dht.onPut = (record, peerId) => {
+            this.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
+        }
+        this._transportPlugin.dht.onRemoved = (record) => {
+            this.emit('removed', uint8ArrayToString(record.key), uint8ArrayToString(record.value))
+        }
+
     }
 
     async stop(args = {}) {
         await super.stop(args)
-        return true
     }
 
     /**
@@ -45,7 +40,7 @@ export class DHTPlugin extends PluginBase {
      */
     async get(key) {
         const keyArray = uint8ArrayFromString(key)
-        const result = await this._transportPlugin.getTransport()._dht.get(keyArray)
+        const result = await this._transportPlugin.dht.get(keyArray)
         return uint8ArrayToString(result)
     }
 
@@ -54,9 +49,7 @@ export class DHTPlugin extends PluginBase {
      * @param {string} key 
      * @param {string} value 
      */
-    async put(key, value) {
-        const keyArray = uint8ArrayFromString(key)
-        const valueArray = uint8ArrayFromString(value)
-        return await this._transportPlugin.getTransport()._dht.put(keyArray, valueArray)
+    async put(key, value, minPeers) {
+        return await this._transportPlugin.dht.put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
     }
 }

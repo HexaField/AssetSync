@@ -42,7 +42,6 @@ export default class AssetSync {
         console.log('Stopping plugins...')
         for (let plugin of this.getPlugins())
             await plugin.stop()
-        this._callbacks = {}
     } */
 
     // INITIALISE
@@ -53,8 +52,12 @@ export default class AssetSync {
 
     async _initialisePlugins() {
         for (let plugin of this.getPlugins()) {
-            if (await plugin.start())
+            try {
+                await plugin.start()
                 console.log('Successfully loaded plugin ' + plugin.getName())
+            } catch(error) {
+                console.error('Failed to load plugin ' + plugin.getName() + ' with error ' + error)
+            }
         }
     }
 }
