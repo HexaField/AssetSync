@@ -12,7 +12,13 @@ const OPCODES_SYNCED_DATABASE = {
     receiveEntries: 'receiveEntries',
 }
 
-// TODO: make timestamps originate once, instead of upon replication - this will make way to many uneccesary updates happen
+/**
+ * TODO:
+ * make timestamps originate once, instead of upon replication
+ *  - this will make way too many unneccesary updates happen
+ * add validators
+ * 
+ */
 
 export class SyncedDatabase extends EventEmitter {
     constructor(databaseName, networkPlugin, diskStorage) {
