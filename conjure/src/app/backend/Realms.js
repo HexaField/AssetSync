@@ -7,110 +7,82 @@ export default class Realms {
         this.earliestRealmTime = 1599176386000
         this.databases = {}
         this.databasePlugin = assetSync.syncedDatabasePlugin
+
+        this.dhtType = 'realm'
+
+        this.dhtProtocol = '/conjure/realm-' // id is added between these
+        this.dhtVersion = '/1.0.0'
     }
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get('realm:' + key)
+        return await this.assetSync.dhtPlugin.get(this.dhtType + ':' + key)
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put('realm:' + key, value)
+        return await this.assetSync.dhtPlugin.put(this.dhtType + ':' + key, value)
     }
 
-    // from DHT
-    receive(realmData) {
-
-    }
-
-    async validateRealms() {
-        
+    receiveFromDHT(key, value, from) {
+        if(value) {
+            this.addDatabase(key)
+        } else {
+            this.removeDatabase(key)
+        }
     }
 
     async initialise() {
         
     }
 
-    async savePinnedRealms() {
-        try {
-            await this.assetSync.storagePlugin.writeFile('recent_realms.json', JSON.stringify(this.pinnedRealms))
-        } catch (error) {
-            console.log('ConjureDatabase: could not save recent realms', this.pinnedRealms, 'with error', error);
-            // this.conjure.getGlobalHUD().log('Failed to read recent realms')
-        }
-    }
+    // async savePinnedRealms() {
+    //     try {
+    //         await this.assetSync.storagePlugin.writeFile('recent_realms.json', JSON.stringify(this.pinnedRealms))
+    //     } catch (error) {
+    //         console.log('ConjureDatabase: could not save recent realms', this.pinnedRealms, 'with error', error);
+    //         // this.conjure.getGlobalHUD().log('Failed to read recent realms')
+    //     }
+    // }
 
-    async loadPinnedRealms() {
-        try {
-            const data = await this.assetSync.storagePlugin.readFile('recent_realms.json')
-            if (!data)
-                return []
-            return JSON.parse(data) || []
-        }
-        catch (error) {
-            console.log('ConjureDatabase: could not read recent realms with error', error);
-            // this.conjure.getGlobalHUD().log('Failed to load recent realms list')
-            return
-        }
-    }
+    // async loadPinnedRealms() {
+    //     try {
+    //         const data = await this.assetSync.storagePlugin.readFile('recent_realms.json')
+    //         if (!data)
+    //             return []
+    //         return JSON.parse(data) || []
+    //     }
+    //     catch (error) {
+    //         console.log('ConjureDatabase: could not read recent realms with error', error);
+    //         // this.conjure.getGlobalHUD().log('Failed to load recent realms list')
+    //         return
+    //     }
+    // }
 
     // API
 
-    async pinRealm(realmData, pin) {
+    // async pinRealm(realmData, pin) {
         
+    // }
+
+    // async updateRealm(realmData) {
+    //     await this.addRealms(realmData)
+    // }
+
+    getRealmById(id) {
+        return this.get(id)
     }
 
-    async updateRealm(realmData) {
-        await this.addRealms(realmData)
+    getDatabase(id) {
+        // return this.databasePlugin.getDatabase(id)
+        return this.assetSync.dhtPlugin.getDHT(this.dhtProtocol + id + this.dhtVersion)
     }
 
-    getRealm(id) {
-        return 
-        for (let realm of this.pinnedRealms)
-            if (realm.id === id)
-                return realm
+    addDatabase(id) {
+        // return await this.databasePlugin.addDatabase(id)
+        return this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + id + this.dhtVersion)
     }
 
-    getRealms() {
-        // return this.pinnedRealms
-        return []
-    }
-
-    async addDatabase(id) {
-        await this.databasePlugin.addDatabase(id)
-    }
-
-    async removeDatabase(id) {
-        await this.databasePlugin.removeDatabase(id)
-    }
-
-    // todo: merge with addDatabase and fix
-    async subscribe(realmID, additionCallback, removalCallback) {
-        // if (this.databasePlugin.getDatabase(realmID))
-        //     this.databasePlugin.getDatabase(realmID).registerCallbacks(additionCallback, removalCallback)
-    }
-
-    async unsubscribe(realmID) {
-        if (this.databasePlugin.getDatabase(realmID))
-            this.databasePlugin.getDatabase(realmID).unregisterCallbacks()
-    }
-
-    async createObject(realmID, uuid, data) {
-        if (!this.databasePlugin.getDatabase(realmID)) return
-        return await this.databasePlugin.getDatabase(realmID).addEntry(uuid, data)
-    }
-
-    async updateObject(realmID, uuid, data) {
-        if (!this.databasePlugin.getDatabase(realmID)) return
-        return await this.databasePlugin.getDatabase(realmID).addEntry(uuid, data)
-    }
-
-    async destroyObject(realmID, uuid) {
-        if (!this.databasePlugin.getDatabase(realmID)) return
-        return await this.databasePlugin.getDatabase(realmID).removeEntry(uuid)
-    }
-
-    async getObjects(realmID) {
-        if (!this.databasePlugin.getDatabase(realmID)) return []
-        return await this.databasePlugin.getDatabase(realmID).getAllValues()
+    removeDatabase(id) {
+        // await this.databasePlugin.removeDatabase(id)
+        this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + id + this.dhtVersion)
     }
 }

@@ -9,37 +9,75 @@ export class DHTPlugin extends PluginBase {
         super(options)
         this._pluginName = 'CORE_DHTPlugin'
         this._transportPlugin = options.transportPlugin
+        this._dhtConstructor = options.dhtConstructor
 
-        this._data = {}
+        this.dhts = {}
     }
 
     async start(args = {}) {
         await super.start(args)
         
-        this._dht = this._transportPlugin.getTransport()._dht
-        if (!this._dht)
+        this.dht = this._transportPlugin.getTransport()._dht
+        
+        if (!this.dht)
             throw new Error('No dht found!')
 
-        this._dht.onPut = (record, peerId) => {
-            this.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
+        this.dht.onPut = (record, peerId) => {
+            this.dht.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
         }
-        this._dht.onRemoved = (record) => {
-            this.emit('removed', uint8ArrayToString(record.key), uint8ArrayToString(record.value))
+        this.dht.onRemoved = (record) => {
+            this.dht.emit('removed', uint8ArrayToString(record.key), uint8ArrayToString(record.value))
         }
 
+        this._defaultProtocol = this.dht.protocol
+        this.dhts[this._defaultProtocol] = this.dht
     }
 
     async stop(args = {}) {
         await super.stop(args)
     }
 
+    getDHT(protocol) {
+        return this.dhts[protocol]
+    }
+
+    addDHT(protocol) {
+        if(!protocol) return
+        if(this.dhts[protocol]) return this.dhts[protocol]
+        const libp2p = this._transportPlugin.getTransport()
+        const customDHT = new this._dhtConstructor({
+            libp2p: libp2p,
+            dialer: libp2p.dialer,
+            peerId: libp2p.peerId,
+            peerStore: libp2p.peerStore,
+            registrar: libp2p.registrar,
+            protocol
+        })
+        customDHT.start()
+        customDHT.on('peer', libp2p._onDiscoveryPeer)
+        customDHT.onPut = (record, peerId) => {
+            customDHT.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
+        }
+        customDHT.onRemoved = (record) => {
+            customDHT.emit('removed', uint8ArrayToString(record.key), uint8ArrayToString(record.value))
+        }
+        this.dhts[protocol] = customDHT
+        return customDHT
+    }
+
+    removeDHT(protocol) {
+        if(!this.dhts[protocol]) return
+        this.dhts[protocol].stop()
+        delete this.dhts[protocol]
+    }
+
     /**
      * 
      * @param {string} key 
      */
-    async get(key) {
+    async get({ key, timeout, protocol }) {
         const keyArray = uint8ArrayFromString(key)
-        const result = await this._dht.get(keyArray)
+        const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
         return uint8ArrayToString(result)
     }
 
@@ -48,7 +86,7 @@ export class DHTPlugin extends PluginBase {
      * @param {string} key 
      * @param {string} value 
      */
-    async put(key, value, minPeers) {
-        return await this._dht.put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
+    async put({ key, value, minPeers, protocol }) {
+        return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
     }
 }

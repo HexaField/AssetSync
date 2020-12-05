@@ -5,7 +5,8 @@ import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
 import SECIO from 'libp2p-secio'
 import GossipSub from 'libp2p-gossipsub'
-import KadDHT from 'libp2p-kad-dht'
+// import KadDHT from 'libp2p-kad-dht'
+import KadDHT from './libp2pkaddht/node/src/index.js'
 import wrtc from 'wrtc'
 
 export async function config() {

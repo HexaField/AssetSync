@@ -21,8 +21,7 @@ export class SyncedDatabasePlugin extends PluginBase {
     }
 
     getDatabase(id) {
-        if(this._databases[id])
-            return this._databases[id]
+        return this._databases[id]
     }
 
     async addDatabase(id)

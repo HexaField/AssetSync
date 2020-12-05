@@ -200,9 +200,4 @@ export class SyncedDatabase extends EventEmitter {
         })
         return neededKeys
     }
-
-    setUpToDate() {
-        // this._isDatabaseUpToDate
-        this.emit('sync')
-    }
 }

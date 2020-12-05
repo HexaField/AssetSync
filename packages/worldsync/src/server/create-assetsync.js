@@ -33,14 +33,22 @@ export async function startAssetSync(proxy) {
         const transportPlugin = new Libp2pPlugin({ libp2p, minPeersCount: 0 })
         await assetSync.register({ transportPlugin })
         networkPlugin = new NetworkPlugin({ transportPlugin })
-        dhtPlugin = new DHTPlugin({ transportPlugin })
+        let dhtConstructor
+        if(isNode) {
+            const { default: dht } = await import('../../../common/src/libp2p-template/libp2pkaddht/node/src/index.js')
+            dhtConstructor = dht
+        } else {
+            const { default: dht } = await import('../../../common/src/libp2p-template/libp2pkaddht/index.min.js')
+            dhtConstructor = dht
+        }
+        dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
         connectionPlugin = new ConnectionPlugin()
     }
 
     const storagePlugin = new StoragePlugin()
-    const syncedDatabasePlugin = new SyncedDatabasePlugin({ networkPlugin })
+    // const syncedDatabasePlugin = new SyncedDatabasePlugin({ networkPlugin })
 
-    await assetSync.register({ networkPlugin, dhtPlugin, storagePlugin, syncedDatabasePlugin, connectionPlugin })
+    await assetSync.register({ networkPlugin, dhtPlugin, storagePlugin, connectionPlugin })
     await assetSync.initialise()
 
     return assetSync

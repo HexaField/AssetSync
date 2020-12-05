@@ -3,12 +3,13 @@ import WS from 'libp2p-websockets'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
 import SECIO from 'libp2p-secio'
-import KadDHT from 'libp2p-kad-dht'
+// import KadDHT from 'libp2p-kad-dht'
+import KadDHT from '../../../common/src/libp2p-template/libp2pkaddht/node/src/index.js'
 import GossipSub from 'libp2p-gossipsub'
 import WebrtcStar from 'libp2p-webrtc-star'
 import wrtc from 'wrtc'
 
-export default async function () {
+export default async function (protocol) {
     const node = await Libp2p.create({
         addresses: {
             listen: [
@@ -37,6 +38,7 @@ export default async function () {
                 }
             },
             dht: {
+                protocol,
                 kBucketSize: 10,
                 enabled: true,
                 randomWalk: {
@@ -47,7 +49,7 @@ export default async function () {
             }
         }
     })
-
     node.start()
+    
     return node
 }

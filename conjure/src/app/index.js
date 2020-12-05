@@ -25,6 +25,26 @@ class App extends EventDispatcher {
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
 
+        this.assetSync.dhtPlugin.dht.on('put', (key, value, from) => {
+            console.log('Received dht entry ' + key)
+            const entryKey = key.split(':')
+            switch(entryKey[0]) {
+                case this.realms.dhtType: this.realms.receiveFromDHT(key, value, from); break;
+                case this.assets.dhtType: this.assets.receiveFromDHT(key, value, from); break;
+                default: break;
+            }
+        })
+
+        this.assetSync.dhtPlugin.dht.on('removed', (key, value) => {
+            console.log('Removed dht entry ' + key)
+            const entryKey = key.split(':')
+            switch(entryKey[0]) {
+                case this.realms.dhtType: this.realms.receiveFromDHT(key); break;
+                case this.assets.dhtType: this.assets.receiveFromDHT(key); break;
+                default: break;
+            }
+        })
+
         if (!isNode) {
             if (isWebWorker) {
                 worldSync.addFunction('requestPointerLock')

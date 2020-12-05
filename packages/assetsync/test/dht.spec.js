@@ -3,7 +3,10 @@ import test from 'ava'
 import createLibp2p from './dht/create-libp2p.js'
 import Peer from './dht/peer.js'
 import delay from 'delay'
+import KadDHT from '../../common/src/libp2p-template/libp2pkaddht/node/src/index.js'
 
+import uint8ArrayFromString from 'uint8arrays/from-string.js'
+import uint8ArrayToString from 'uint8arrays/to-string.js'
 
 /**
  * DISCLAIMER!
@@ -33,52 +36,93 @@ async function createPeers(peerCount = 2) {
 //     const peers = await createPeers()
 
 //     const key = 'hello0'
-//     const val = 'world0'
+//     const value = 'world0'
 
 //     return new Promise((resolve) => {
 
 //         peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
 //             await delay(100) // wait for connection to complete
-//             await peers[0].dhtPlugin.put(key, val)
+//             await peers[0].dhtPlugin.put({ key, value })
 //         })
 
 //         peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
 //             await delay(500) // wait for entry to propagate
-//             const result = await peers[1].dhtPlugin.get(key, { timeout: 1000 })
+//             const result = await peers[1].dhtPlugin.get({ key, timeout: 1000 })
 //             resolve(result)
 //         })
 
 //     }).then((result) => {
-//         t.is(result, val)
+//         t.is(result, value)
 //     })
 // })
 
-test.serial('onPut event', async (t) => {
+// test.serial('onPut event', async (t) => {
+
+//     const peers = await createPeers()
+
+//     const key = 'hello1'
+//     const value = 'world1'
+
+//     return new Promise((resolve) => {
+
+//         peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
+//             await delay(100) // 
+//             try {
+//                 await peers[0].dhtPlugin.put({ key, value, minPeers: 1 })
+//             } catch (error) {
+//                 console.error(error)
+//             }
+//         })
+
+//         peers[1].dhtPlugin.dht.on('put', (key, value, from) => {
+//             resolve({ key, value, from })
+//         })
+
+//     }).then((result) => {
+//         t.is(result.key, key)
+//         t.is(result.value, value)
+//         t.is(result.from, peers[0].libp2pPlugin.getPeerID())
+//     })
+// })
+
+test.serial('custom DHT', async (t) => {
 
     const peers = await createPeers()
 
-    const key = 'hello1'
-    const val = 'world1'
+    const protocol = '/mycustom/dht/1.2.3'
+    
+    peers[0].dhtPlugin.addDHT(protocol)
+    peers[1].dhtPlugin.addDHT(protocol)
+
+    const key = 'hello0'
+    const value = 'world0'
 
     return new Promise((resolve) => {
 
         peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
-            await delay(100) // 
             try {
-                await peers[0].dhtPlugin.put(key, val, 1)
-            } catch (error) {
+                await delay(100) // wait for connection to complete
+                await peers[0].dhtPlugin.put({ key, value, protocol })
+            }
+            catch (error) {
                 console.error(error)
             }
         })
 
-        peers[1].dhtPlugin.on('put', (key, value, from) => {
-            resolve({ key, value, from })
+        peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
+            try {
+                await delay(500) // wait for entry to propagate
+                const result = await peers[1].dhtPlugin.get({ key, timeout: 1000, protocol })
+                console.log(result)
+                resolve(result)
+            }
+            catch (error) {
+                console.error(error)
+            }
         })
 
     }).then((result) => {
-        t.is(result.key, key)
-        t.is(result.value, val)
-        t.is(result.from, peers[0].libp2pPlugin.getPeerID())
+        t.is(result, value)
     })
 })
 
