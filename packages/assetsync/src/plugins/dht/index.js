@@ -2,6 +2,7 @@ import { PluginBase } from '../../PluginBase.js'
 
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
+import { isNode } from '@AssetSync/common'
 
 export class DHTPlugin extends PluginBase {
 
@@ -10,6 +11,7 @@ export class DHTPlugin extends PluginBase {
         this._pluginName = 'CORE_DHTPlugin'
         this._transportPlugin = options.transportPlugin
         this._dhtConstructor = options.dhtConstructor
+        this._datastoreConstructor = options.datastoreConstructor
 
         this.dhts = {}
     }
@@ -17,6 +19,15 @@ export class DHTPlugin extends PluginBase {
     async start(args = {}) {
         await super.start(args)
         
+        if(!this._datastoreConstructor) {
+            if(isNode) { 
+                const { default: datastore } = await import('datastore-fs')
+                this._datastoreConstructor = datastore
+            } else {
+                const { default: datastore } = await import('datastore-idb')
+                this._datastoreConstructor = datastore
+            }
+        }
         this.dht = this._transportPlugin.getTransport()._dht
         
         if (!this.dht)
@@ -51,6 +62,7 @@ export class DHTPlugin extends PluginBase {
             peerId: libp2p.peerId,
             peerStore: libp2p.peerStore,
             registrar: libp2p.registrar,
+            datastore: new this._datastoreConstructor(protocol),
             protocol
         })
         customDHT.start()
@@ -71,21 +83,22 @@ export class DHTPlugin extends PluginBase {
         delete this.dhts[protocol]
     }
 
-    /**
-     * 
-     * @param {string} key 
-     */
+    async getAllLocal(protocol) {
+        if(!this.dhts[protocol || this._defaultProtocol]) return []
+        const dht = this.dhts[protocol || this._defaultProtocol]
+        const entries = []
+        for await (const entry of dht.datastore._all()) {
+            entries.push(entry)
+        }
+        return entries
+    }
+
     async get({ key, timeout, protocol }) {
         const keyArray = uint8ArrayFromString(key)
         const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
         return uint8ArrayToString(result)
     }
 
-    /**
-     * 
-     * @param {string} key 
-     * @param {string} value 
-     */
     async put({ key, value, minPeers, protocol }) {
         return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
     }

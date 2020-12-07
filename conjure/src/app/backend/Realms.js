@@ -59,16 +59,16 @@ export default class Realms {
 
     // API
 
-    // async pinRealm(realmData, pin) {
-        
-    // }
-
     // async updateRealm(realmData) {
     //     await this.addRealms(realmData)
     // }
 
-    getRealmById(id) {
-        return this.get(id)
+    async getRealms() {
+        return await this.assetSync.dhtPlugin.getAllLocal()
+    }
+
+    async getRealmById(id) {
+        return await this.get(id)
     }
 
     getDatabase(id) {

@@ -19,7 +19,7 @@ export default class ScreenRealms extends ScreenBase
         this.group.add(this.background);
 
         this.createRealm = this.createRealm.bind(this);
-        this.pin = this.pin.bind(this);
+        this.forgetRealm = this.forgetRealm.bind(this);
         this.joinRealm = this.joinRealm.bind(this);
 
         this.realms = [] // [{ realmData, pinned }, ...]
@@ -52,7 +52,8 @@ export default class ScreenRealms extends ScreenBase
 
     async getRealms()
     {
-        this.realms = await this.screenManager.conjure.getWorld().getRealmsAndPinned()
+        this.realms = await this.screenManager.conjure.getWorld().getRealms()
+        console.log(this.realms)
         this.displayRealms()
     }
 
@@ -70,35 +71,37 @@ export default class ScreenRealms extends ScreenBase
             let container = new ScreenElementBase(this, this.scrollPanel, { z: 0.025, width: this.buttonWidth * 2, height: this.buttonHeight })
             
             let button = new ScreenElementButton(this, container, { width: this.buttonWidth, height: this.buttonHeight })
-            button.setOnClickCallback(this.joinRealm, realm.realmData.id) // return all the realm info data
-            button.setValue(realm.realmData.name)
+            button.setOnClickCallback(this.joinRealm, realm.id) // return all the realm info data
+            button.setValue(realm.name)
             container.registerElement(button)
             
             let icon = new ScreenElementSprite(this, container, { x: -this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
-            icon.load(realm.realmData.iconURL ? realm.realmData.iconURL : 'default_realm')
+            icon.load(realm.iconURL ? realm.iconURL : 'default_realm')
             // icon.setIconScale(0.1)
             container.registerElement(icon)
             
-            let pinIcon = new ScreenElementSprite(this, container, { x: this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
-            pinIcon.load(realm.pinned === 'global' ? 'global_icon' : realm.pinned ? 'pin_full' : 'pin_empty')
-            pinIcon.setIconScale(0.75)
-            pinIcon.setOnClickCallback(this.pin, realm) // return all the realm info data
-            container.registerElement(pinIcon)
+            let forgetIcon = new ScreenElementSprite(this, container, { x: this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
+            forgetIcon.load(realm.global === 'global' ? 'global_icon' : 'pin_full')// : 'pin_empty')
+            forgetIcon.setIconScale(0.75)
+            if(!realm.global) { // todo: properly implement this
+                forgetIcon.setOnClickCallback(this.forgetRealm, realm) // return all the realm info data
+            }
+            container.registerElement(forgetIcon)
             
             this.scrollPanel.registerItem(container)
         }
         this.scrollPanel.updateItems(0)
     }
 
-    async pin(realmData)
+    async forgetRealm(realmData)
     {
         for(let realm of await this.screenManager.conjure.getRealms()) // get all stored realms
         {
             if(realm.id === realmData.realmData.id)
             {
-                await this.screenManager.conjure.pinRealm(realmData.realmData, !realmData.pinned)
-                this.getRealms()
-                return
+                // await this.screenManager.conjure.pinRealm(realmData.realmData, !realmData.pinned)
+                // this.getRealms()
+                // return
             }
         }
     }

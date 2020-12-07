@@ -15,8 +15,6 @@ export default class World
         this.conjure = conjure
         this.scene = this.conjure.scene
 
-        this.realmHandler = conjure.realms
-
         this.group = new THREE.Group()
         this.scene.add(this.group)
 
@@ -69,7 +67,7 @@ export default class World
         
         for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
             realms[realm.id] = new RealmData(realm).getData()
-
+        
         for(let realm of await this.conjure.realms.getRealms())  
             realms[realm.id] = new RealmData(realm).getData()
 
@@ -81,28 +79,7 @@ export default class World
         return Object.values(realms)
     }
 
-    async getRealmsAndPinned()
-    {
-        let realms = {}
-        
-        for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
-            realms[realm.id] = { realmData: new RealmData(realm).getData(), pinned: false }
-        
-        for(let pinned of await this.conjure.realms.getRealms())
-        {
-            if(realms[pinned.id])
-                realms[pinned.id].pinned = true
-            else
-                realms[pinned.id] = { realmData: new RealmData(pinned).getData(), pinned: true }
-        }
-
-        for(let realm of this.globalRealms)   
-            realms[realm.id] = { realmData: realm, pinned: 'global' }
-        
-        return Object.values(realms)
-    }
-
-    async getRealm(id, getPrivate)
+    async getRealm(id)
     {
         for(let realm of this.globalRealms)
             if(id === realm.id)
@@ -118,7 +95,7 @@ export default class World
             const realmData = new RealmData(realm).getData()
             realmData.global = true
             this.globalRealms.push(realmData)
-            await this.conjure.realms.pinRealm(realmData, true)
+            await this.conjure.realms.addDatabase(realmData, true)
         }
     }
 

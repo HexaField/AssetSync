@@ -6,7 +6,6 @@ import AssetSync, {
     DHTPlugin,
     RemoteDHTPlugin,
     StoragePlugin,
-    SyncedDatabasePlugin,
     ConnectionPlugin
 
 } from '@AssetSync/AssetSync'
