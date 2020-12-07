@@ -1,14 +1,50 @@
-# AssetSync
+# Conjure
 
-~ *Synchronising the metaverse* ~
+[#ProjectConjure](https://info.conjure.world/)
 
-*Disclaimer:* this is a work in progress - ideas, context and implementation details may and will change
+*Disclaimer:* This is a work in progress - ideas, context and implementation details may and will change
 
-This project is one half of [#ProjectConjure](https://info.conjure.world/)
+*Disclaimer:* This repo is in the middle of a migration as I figure out how best to organise Conjure & AssetSync
+
+![Conjure](./images/Project_Conjure_Splash_Screen_small.jpg)
+
 
 Read about AssetSync & Conjure [here](https://medium.com/@joshfield999)
 
 [Join the conversation on discord!](https://discord.com/invite/ExBxEN2)
+
+## Architecture
+![Conjure](./images/Server_Client_Info_v4_small.jpg)
+
+## Conjure Progress Goals 2020 Q4
+
+- [x] Migration to AssetSync
+- [ ] Basic realm object system working on DHTs
+
+## Conjure Progress Goals 2021 Q1
+
+- [ ] Profile system (DIDs)
+- [ ] Launch test network
+- [ ] v0.1 for API / Toolkit
+
+## Deploys
+
+[Semi-stable Prototype Snapshop](https://conjure.world/)
+
+[Current Dev Build](https://dev.conjure.world/)
+
+## Run locally
+Make sure you have git, node and yarn (or npm) installed
+
+```	
+git clone https://github.com/hexafield/assetsync
+cd assetsync/
+yarn conjure
+```	
+
+# AssetSync
+
+~ *Synchronising the metaverse* ~
 
 ## [Asset Sync](packages/AssetSync)
 
@@ -34,42 +70,10 @@ A context agnostic wrapper for your virtual worlds
 
 Please read the [contributing document](CONTRIBUTING.MD) if you would like to contribute!
 
-## Progress
+## Other Links
 
-General
+Follow me on [YouTube](https://www.youtube.com/channel/UCZ-gYU_8R-EEFzVY09UyVDQ)
 
-- [x] Unit tests
-- [ ] Integration tests
-- [ ] Migrate to typescript
+Follow me on twitter https://twitter.com/hexafield and https://twitter.com/conjureworld
 
-PeerSync / SocketSync / WorkerSync / QUICSync
-
-- [x] Messaging
-- [x] Callbacks
-- [x] Events
-- [ ] Array Buffers
-
-AssetSync
-
-- [x] Basic plugin system
-- [x] IPFS plugin
-- [x] Network Plugin
-- [x] File system plugin
-- [x] DHT plugin
-- [x] Synchronised database plugin
-- [ ] QUIC network plugin
-- [ ] Crypto plugin
-- [ ] ZKP plugin
-- [ ] Ring Sig plugin
-- [ ] ILP plugin
-
-WorldSync
-
-- [x] Basic client & server structure
-- [x] Websocket messages and buffers with PeerSync
-- [x] AssetSync integration
-- [x] WebWorkers
-- [ ] Example project running threejs, ammojs with networking
-- [ ] Audio (worklets?)
-
-more to come...
+Support me here https://ko-fi.com/joshfield
