@@ -3,9 +3,9 @@ import os from 'os'
 
 function homedir () {
     if(isNode) {
-        return os.homedir()
+        return os.homedir() + '/'
     }
-    return '/'
+    return ''
 }
 
 export { homedir }

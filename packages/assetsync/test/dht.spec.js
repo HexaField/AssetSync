@@ -3,7 +3,8 @@ import test from 'ava'
 import createLibp2p from './dht/create-libp2p.js'
 import Peer from './dht/peer.js'
 import delay from 'delay'
-import KadDHT from '../../common/src/libp2p-template/libp2pkaddht/node/src/index.js'
+// import KadDHT from '../../common/src/libp2pkaddht/src/index.js'
+// import KadDHT from 'libp2p-kad-dht'
 
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
@@ -35,8 +36,8 @@ async function createPeers(peerCount = 2) {
 
 //     const peers = await createPeers()
 
-//     const key = 'hello0'
-//     const value = 'world0'
+//     const key = Math.random().toString(36)
+//     const value = Math.random().toString(36)
 
 //     return new Promise((resolve) => {
 
@@ -60,8 +61,8 @@ async function createPeers(peerCount = 2) {
 
 //     const peers = await createPeers()
 
-//     const key = 'hello1'
-//     const value = 'world1'
+//     const key = Math.random().toString(36)
+//     const value = Math.random().toString(36)
 
 //     return new Promise((resolve) => {
 
@@ -89,13 +90,18 @@ test.serial('custom DHT', async (t) => {
 
     const peers = await createPeers()
 
-    const protocol = '/mycustom/dht/1.2.3'
-    
-    peers[0].dhtPlugin.addDHT(protocol)
-    peers[1].dhtPlugin.addDHT(protocol)
+    const protocol = '/test'
 
-    const key = 'hello0'
-    const value = 'world0'
+    try {
+        await peers[0].dhtPlugin.addDHT(protocol)
+        await peers[1].dhtPlugin.addDHT(protocol)
+    }
+    catch (error) {
+        console.error(error)
+    }
+
+    const key = Math.random().toString(36)
+    const value = Math.random().toString(36)
 
     return new Promise((resolve) => {
 
@@ -113,7 +119,6 @@ test.serial('custom DHT', async (t) => {
             try {
                 await delay(500) // wait for entry to propagate
                 const result = await peers[1].dhtPlugin.get({ key, timeout: 1000, protocol })
-                console.log(result)
                 resolve(result)
             }
             catch (error) {
@@ -127,26 +132,4 @@ test.serial('custom DHT', async (t) => {
 })
 
 
-// node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-
-// await node1.dial(node2.peerId)
-
-// Wait for onConnect handlers in the DHT
-// await delay(1000)
-
-// const peer = await node1.peerRouting.findPeer(node3.peerId)
-// console.log(peer)
-
-// const bytes = new TextEncoder('utf8').encode('OMG!')
-
-// const hash = await multihashing(key, 'sha2-256')
-// const cid = new CID(1, 'dag-pb', hash)
-
-// await node1.contentRouting.provide(cid)
-
-// wait for propagation
-// await delay(300)
-
-// const providers = await all(node3.contentRouting.findProviders(cid, { timeout: 3000 }))
-
-// console.log(uint8ArrayToString(await node3.contentRouting.get(key)))
+// TODO: add test for opening, putting, closing, opening and getting an entry in datastore with DHT

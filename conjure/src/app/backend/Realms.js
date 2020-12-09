@@ -10,8 +10,8 @@ export default class Realms {
 
         this.dhtType = 'realm'
 
-        this.dhtProtocol = '/conjure/realm-' // id is added between these
-        this.dhtVersion = '/1.0.0'
+        this.dhtProtocol = '/conjure/realms/' // id is added between these
+        // this.dhtVersion = '/1.0.0' // not currently impelemented
     }
 
     async get(key) {
@@ -31,7 +31,7 @@ export default class Realms {
     }
 
     async initialise() {
-        
+        console.log(await this.addDatabase('Lobby'))
     }
 
     // async savePinnedRealms() {
@@ -73,16 +73,16 @@ export default class Realms {
 
     getDatabase(id) {
         // return this.databasePlugin.getDatabase(id)
-        return this.assetSync.dhtPlugin.getDHT(this.dhtProtocol + id + this.dhtVersion)
+        return this.assetSync.dhtPlugin.getDHT(this.dhtProtocol + id)// + this.dhtVersion)
     }
 
-    addDatabase(id) {
+    async addDatabase(id) {
         // return await this.databasePlugin.addDatabase(id)
-        return this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + id + this.dhtVersion)
+        return await this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + id)// + this.dhtVersion)
     }
 
-    removeDatabase(id) {
+    async removeDatabase(id) {
         // await this.databasePlugin.removeDatabase(id)
-        this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + id + this.dhtVersion)
+        await this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + id)// + this.dhtVersion)
     }
 }

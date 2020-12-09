@@ -10,7 +10,8 @@ import AssetSync, {
 
 } from '@AssetSync/AssetSync'
 
-import { isBrowser, isNode, isWebWorker, libp2p } from '@AssetSync/common'
+import { homedir, isBrowser, isNode, isWebWorker } from '@AssetSync/common'
+import libp2p from './create-libp2p/index.js'
 
 // args = { }
 
@@ -29,15 +30,18 @@ export async function startAssetSync(proxy) {
 
     } else {
 
-        const transportPlugin = new Libp2pPlugin({ libp2p, minPeersCount: 0 })
+
+        const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
+        
+        const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: 0 })
         await assetSync.register({ transportPlugin })
         networkPlugin = new NetworkPlugin({ transportPlugin })
         let dhtConstructor
         if(isNode) {
-            const { default: dht } = await import('../../../common/src/libp2p-template/libp2pkaddht/node/src/index.js')
+            const { default: dht } = await import('libp2p-kad-dht')
             dhtConstructor = dht
         } else {
-            const { default: dht } = await import('../../../common/src/libp2p-template/libp2pkaddht/index.min.js')
+            const { default: dht } = await import('../../../common/src/libp2pkaddht/dist/index.min.js')
             dhtConstructor = dht
         }
         dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })

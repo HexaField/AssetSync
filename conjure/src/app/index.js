@@ -24,7 +24,7 @@ class App extends EventDispatcher {
         this.realms = new Realms(this.assetSync)
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
-
+        
         this.assetSync.dhtPlugin.dht.on('put', (key, value, from) => {
             console.log('Received dht entry ' + key)
             const entryKey = key.split(':')

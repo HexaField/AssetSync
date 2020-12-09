@@ -33,6 +33,11 @@ export class DHTPlugin extends PluginBase {
         if (!this.dht)
             throw new Error('No dht found!')
 
+        this._repoLocation = this._transportPlugin.getTransport().repo ? this._transportPlugin.getTransport().repo.path : this._options.repoPath
+        
+        if (!this.dht)
+            throw new Error('No repo location supplied!')
+        
         this.dht.onPut = (record, peerId) => {
             this.dht.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
         }
@@ -52,7 +57,7 @@ export class DHTPlugin extends PluginBase {
         return this.dhts[protocol]
     }
 
-    addDHT(protocol) {
+    async addDHT(protocol, datastore) {
         if(!protocol) return
         if(this.dhts[protocol]) return this.dhts[protocol]
         const libp2p = this._transportPlugin.getTransport()
@@ -62,10 +67,11 @@ export class DHTPlugin extends PluginBase {
             peerId: libp2p.peerId,
             peerStore: libp2p.peerStore,
             registrar: libp2p.registrar,
-            datastore: new this._datastoreConstructor(protocol),
-            protocol
+            datastore: datastore || new this._datastoreConstructor(this._repoLocation + protocol),
+            protocolPrefix: protocol
         })
-        customDHT.start()
+        await customDHT.datastore.open()
+        await customDHT.start()
         customDHT.on('peer', libp2p._onDiscoveryPeer)
         customDHT.onPut = (record, peerId) => {
             customDHT.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())

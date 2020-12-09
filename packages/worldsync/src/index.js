@@ -36,9 +36,10 @@ inital config {
 */
 
 import AssetSync, { NetworkPlugin, Libp2pPlugin } from '@AssetSync/AssetSync'
-import { isBrowser, isNode, libp2p } from '@AssetSync/common'
+import { isBrowser, isNode } from '@AssetSync/common'
 import { createWorker } from '@AssetSync/WorkerSync'
 import SocketSync from '@AssetSync/SocketSync'
+import libp2p from './server/create-libp2p/index.js'
 
 // export * from './server/world/index.js'
 
