@@ -1,5 +1,3 @@
-import dht from '../../../../common/src/libp2pkaddht/dist/index.min.js'
-
 export function config() {
     return {
         addresses: {
@@ -17,7 +15,7 @@ export function config() {
             streamMuxer: [window.Libp2pMplex],
             connEncryption: [window.Libp2pSecio],
             pubsub: window.Libp2pGossipsub,
-            dht: dht
+            dht: window.Libp2pKadDht
         },
         config: {
             dht: {
@@ -44,6 +42,7 @@ export default async function (options) {
     await import('https://unpkg.com/libp2p-websockets@0.14.0/dist/index.min.js')
     // await import('https://unpkg.com/libp2p-bootstrap@0.12.1/dist/index.min.js')
     await import('https://unpkg.com/libp2p-gossipsub@0.6.3/dist/index.min.js')
+    await import('https://unpkg.com/libp2p-kad-dht@0.20.3/dist/index.min.js')
 
     await import('https://unpkg.com/libp2p-webrtc-star@0.20.0/dist/index.min.js') // we can't use webrtc in webworker
 

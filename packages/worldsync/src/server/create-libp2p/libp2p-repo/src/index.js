@@ -403,9 +403,11 @@ async function getSize (queryFn) {
   return sum
 }
 
+const startRepo = require('./load')
+
 module.exports = Libp2pRepo
 module.exports.errors = ERRORS
-module.exports.startRepo = require('./load')
+module.exports.startRepo = startRepo
 
 function buildOptions (_options) {
   const options = Object.assign({}, defaultOptions, _options)

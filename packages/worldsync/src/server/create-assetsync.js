@@ -41,8 +41,9 @@ export async function startAssetSync(proxy) {
             const { default: dht } = await import('libp2p-kad-dht')
             dhtConstructor = dht
         } else {
-            const { default: dht } = await import('../../../common/src/libp2pkaddht/dist/index.min.js')
-            dhtConstructor = dht
+            if(!window.Libp2pKadDht)
+                await import('https://unpkg.com/libp2p-kad-dht@0.20.3/dist/index.min.js')
+            dhtConstructor = window.Libp2pKadDht
         }
         dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
         connectionPlugin = new ConnectionPlugin()
