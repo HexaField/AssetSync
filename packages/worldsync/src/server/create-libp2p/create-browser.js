@@ -19,6 +19,7 @@ export function config() {
         },
         config: {
             dht: {
+                protocolPrefix: '/conjure',
                 kBucketSize: 10,
                 enabled: true,
                 randomWalk: {

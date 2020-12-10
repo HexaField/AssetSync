@@ -38,6 +38,7 @@ export function config() {
                 }
             },
             dht: {
+                protocolPrefix: '/conjure',
                 kBucketSize: 10,
                 enabled: true,
                 randomWalk: {
