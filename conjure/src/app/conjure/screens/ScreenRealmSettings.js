@@ -132,7 +132,7 @@ export default class ScreenRealmSettings extends ScreenBase
         // replace with dht
         if(this.isCreating)
         {
-            await this.screenManager.conjure.realms.pinRealm(this.data.getData(), true)
+            await this.screenManager.conjure.realms.createRealm(this.data.getData())
             console.log('Successfully made realm!', this.data)
             this.screenManager.showScreen(this.screenManager.screenRealms)
             this.data = undefined // must reset data

@@ -15,14 +15,15 @@ export default class Realms {
     }
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get(this.dhtType + ':' + key)
+        return await this.assetSync.dhtPlugin.get({ key: this.dhtType + ':' + key })
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put(this.dhtType + ':' + key, value)
+        return await this.assetSync.dhtPlugin.put({ key: this.dhtType + ':' + key, value })
     }
 
     receiveFromDHT(key, value, from) {
+        console.log('receiveFromDHT', key, value, from)
         if(value) {
             this.addDatabase(key)
         } else {
@@ -69,6 +70,15 @@ export default class Realms {
 
     async getRealmById(id) {
         return await this.get(id)
+    }
+
+    async createRealm(realmData) {
+        await this.put(realmData.id, realmData)
+        // await this.addDatabase(realmData.id)
+    }
+
+    updateRealm(id) {
+
     }
 
     getDatabase(id) {

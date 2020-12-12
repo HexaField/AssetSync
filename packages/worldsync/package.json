@@ -26,7 +26,15 @@
         "@AssetSync/common": "^0.0.0",
         "async": "0.9.x",
         "audiobuffer": "0.2.x",
-        "underscore": "1.8.x"
+        "underscore": "1.8.x",
+        "libp2p": "^0.29.4",
+        "libp2p-kad-dht": "^0.20.3",
+        "libp2p-gossipsub": "^0.7.0",
+        "libp2p-mplex": "^0.10.1",
+        "libp2p-secio": "^0.13.1",
+        "libp2p-tcp": "^0.15.1",
+        "libp2p-websockets": "^0.15.0",
+        "libp2p-webrtc-star": "^0.20.4"
     },
     "devDependencies": {
         "ava": "^3.13.0"

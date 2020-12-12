@@ -12,6 +12,7 @@ export class DHTPlugin extends PluginBase {
         this._transportPlugin = options.transportPlugin
         this._dhtConstructor = options.dhtConstructor
         this._datastoreConstructor = options.datastoreConstructor
+        this._repoPath = options.repoPath || ''
 
         this.dhts = {}
     }
@@ -33,7 +34,7 @@ export class DHTPlugin extends PluginBase {
         if (!this.dht)
             throw new Error('No dht found!')
 
-        this._repoLocation = this._transportPlugin.getTransport().repo ? this._transportPlugin.getTransport().repo.path : this._options.repoPath
+        this._repoLocation = this._transportPlugin.getTransport().repo ? this._transportPlugin.getTransport().repo.path : this._repoPath
         
         if (!this.dht)
             throw new Error('No repo location supplied!')
