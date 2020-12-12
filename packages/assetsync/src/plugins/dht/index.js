@@ -101,12 +101,20 @@ export class DHTPlugin extends PluginBase {
     }
 
     async get({ key, timeout, protocol }) {
-        const keyArray = uint8ArrayFromString(key)
-        const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
-        return uint8ArrayToString(result)
+        try {
+            const keyArray = uint8ArrayFromString(key)
+            const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
+            return uint8ArrayToString(result)
+        } catch(error) {
+            console.log('Failed to get from dht: ', error)
+        }
     }
 
     async put({ key, value, minPeers, protocol }) {
-        return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
+        try {
+            return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
+        } catch(error) {
+            console.log('Failed to put to dht: ', error)
+        }
     }
 }
