@@ -15,14 +15,14 @@ export function config() {
                 window.Libp2pWebrtcStar
             ],
             streamMuxer: [window.Libp2pMplex],
-            connEncryption: [window.Libp2pSecio],
+            connEncryption: [window.Libp2pNoise, window.Libp2pSecio],
             pubsub: window.Libp2pGossipsub,
             dht: kad
         },
         config: {
             dht: {
                 protocolPrefix: '/conjure',
-                kBucketSize: 10,
+                kBucketSize: 20,
                 enabled: true,
                 randomWalk: {
                     enabled: true,
@@ -41,7 +41,9 @@ export default async function (options) {
     await import('https://unpkg.com/libp2p@0.29.4/dist/index.min.js')
     await import('https://unpkg.com/libp2p-mplex@0.10.1/dist/index.min.js')
     await import('https://unpkg.com/libp2p-secio@0.13.1/dist/index.min.js')
-    // await import('https://unpkg.com/libp2p-noise@2.0.0/dist/index.min.js')
+    await import('https://bundle.run/buffer@6.0.3')
+    window.Buffer = window.buffer.Buffer
+    await import('https://unpkg.com/libp2p-noise@2.0.1/dist/index.min.js')
     await import('https://unpkg.com/libp2p-websockets@0.14.0/dist/index.min.js')
     // await import('https://unpkg.com/libp2p-bootstrap@0.12.1/dist/index.min.js')
     await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')

@@ -1,4 +1,4 @@
-import RealmDatabase from "./RealmDatabase.js"
+import RealmDatabase from "./realm/RealmDatabase.js"
 import { NETWORKING_OPCODES } from './Constants.js'
 
 export default class RealmHandler {
@@ -102,11 +102,7 @@ export default class RealmHandler {
     }
 
     async _createDatabase(realmData, onProgress) {
-        const dht = await this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + realmData.id)
-        const network = await this.assetSync.networkPlugin.joinNetwork(realmData.id)
-        const database = new RealmDatabase(realmData, this.assetSync.dhtPlugin, this.dhtProtocol + realmData.id, network)
-        dht.on('put', (key, val, peer) => database.emit('put', key, val, peer))
-        dht.on('removed', (key, val) => database.emit('removed', key, val))
+        const database = new RealmDatabase(realmData, this.assetSync, this.dhtProtocol)
         await database.start(onProgress)
         this.realms[realmData.id] = database
         return database

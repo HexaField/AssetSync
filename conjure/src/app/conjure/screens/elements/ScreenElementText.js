@@ -13,7 +13,7 @@ export default class ScreenElementText extends ScreenElementBase
 
         this.textObj = new TextRenderer3D(screen.screenManager.conjure, this.group, {
             text: args.text,
-            fit: { x: this.width - 0.025, y: this.height - 0.025 },
+            fit: args.fit && { x: this.width - 0.025, y: this.height - 0.025 },
             ...args.textSettings
         });
 

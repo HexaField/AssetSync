@@ -26,7 +26,7 @@ export async function startAssetSync(proxy) {
         networkPlugin.setTarget(proxy)
         dhtPlugin = new RemoteDHTPlugin()
         dhtPlugin.setTarget(proxy)
-        // connectoio proxy
+        // connectoin proxy
 
     } else {
 

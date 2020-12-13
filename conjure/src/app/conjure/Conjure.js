@@ -284,6 +284,7 @@ class Conjure extends EventEmitter
         // this.loadInfo.hidden = true
         
         this.getGlobalHUD().log('Took ' + (Date.now() - this.loadTimer)/1000 + ' seconds to load.')
+        this.getGlobalHUD().addWatchItem('Peers Online', this.assetSync.transportPlugin.peerInfo, 'peersCount')
     }
 
     toggleConjureMode()

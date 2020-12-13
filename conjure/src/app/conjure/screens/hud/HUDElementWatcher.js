@@ -17,12 +17,19 @@ export default class HUDElementWatcher
         this.watchItems.push(reference)
         this.watchItemsKey.push(key)
         let element = new ScreenElementLabelled(
-                        this.screen, this.screen, {
-                            x: 1, height: 0.1, 
-                            element: new ScreenElementText(this.screen, this.screen, { height: 0.1, textSettings: {scale:0.5, text:reference[key], anchorX:'left' } }),
-                            autoUpdateSize:true, anchor:true, textSettings: {scale:0.5, anchorX:'right'}, label: label+': '
-                        }
-                    )
+            this.screen, this.screen, {
+                x: -0.9, 
+                height: 0.1, 
+                width: 0.2,
+                element: new ScreenElementText(this.screen, this.screen, { height: 0.1, width:0.4, textSettings: { scale:0.4, text:reference[key], anchorX:'right', anchor:true } }),
+                autoUpdateSize: false,
+                anchor:true,
+                textSettings: {
+                    scale:0.4, anchorX:'right'
+                },
+                label: label+': '
+            }
+        )
         this.screen.registerElement(element)
         this.watchItemsLabel.push(element)
         this.updateWatchItems()
@@ -47,7 +54,7 @@ export default class HUDElementWatcher
 
     updateWatchItems()
     {
-        let y = 1
+        let y = 0.95
         for(let i in this.watchItems)
         {
             this.watchItemsLabel[i].group.position.setY(y)
@@ -59,7 +66,7 @@ export default class HUDElementWatcher
     {
         for(let i in this.watchItems)
         {
-            this.watchItemsLabel[i].element.setText(this.watchItems[i][this.watchItemsKey[i]])
+            this.watchItemsLabel[i].element.setText(String(this.watchItems[i][this.watchItemsKey[i]]))
         }
     }
 }

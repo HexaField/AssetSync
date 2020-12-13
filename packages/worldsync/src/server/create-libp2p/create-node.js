@@ -5,6 +5,7 @@ import WebrtcStar from 'libp2p-webrtc-star'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
 import SECIO from 'libp2p-secio'
+import { NOISE } from 'libp2p-noise'
 import GossipSub from 'libp2p-gossipsub'
 import KadDHT from 'libp2p-kad-dht'
 // import KadDHT from '../../../../common/src/libp2pkaddht/src/index.js'
@@ -27,6 +28,7 @@ export function config() {
                 Multiplex
             ],
             connEncryption: [
+                NOISE,
                 SECIO
             ],
             dht: KadDHT,

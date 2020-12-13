@@ -2,7 +2,7 @@ import Libp2p from 'libp2p'
 import WS from 'libp2p-websockets'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
-import SECIO from 'libp2p-secio'
+import { NOISE } from 'libp2p-noise'
 import KadDHT from 'libp2p-kad-dht'
 // import KadDHT from '../../../common/src/libp2pkaddht/src/index.js'
 import GossipSub from 'libp2p-gossipsub'
@@ -27,7 +27,7 @@ export default async function (protocol) {
                 Multiplex
             ],
             connEncryption: [
-                SECIO
+                NOISE
             ],
             dht: KadDHT,
             pubsub: GossipSub
@@ -39,7 +39,7 @@ export default async function (protocol) {
                 }
             },
             dht: {
-                protocol,
+                protocolPrefix: protocol,
                 kBucketSize: 10,
                 enabled: true,
                 randomWalk: {

@@ -7,6 +7,7 @@ import PROTOCOL from './protocol.js'
 export default class Connection extends EventEmitter {
   constructor (remoteId, libp2p, room) {
     super()
+    this.setMaxListeners(64)
     this._remoteId = remoteId
     this._libp2p = libp2p
     this._room = room

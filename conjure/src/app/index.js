@@ -25,13 +25,16 @@ class App extends EventDispatcher {
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
 
-        // setInterval(async () => {
-        //     try {
-        //         console.log('Peers', await this.assetSync.transportPlugin._libp2p.connections)
-        //     } catch (err) {
-        //         this.warn('An error occurred trying to check our peers:', err)
-        //     }
-        // }, 1000)
+        this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')
+
+        if(isNode) {
+            this.globalNetwork.on('onPeerJoin', (peerId) => {
+                console.log('Peer ' + peerId.substring(0, 8) + ' joined')
+            })
+            this.globalNetwork.on('onPeerLeave', (peerId) => {
+                console.log('Peer ' + peerId.substring(0, 8) + ' left')
+            })
+        }
         
         this.assetSync.dhtPlugin.dht.on('put', (key, value, from) => {
             console.log('Received dht entry ' + key)

@@ -1,7 +1,7 @@
 import Libp2p from 'libp2p'
 import WS from 'libp2p-websockets'
 import Multiplex from 'libp2p-mplex'
-import SECIO from 'libp2p-secio'
+import { NOISE } from 'libp2p-noise'
 import GossipSub from 'libp2p-gossipsub'
 import PeerId from 'peer-id'
 import multiaddr from 'multiaddr'
@@ -29,7 +29,7 @@ export async function config (isRelay) {
         Multiplex
       ],
       connEncryption: [
-        SECIO
+        NOISE
       ],
       pubsub: GossipSub
     },
