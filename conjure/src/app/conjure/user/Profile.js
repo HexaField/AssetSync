@@ -1,4 +1,4 @@
-// import { NETWORKING_OPCODES } from "../world/realm/NetworkingSchemas.js"
+// import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 import { generateUUID } from '@AssetSync/common'
 import ServiceManager from './services/ServiceManager.js'
 

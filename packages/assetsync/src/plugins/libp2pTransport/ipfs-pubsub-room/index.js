@@ -71,6 +71,12 @@ export default class PubSubRoom extends EventEmitter {
     await this._libp2p.pubsub.publish(this._topic, message)
   }
 
+  sendToAll (message) {
+    for(let peer of this.getPeers()) {
+        this.sendTo(peer, message)
+    }
+  }
+
   sendTo (peer, message) {
     let conn = this._connections[peer]
     if (!conn) {

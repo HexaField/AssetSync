@@ -8,7 +8,7 @@ import ObjectManager from './ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 import EventEmitter from 'events'
-import { NETWORKING_OPCODES } from './NetworkingSchemas'
+import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
 
 export const GLOBAL_REALMS = {
     LOBBY: {
@@ -134,7 +134,7 @@ export default class Realm extends EventEmitter
     }
 
     sendData(opcode, content) {
-        this.network.broadcast(JSON.stringify({ opcode, content }))
+        this.network.sendToAll(JSON.stringify({ opcode, content }))
     }
 
     sendTo(opcode, content, peerID) {
@@ -145,21 +145,26 @@ export default class Realm extends EventEmitter
     {
         for(let feature of this.features)
             await feature.load()
-        
-        this.network = await this.conjure.assetSync.networkPlugin.joinNetwork(this.realmID)
 
-        this.network.on('message', (message) => {
-            
-            if (message.from === this.conjure.assetSync.networkPlugin.getPeerID()) return
-            
-            if (message.data === undefined || message.data === null) {
-                this.warn('Received bad buffer data', message.data, 'from peer', message.from)
-                return
-            }
-            
-            const { opcode, content } = JSON.parse(message.data)
-            this.emit(opcode, content, message.from)
+        console.log(this.realmData.getData())
+        this.database = await this.world.conjure.realms.addDatabase(this.realmData.getData(), ({ message }) => {
+            this.conjure.loadingScreen.setText(message, false)
         })
+        
+        this.database.on(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
+        this.database.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, this.onObjectUpdate)
+        this.database.on(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
+        this.database.on(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
+        this.database.on(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+
+        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.UPDATE, this.onObjectUpdate)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
+        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
+
+        this.network = this.database.network
 
         this.network.on('onPeerJoin', async (peerID) => {
             // direct connection, but it don't werk
@@ -233,7 +238,7 @@ export default class Realm extends EventEmitter
     async leave()
     {
         this.getObjectManager().destroyAllObjects()
-        await this.conjure.assetSync.networkPlugin.leaveNetwork(this.realmID)
+        await this.conjure.realms.removeDatabase(this.realmId)
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.REALM_UNSUBSCRIBE, { realmID: this.realmID })
         
         if(this.terrain)
@@ -291,7 +296,7 @@ export default class Realm extends EventEmitter
     
     async onObjectDestroy(uuid, peerID)
     {
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.DESTROY_OBJECT, { realmID: this.realmID, uuid: uuid })
+        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.DESTROY_OBJECT, { realmID: this.realmID, uuid: uuid })
         this.objectManager.destroyObjectByHash(uuid);
     }
 
@@ -302,27 +307,26 @@ export default class Realm extends EventEmitter
     async loadObjectFromPeer(uuid, data)
     {
         try {
-            await this.conjure.getDataHandler(SERVER_PROTOCOLS.CREATE_OBJECT, { realmID: this.realmID, uuid: uuid, data: data })
+            // await this.conjure.getDataHandler(SERVER_PROTOCOLS.CREATE_OBJECT, { realmID: this.realmID, uuid: uuid, data: data })
             await this.loadObject(data)
         } catch (error) {
             console.log('REALM: could not load object', object.hash, 'with error', error);
         }
     }
+
     async createObject(object)
     {
         object.userData.originatorID = this.conjure.getProfile().getID();
         object.position.copy(this.world.user.previewMeshPoint.getWorldPosition(this.vec3));
         object.quaternion.copy(this.world.user.previewMeshPoint.getWorldQuaternion(this.quat));
         object.updateMatrixWorld();
-        this.restorePhysics(object);
+        // this.restorePhysics(object);
         let json = await this.objectToJSON(object);
-        this.conjure.screenManager.hideScreen();
-        let databaseObject = await this.conjure.getDataHandler(SERVER_PROTOCOLS.CREATE_OBJECT, { realmID: this.realmID, uuid: object.uuid, data: json })
-        if(databaseObject) // if adding to database failed, don't put it into our world
-        {
-            this.objectManager.addObject(object)
-            json = await this.objectToJSON(object);
-            this.sendData(NETWORKING_OPCODES.OBJECT.CREATE, { uuid: databaseObject.uuid, data:json });
+        const success = await this.database.createObject({ uuid: object.uuid, data: json })
+        // if adding to database failed, don't put it into our world
+        if(success) {
+            this.objectManager.addObject(object, true)
+            this.conjure.screenManager.hideScreen()
         }
     }
 
@@ -366,7 +370,7 @@ export default class Realm extends EventEmitter
             let object = this.loadObjectAssets(data);
             await this.conjure.assetManager.saveAssets(object)
             // console.log(object)
-            this.restorePhysics(object);
+            // this.restorePhysics(object);
             this.objectManager.addObject(object)
             if(data.object.userData.lastUpdate)
                 this.objectManager.updateObjectFromClient(object.uuid, data.object.userData.lastUpdate)
@@ -385,20 +389,20 @@ export default class Realm extends EventEmitter
         return this.objectLoader.parse(json);
     }
 
-    restorePhysics(object)
-    {
-        if(object.userData.physics && !object.body && this.objectManager.getPhysicsType(object.userData.physics.type) >= 0)
-        {
-            this.conjure.physics.add.existing(object, {
-                shape: this.objectManager.getPhysicsShape(object.userData.physics.shape),
-                collisionFlags: this.objectManager.getPhysicsType(object.userData.physics.type),
-                mass: object.userData.physics.mass,
-                // breakable: object.userData.physics.destructable
-            });
-            object.body.setGravity(0, object.userData.physics.gravity * this.gravity, 0);
-            object.body.setBounciness(object.userData.physics.bounciness);
-        }
-    }
+    // restorePhysics(object)
+    // {
+    //     if(object.userData.physics && !object.body && this.objectManager.getPhysicsType(object.userData.physics.type) >= 0)
+    //     {
+    //         this.conjure.physics.add.existing(object, {
+    //             shape: this.objectManager.getPhysicsShape(object.userData.physics.shape),
+    //             collisionFlags: this.objectManager.getPhysicsType(object.userData.physics.type),
+    //             mass: object.userData.physics.mass,
+    //             // breakable: object.userData.physics.destructable
+    //         });
+    //         object.body.setGravity(0, object.userData.physics.gravity * this.gravity, 0);
+    //         object.body.setBounciness(object.userData.physics.bounciness);
+    //     }
+    // }
 
     // TODO: fix this - hashs arent handled properly
     async updateObjectPosition(obj)
@@ -406,7 +410,7 @@ export default class Realm extends EventEmitter
         await this.updateObject(obj) // temp fix
 
         // args to data handler need to be objectified
-        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_OBJECT, obj.userData.hash, obj.userData.lastUpdate);
+        const success = await this.database.updateObject(obj.userData.hash, obj.userData.lastUpdate);
         // if(!obj.userData.hash) return;
         // let json = await this.objectToJSON(obj)
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_OBJECT, obj.userData.hash, json);
@@ -421,7 +425,7 @@ export default class Realm extends EventEmitter
             return;
         }
         let json = await this.objectToJSON(obj)
-        await this.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_OBJECT, { realmID: this.realmID, uuid: object.uuid, data: json });
+        await this.database.updateObject({ realmID: this.realmID, uuid: object.uuid, data: json });
     }
 
     async destroyObject(obj)
@@ -429,11 +433,11 @@ export default class Realm extends EventEmitter
         obj.userData.markedDestroyed = true;
         if(this.objectManager.getObject(obj))
         {
-            let success = await this.conjure.getDataHandler(SERVER_PROTOCOLS.DESTROY_OBJECT, { realmID: this.realmID, uuid: object.uuid })
+            let success = await this.database.dereferenceObject({ realmID: this.realmID, uuid: object.uuid })
             if(success)
             {
                 this.objectManager.destroyObject(obj);
-                this.sendData(NETWORKING_OPCODES.OBJECT.DESTROY, obj.uuid, true);
+                // this.sendData(NETWORKING_OPCODES.OBJECT.DESTROY, obj.uuid, true);
             }
             else
             {
@@ -444,7 +448,7 @@ export default class Realm extends EventEmitter
         else
         {
             let topParent = this.objectManager.getTopGroupObject(obj)
-            this.sendData(NETWORKING_OPCODES.OBJECT.UPDATE, topParent, true);
+            // this.sendData(NETWORKING_OPCODES.OBJECT.UPDATE, topParent, true);
             this.objectManager.destroyObject(obj, { isChild: true });
             await this.updateObject(topParent)
         }

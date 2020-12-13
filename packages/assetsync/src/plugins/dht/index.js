@@ -13,6 +13,7 @@ export class DHTPlugin extends PluginBase {
         this._dhtConstructor = options.dhtConstructor
         this._datastoreConstructor = options.datastoreConstructor
         this._repoPath = options.repoPath || ''
+        this._removeFunction = options.removeFunction || (() => {})
 
         this.dhts = {}
     }
@@ -25,8 +26,8 @@ export class DHTPlugin extends PluginBase {
                 const { default: datastore } = await import('datastore-fs')
                 this._datastoreConstructor = datastore
             } else {
-                const { default: datastore } = await import('datastore-idb')
-                this._datastoreConstructor = datastore
+                const { MemoryDatastore } = await import('interface-datastore')
+                this._datastoreConstructor = MemoryDatastore
             }
         }
         this.dht = this._transportPlugin.getTransport()._dht
@@ -98,6 +99,15 @@ export class DHTPlugin extends PluginBase {
             entries.push(entry)
         }
         return entries
+    }
+
+    async removeLocal({ key, protocol}) {
+        try {
+            const keyArray = uint8ArrayFromString(key)
+            return await this.dhts[protocol || this._defaultProtocol].removeLocal(keyArray)
+        } catch(error) {
+            console.log('Failed to remove from dht: ', error)
+        }
     }
 
     async get({ key, timeout, protocol }) {

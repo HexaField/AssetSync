@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { NETWORKING_OPCODES } from './realm/NetworkingSchemas'
+import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 import Realm, { GLOBAL_REALMS } from './realm/Realm.js'
 import User from '../user/User.js'
 import UserRemote from '../user/UserRemote.js'
@@ -95,7 +95,7 @@ export default class World
             const realmData = new RealmData(realm).getData()
             realmData.global = true
             this.globalRealms.push(realmData)
-            await this.conjure.realms.addDatabase(realmData, true)
+            await this.conjure.realms.addDatabase(realmData)
         }
     }
 
@@ -110,8 +110,11 @@ export default class World
             this.realm = undefined
         }
 
+
+        
         // console.log('Joining realm', realmData)
         this.conjure.setConjureMode(CONJURE_MODE.LOADING)
+        this.conjure.loadingScreen.setText('Joining realm...', false)
 
         if(realmData.getData().whitelist)
         {
@@ -141,12 +144,14 @@ export default class World
         this.realm = new Realm(this, realmData)
         await self.simpleStorage.set('conjure-profile-lastJoinedRealm', realmData.getID()) // make a thing for this
         
+        this.conjure.loadingScreen.setText('Pre-loading realm...', false)
         await this.realm.preload()
+        this.conjure.loadingScreen.setText('Loading realm...', false)
         await this.realm.load()
 
-        this.realm.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
-        this.realm.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
-        this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
+        this.realm.database.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
+        this.realm.database.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
+        this.realm.database.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
         let spawn = realmData.getData().worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn

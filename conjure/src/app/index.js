@@ -1,7 +1,7 @@
 import { isNode, EventDispatcher, isWebWorker } from '@AssetSync/common'
 
 import Assets from './backend/Assets.js'
-import Realms from './backend/Realms.js'
+import RealmHandler from './backend/Realms.js'
 import Profiles from './backend/Profiles.js'
 
 export default async function (args) {
@@ -21,9 +21,17 @@ class App extends EventDispatcher {
     async start() {
 
         this.assets = new Assets(this.assetSync)
-        this.realms = new Realms(this.assetSync)
+        this.realms = new RealmHandler(this.assetSync)
         await this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
+
+        // setInterval(async () => {
+        //     try {
+        //         console.log('Peers', await this.assetSync.transportPlugin._libp2p.connections)
+        //     } catch (err) {
+        //         this.warn('An error occurred trying to check our peers:', err)
+        //     }
+        // }, 1000)
         
         this.assetSync.dhtPlugin.dht.on('put', (key, value, from) => {
             console.log('Received dht entry ' + key)

@@ -96,6 +96,11 @@ export class NetworkPlugin extends PluginBase {
         }
     }
 
+    async sendToAll(networkID, data) {
+        await this._networks[networkID].sendToAll(data)
+        return true
+    }
+
     async sendTo(networkID, data, peerID) {
         await this._networks[networkID].sendTo(peerID, data)
         return true

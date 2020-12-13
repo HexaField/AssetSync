@@ -1,5 +1,5 @@
 import ScreenBase from './ScreenBase';
-import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas';
+import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 import ScreenElementButton from './elements/ScreenElementButton';
 
 export default class ScreenUserInteract extends ScreenBase

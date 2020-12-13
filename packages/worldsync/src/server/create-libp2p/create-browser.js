@@ -4,7 +4,7 @@ export function config() {
     return {
         addresses: {
             listen: [
-                '/dns4/boiling-hamlet-91904.herokuapp.com/tcp/443/wss/p2p-webrtc-star',
+                '/dns4/floating-retreat-57828.herokuapp.com/tcp/443/wss/p2p-webrtc-star/',
                 // '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
                 // '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
             ] 
@@ -47,7 +47,7 @@ export default async function (options) {
     await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')
     // await import('https://unpkg.com/libp2p-kad-dht@0.20.3/dist/index.min.js')
 
-    await import('https://unpkg.com/libp2p-webrtc-star@0.20.2/dist/index.min.js') // we can't use webrtc in webworker
+    await import('https://unpkg.com/libp2p-webrtc-star@0.20.4/dist/index.min.js') // we can't use webrtc in webworker
 
     const node = await self.Libp2p.create(options || config())
     await node.start()

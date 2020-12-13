@@ -1,3 +1,4 @@
+const isFireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 export default class pinput {
 	constructor() {
 		this.realState = {

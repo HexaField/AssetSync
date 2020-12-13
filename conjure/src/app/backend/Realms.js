@@ -1,4 +1,7 @@
-export default class Realms {
+import RealmDatabase from "./RealmDatabase.js"
+import { NETWORKING_OPCODES } from './Constants.js'
+
+export default class RealmHandler {
     constructor(assetSync) {
         this.assetSync = assetSync
         this.pinnedRealms = [] // just a list of IDs
@@ -12,7 +15,12 @@ export default class Realms {
 
         this.dhtProtocol = '/conjure/realms/' // id is added between these
         // this.dhtVersion = '/1.0.0' // not currently impelemented
+        this.realms = {}
     }
+
+    // DHT data
+    // key: realmId
+    // value: realmData
 
     async get(key) {
         return await this.assetSync.dhtPlugin.get({ key: this.dhtType + ':' + key })
@@ -23,16 +31,15 @@ export default class Realms {
     }
 
     receiveFromDHT(key, value, from) {
-        console.log('receiveFromDHT', key, value, from)
         if(value) {
-            this.addDatabase(key)
+            this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
         } else {
-            this.removeDatabase(key)
+            this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
         }
     }
 
     async initialise() {
-        console.log(await this.addDatabase('Lobby'))
+        
     }
 
     // async savePinnedRealms() {
@@ -64,6 +71,11 @@ export default class Realms {
     //     await this.addRealms(realmData)
     // }
 
+    async forgetRealm(realmData) {
+        await this.assetSync.dhtPlugin.removeLocal({ key: realmData.id })
+        await this.removeDatabase(realmData)
+    }
+
     async getRealms() {
         return await this.assetSync.dhtPlugin.getAllLocal()
     }
@@ -74,7 +86,7 @@ export default class Realms {
 
     async createRealm(realmData) {
         await this.put(realmData.id, realmData)
-        // await this.addDatabase(realmData.id)
+        await this.addDatabase(realmData)
     }
 
     updateRealm(id) {
@@ -82,17 +94,29 @@ export default class Realms {
     }
 
     getDatabase(id) {
-        // return this.databasePlugin.getDatabase(id)
-        return this.assetSync.dhtPlugin.getDHT(this.dhtProtocol + id)// + this.dhtVersion)
+        return this.realms[id]
     }
 
-    async addDatabase(id) {
-        // return await this.databasePlugin.addDatabase(id)
-        return await this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + id)// + this.dhtVersion)
+    async addDatabase(realmData, onProgress) {
+        return this.realms[realmData.id] || await this._createDatabase(realmData, onProgress)
     }
 
-    async removeDatabase(id) {
-        // await this.databasePlugin.removeDatabase(id)
-        await this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + id)// + this.dhtVersion)
+    async _createDatabase(realmData, onProgress) {
+        const dht = await this.assetSync.dhtPlugin.addDHT(this.dhtProtocol + realmData.id)
+        const network = await this.assetSync.networkPlugin.joinNetwork(realmData.id)
+        const database = new RealmDatabase(realmData, this.assetSync.dhtPlugin, this.dhtProtocol + realmData.id, network)
+        dht.on('put', (key, val, peer) => database.emit('put', key, val, peer))
+        dht.on('removed', (key, val) => database.emit('removed', key, val))
+        await database.start(onProgress)
+        this.realms[realmData.id] = database
+        return database
+    }
+
+    async removeDatabase(realmData) {
+        if(this.realms[realmData.id]) {
+            await this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + realmData.id)// + this.dhtVersion)
+            await this.realms[realmData.id].stop()
+            delete this.realms[realmData.id]
+        }
     }
 }

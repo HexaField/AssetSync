@@ -1,14 +1,5 @@
 import * as Schema from '@geckos.io/typed-array-buffer-schema'
-
-export const NETWORKING_OPCODES = {
-    HEARTBEAT: 0,
-    USER: {
-        METADATA: 100,
-        MOVE: 101,
-        ANIMATION: 102,
-        // UPDATE: 104,
-    },
-}
+import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
 
 const SCHEMA_POSITION = Schema.BufferSchema.schema('position', {
     x: Schema.float32,

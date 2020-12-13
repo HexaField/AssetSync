@@ -2,7 +2,7 @@ import ScreenBase from './ScreenBase';
 import ScreenElementText from './elements/ScreenElementText'
 import ScreenElementTextBox from './elements/ScreenElementTextBox'
 import ScreenElementButton from './elements/ScreenElementButton'
-import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas';
+import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 import ScreenElementLabelled from './elements/ScreenElementLabelled';
 
 export default class ScreenUserPay extends ScreenBase

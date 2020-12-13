@@ -1,8 +1,7 @@
 
 import * as THREE from 'three'
 import ScreenElementText from '../elements/ScreenElementText';
-import { NETWORKING_OPCODES } from '../../world/realm/NetworkingSchemas';
-
+import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
 export const INTERACT_TYPES = {
     NONE: 'none',
     USER: 'user',

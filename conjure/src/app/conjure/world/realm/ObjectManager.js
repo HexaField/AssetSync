@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { number } from '../../util/number'
-import { NETWORKING_OPCODES } from './NetworkingSchemas'
+import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
 
 export const PHYSICS_TYPES = {
     NONE: 'None',
@@ -130,11 +130,11 @@ export default class ObjectManager
                 return object;
     }
 
-    addObject(object)
+    addObject(object, attach = false)
     {
         this.objects.push(object);
         this.scene.add(object);
-        this.conjure.getControls().addTransformObject(object);
+        this.conjure.getControls().addTransformObject(object, attach);
         this.conjure.getScreens().screenObjectsHierarchy.updateObjects();
     }
     // find a group in this.objects that contains 'obj'

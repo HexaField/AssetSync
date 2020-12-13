@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { ExtendedObject3D } from 'enable3d'
-import { NETWORKING_OPCODES } from '../world/realm/NetworkingSchemas'
+import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 // import { easySphere, easyOrigin } from '../util/MeshTemplates';
 
 export default class User

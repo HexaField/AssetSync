@@ -33,8 +33,9 @@
         "libp2p-mplex": "^0.10.1",
         "libp2p-secio": "^0.13.1",
         "libp2p-tcp": "^0.15.1",
-        "libp2p-websockets": "^0.15.0",
-        "libp2p-webrtc-star": "^0.20.4"
+        "libp2p-websockets": "^0.14.0",
+        "libp2p-webrtc-star": "^0.20.4",
+        "wrtc": "^0.4.6"
     },
     "devDependencies": {
         "ava": "^3.13.0"

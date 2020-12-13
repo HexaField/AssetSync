@@ -77,7 +77,7 @@ export default class ScreenObjectCreate extends ScreenBase
                 deformable: false
             }
             await this.world.realm.createObject(newObject);
-            this.screenManager.conjure.getControls().objectControls.attach(newObject, {detachOthers:true});
+            // this.screenManager.conjure.getControls().objectControls.attach(newObject, {detachOthers:true});
         }
     }
 }

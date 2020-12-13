@@ -78,9 +78,9 @@ export default class LoadingScreen
         this.scene.add(this.textObj.getObject())
     }
 
-    setText(text)
+    setText(text, reset = true)
     {
-        this.textObj.setText(text)
+        this.textObj.setText(reset ? text : this.textObj.getText() + '\n' + text)
         if(text.includes('\n'))
             this.textObj.getObject().position.setY((this.textObj._line_height * text.match(/\n/g).length))
         else
