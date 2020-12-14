@@ -67,7 +67,7 @@ export default class UserRemote extends User
     {
         this.timeoutCount = 0
         this.group.position.set(physics.position.x, physics.position.y, physics.position.z)
-        this.group.quaternion.set(physics.rotation._x, physics.rotation._y, physics.rotation._z, physics.rotation._w)
+        this.group.quaternion.set(physics.rotation.x, physics.rotation.y, physics.rotation.z, physics.rotation.w)
         this.velocity.set(physics.velocity.x, physics.velocity.y, physics.velocity.z)
         // this.group.body.needUpdate = true
     }

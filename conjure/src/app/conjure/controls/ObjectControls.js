@@ -83,12 +83,12 @@ export default class ObjectControls
         console.log(object)
         if(params.detachOthers) 
             this.detachAll();
-        iterateChildrenWithFunction(object, (o) => {
-            if(o.body)
-            {
-                this.conjure.physics.destroy(o.body);
-            }
-        })
+        // iterateChildrenWithFunction(object, (o) => {
+        //     if(o.body)
+        //     {
+        //         this.conjure.physics.destroy(o.body);
+        //     }
+        // })
 
         this.controls.attach(object);
         this.conjure.postProcessing.addSelectedObject(object);
@@ -108,9 +108,9 @@ export default class ObjectControls
             {
                 if(!params.ignoreScreenUpdate)
                     this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object);
-                iterateChildrenWithFunction(object, (o) => {
-                    this.conjure.getWorld().realm.restorePhysics(o);
-                });
+                // iterateChildrenWithFunction(object, (o) => {
+                //     this.conjure.getWorld().realm.restorePhysics(o);
+                // });
                 object.userData.needsUpdate = true;
             }
 
@@ -123,9 +123,9 @@ export default class ObjectControls
     {
         this.controls.detach(object);
         
-        iterateChildrenWithFunction(object, (o) => {
-            this.conjure.getWorld().realm.restorePhysics(o);
-        });
+        // iterateChildrenWithFunction(object, (o) => {
+        //     this.conjure.getWorld().realm.restorePhysics(o);
+        // });
         object.userData.needsUpdate = true;
         this.conjure.postProcessing.removeSelectedObject(object);
         

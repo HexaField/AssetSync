@@ -18,7 +18,7 @@ export default class HUDElementConsole
             width: 1,
             height: this.messageHeight, 
             anchor: true,
-            text: text,
+            text: text.join(' '),
             textSettings: {
                 alignX: 'right',
                 scale: 0.4,

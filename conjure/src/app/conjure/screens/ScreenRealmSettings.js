@@ -1,8 +1,8 @@
 import ScreenBase from './ScreenBase'
 import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementJSONTree from './elements/ScreenElementJSONTree'
-import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../world/realm/RealmData'
-import RealmData from '../world/realm/RealmData'
+import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../backend/realm/RealmData.js'
+import RealmData from '../../backend/realm/RealmData.js'
 
 export default class ScreenRealmSettings extends ScreenBase
 {  
@@ -114,8 +114,8 @@ export default class ScreenRealmSettings extends ScreenBase
             this.createButton.setText('Create')
             this.createFromServiceButton.setHidden(false)
             if(!this.data)
-                this.data = new RealmData(args.data ? args.data.getData() : {})
-            this.jsonTree.updateTree(this.data.getData(), this.updateData)
+                this.data = new RealmData(args.data)
+            this.jsonTree.updateTree(this.data, this.updateData)
         }
         else
         {   
@@ -123,7 +123,7 @@ export default class ScreenRealmSettings extends ScreenBase
             this.createFromServiceButton.setHidden(true) // TODO: turn this into 'manage features' when in update mode
             // when in updating mode, we always want to force to get the latest data
             this.data = this.screenManager.conjure.getWorld().realm.realmData
-            this.jsonTree.updateTree(this.data.getData(), this.updateData)
+            this.jsonTree.updateTree(this.data, this.updateData)
         }
     }
 
@@ -132,15 +132,15 @@ export default class ScreenRealmSettings extends ScreenBase
         // replace with dht
         if(this.isCreating)
         {
-            await this.screenManager.conjure.realms.createRealm(this.data.getData())
+            await this.screenManager.conjure.realms.createRealm(this.data)
             console.log('Successfully made realm!', this.data)
             this.screenManager.showScreen(this.screenManager.screenRealms)
             this.data = undefined // must reset data
         }
         else
         {
-            this.data.getData().timestamp = Date.now()
-            await this.screenManager.conjure.realms.updateRealm(this.data.getData())
+            this.data.timestamp = Date.now()
+            await this.screenManager.conjure.realms.updateRealm(this.data)
             this.screenManager.conjure.getWorld().forceReloadCurrentRealm()
         }
     }
@@ -158,9 +158,9 @@ export default class ScreenRealmSettings extends ScreenBase
         if(!item.owner) return
         this.fromService = true
         this.data = new RealmData(item)
-        this.data.getData().whitelist.type = REALM_WHITELIST.SERVICE
+        this.data.whitelist.type = REALM_WHITELIST.SERVICE
         this.jsonTree.setSchema(this.getSchema())
-        this.jsonTree.updateTree(this.data.getData(), this.updateData)
+        this.jsonTree.updateTree(this.data, this.updateData)
     }
 
     updateData()

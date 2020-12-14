@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { NETWORKING_OPCODES } from '../../backend/Constants.js'
-import Realm, { GLOBAL_REALMS } from './realm/Realm.js'
+import Realm from './realm/Realm.js'
 import User from '../user/User.js'
 import UserRemote from '../user/UserRemote.js'
 import { CONJURE_MODE } from '../Conjure.js'
 import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
-import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST } from './realm/RealmData.js'
+import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS } from '../../backend/realm/RealmData.js'
 import _ from 'lodash'
 
 export default class World
@@ -66,10 +66,10 @@ export default class World
         let realms = {}
         
         for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
-            realms[realm.id] = new RealmData(realm).getData()
+            realms[realm.id] = new RealmData(realm)
         
         for(let realm of await this.conjure.realms.getRealms())  
-            realms[realm.id] = new RealmData(realm).getData()
+            realms[realm.id] = new RealmData(realm)
 
         for(let realm of this.globalRealms)
         {
@@ -88,14 +88,11 @@ export default class World
         return await this.conjure.realms.getRealm(id)
     }
 
-    async preloadGlobalRealms()
-    {
-        for(let realm of Object.values(GLOBAL_REALMS))
-        {
-            const realmData = new RealmData(realm).getData()
+    async preloadGlobalRealms() {
+        for(let realm of Object.values(GLOBAL_REALMS)) {
+            const realmData = new RealmData(realm)
             realmData.global = true
             this.globalRealms.push(realmData)
-            await this.conjure.realms.addDatabase(realmData)
         }
     }
 
@@ -116,19 +113,19 @@ export default class World
         this.conjure.setConjureMode(CONJURE_MODE.LOADING)
         this.conjure.loadingScreen.setText('Joining realm...', false)
 
-        if(realmData.getData().whitelist)
+        if(realmData.whitelist)
         {
-            if(realmData.getData().whitelist.type === REALM_WHITELIST.SERVICE)
+            if(realmData.whitelist.type === REALM_WHITELIST.SERVICE)
             {
                 if(!this.conjure.getProfile().getServiceManager().getServiceLinked('Discord')) return false
-                // if(!realmData.getData().whitelist.ids.includes(this.conjure.getProfile().getServiceManager().getService('Discord').data.discordID)) return false
+                // if(!realmData.whitelist.ids.includes(this.conjure.getProfile().getServiceManager().getService('Discord').data.discordID)) return false
             }
-            if(realmData.getData().whitelist.type === REALM_WHITELIST.PASSCODE)
+            if(realmData.whitelist.type === REALM_WHITELIST.PASSCODE)
             {
                 this.conjure.setConjureMode(CONJURE_MODE.LOADING)
                 this.conjure.loadingScreen.setPasscodeVisible(true)
                 console.log('Waiting for valid passcode...')
-                if(!await this.waitForPasscode(realmData.getData().whitelist.ids))
+                if(!await this.waitForPasscode(realmData.whitelist.ids))
                 {
                     console.log('Maybe another time...')
                     return false
@@ -153,7 +150,11 @@ export default class World
         this.realm.database.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
         this.realm.database.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
-        let spawn = realmData.getData().worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
+        this.realm.sendData(NETWORKING_OPCODES.USER.METADATA, {
+            username: this.conjure.getProfile().getUsername()
+        })
+
+        let spawn = realmData.worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
         this.user.teleport(spawn.x, spawn.y, spawn.z)
         
@@ -205,7 +206,7 @@ export default class World
     getScreensDisabled()
     {
         if(!this.realm) return false
-        if(this.realm.realmData.getData().worldData.disableScreens)
+        if(this.realm.realmData.worldData.disableScreens)
             return true
         return false
     }
@@ -264,6 +265,10 @@ export default class World
             this.getWorldUpdates(updateArgs)
     }
 
+    roundInt(int, num) {
+        return parseFloat(String(int)).toFixed(num)
+    }
+
     getWorldUpdates()
     {
         let deltaUpdate = true;
@@ -275,12 +280,31 @@ export default class World
         }
         if(this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
         {
-            if(!deltaUpdate)
-                this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
+            // if(!deltaUpdate)
+            //     this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
+            
+            const pos = this.user.group.getWorldPosition(this.vec3).multiplyScalar(100).round().multiplyScalar(0.01)
+            const position = {
+                x: this.roundInt(pos.x, 2),
+                y: this.roundInt(pos.y, 2),
+                z: this.roundInt(pos.z, 2)
+            }
+            const quat = this.user.group.getWorldQuaternion(this.quat)
+            const rotation = {
+                x: this.roundInt(quat._x, 2),
+                y: this.roundInt(quat._y, 2),
+                z: this.roundInt(quat._z, 2),
+                w: this.roundInt(quat._w, 2)
+            }
+            const velocity = {
+                x: this.roundInt(this.user.group.body.velocity.x, 2),
+                y: this.roundInt(this.user.group.body.velocity.x, 2),
+                z: this.roundInt(this.user.group.body.velocity.y, 2),
+            }
             let payload = {
-                position: this.user.group.getWorldPosition(this.vec3),
-                rotation: this.user.group.getWorldQuaternion(this.quat),
-                velocity: this.user.group.body.velocity,
+                position,
+                rotation,
+                velocity
             }
             if(deltaUpdate || !_.isEqual(this.lastUserUpdate, payload))
             {
@@ -290,16 +314,16 @@ export default class World
         }
     }
 
-    async sendData(protocol, data)
+    async sendData(opcode, data)
     {
         if(this.realm)
-            await this.realm.sendData(protocol, data);
+            await this.realm.sendData(opcode, data);
     }
 
-    async sendTo(protocol, data, peerID)
+    async sendTo(opcode, data, peerID)
     {
         if(this.realm)
-            await this.realm.sendTo(protocol, data, peerID);
+            await this.realm.sendTo(opcode, data, peerID);
     }
 
     // TODO: if user joins with same discordID and diff peerID, need to figure out implications

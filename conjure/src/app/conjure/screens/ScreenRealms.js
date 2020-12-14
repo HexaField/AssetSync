@@ -3,7 +3,7 @@ import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementBase from './elements/ScreenElementBase'
 import ScreenElementTextBox from './elements/ScreenElementTextBox'
 import ScreenElementScroll from './elements/ScreenElementScroll'
-import RealmData from '../world/realm/RealmData'
+import RealmData from '../../backend/realm/RealmData'
 import ScreenElementSprite from './elements/ScreenElementSprite'
 
 export default class ScreenRealms extends ScreenBase

@@ -20,6 +20,13 @@ const log = debug('libp2p:repo')
 const noLimit = Number.MAX_SAFE_INTEGER
 const AUTO_MIGRATE_CONFIG_KEY = 'repoAutoMigrate'
 
+const defaultBackend = isNode ? require('datastore-fs') : require('datastore-level')
+const defaultBackendConfig = isNode ? {} : {
+    sharding: false,
+    prefix: '',
+    version: 2
+}
+
 const lockers = {
   memory: require('./lock-memory'),
   fs: require('./lock')
@@ -111,7 +118,7 @@ class Libp2pRepo {
    * @param {Object} storageBackendOptions
    * @returns {datastore-interface}
    */
-  async openDatastore(name, storageBackend, storageBackendOptions) {
+  async openDatastore(name, storageBackend = defaultBackend, storageBackendOptions = defaultBackendConfig) {
     try {
       const datastore = backends.create(name, pathJoin(this.path, name), { storageBackends: { [name]: storageBackend }, storageBackendOptions: storageBackendOptions || {} } )
       await datastore.open()
@@ -168,11 +175,7 @@ class Libp2pRepo {
         }
       }
 
-      await this.openDatastore('keys', isNode ? require('datastore-fs') : require('datastore-level'), isNode ? {} : {
-        sharding: false,
-        prefix: '',
-        version: 2
-      })
+      await this.openDatastore('keys')
 
       this.closed = false
       log('all opened')

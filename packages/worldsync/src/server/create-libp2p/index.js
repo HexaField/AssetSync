@@ -6,22 +6,25 @@ export default async function (options = {}) {
         const { default: Libp2p, config } = await import('./create-node.js')
 
         if (options.repoPath) {
+            try {
+                const { peerId, keychain, repo, print, isNew } = await startRepo({
+                    repo: options.repoPath,
+                    libp2pConfig: config()
+                })
 
-            const { peerId, keychain, repo, print, isNew } = await startRepo({
-                repo: options.repoPath,
-                libp2pConfig: config()
-            })
+                const { datastore, keys } = repo
+                const libp2pConfig = Object.assign({}, config(), {
+                    peerId,
+                    datastore,
+                    keychain
+                })
 
-            const { datastore, keys } = repo
-            const libp2pConfig = Object.assign({}, config(), {
-                peerId,
-                datastore,
-                keychain
-            })
-
-            const libp2p = await Libp2p(libp2pConfig)
-            libp2p.repo = repo
-            return libp2p
+                const libp2p = await Libp2p(libp2pConfig)
+                libp2p.repo = repo
+                return libp2p
+            } catch (error) {
+                console.log('Failed to start repo, using memory instead...', error)
+            }
         }
 
         return await Libp2p(config())

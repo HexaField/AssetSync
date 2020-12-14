@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import Feature from "./Feature"
 import StructurePortal from "../structures/StructurePortal"
 import { POSTPROCESSING } from '../../PostProcessing';
-import { REALM_WHITELIST } from '../realm/RealmData';
+import { REALM_WHITELIST } from '../../../backend/realm/RealmData';
 import { createLineGeometry, createCircleGeometry } from '../../util/MeshTemplates'
 
 export default class FeatureLobby extends Feature

@@ -1,5 +1,5 @@
 import RealmDatabase from "./realm/RealmDatabase.js"
-import { NETWORKING_OPCODES } from './Constants.js'
+import RealmData, { GLOBAL_REALMS } from './realm/RealmData.js'
 
 export default class RealmHandler {
     constructor(assetSync) {
@@ -13,7 +13,7 @@ export default class RealmHandler {
 
         this.dhtType = 'realm'
 
-        this.dhtProtocol = '/conjure/realms/' // id is added between these
+        this.dhtProtocol = '/realms/' // id is added between these
         // this.dhtVersion = '/1.0.0' // not currently impelemented
         this.realms = {}
     }
@@ -39,7 +39,15 @@ export default class RealmHandler {
     }
 
     async initialise() {
-        
+        await this.preloadGlobalRealms()
+    }
+
+    async preloadGlobalRealms() {
+        for(let realm of Object.values(GLOBAL_REALMS)) {
+            const realmData = new RealmData(realm)
+            realmData.global = true
+            await this.addDatabase(realmData)
+        }
     }
 
     // async savePinnedRealms() {

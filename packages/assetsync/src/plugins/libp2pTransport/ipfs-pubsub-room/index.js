@@ -71,12 +71,6 @@ export default class PubSubRoom extends EventEmitter {
     await this._libp2p.pubsub.publish(this._topic, message)
   }
 
-  sendToAll (message) {
-    for(let peer of this.getPeers()) {
-        this.sendTo(peer, message)
-    }
-  }
-
   sendTo (peer, message) {
     let conn = this._connections[peer]
     if (!conn) {
@@ -134,7 +128,8 @@ export default class PubSubRoom extends EventEmitter {
 
   _onMessage (message) {
     message.data = decoding(message.data)
-    this.emit('message', message)
+    if(message.from !== this._libp2p.peerId.toB58String())
+        this.emit('message', message)
   }
 
   _handleDirectMessage (message) {

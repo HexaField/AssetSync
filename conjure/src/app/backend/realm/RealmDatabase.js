@@ -1,5 +1,9 @@
 import EventEmitter from 'events'
 import { NETWORKING_OPCODES } from '../Constants.js'
+import { REALM_WORLD_GENERATORS } from './RealmData.js'
+import realmBasic from './datastores/RealmDatabaseBasic.js'
+import realmProcedural from './datastores/RealmDatabaseProcedural.js'
+import { isNode } from '@AssetSync/common'
 
 export default class RealmDatabase extends EventEmitter {
     constructor(realmData, assetSync, dhtProtocol) {
@@ -9,29 +13,61 @@ export default class RealmDatabase extends EventEmitter {
         this.dhtProtocol = dhtProtocol + this.realmData.id
 
         this.objects = {}
+
+        this._get = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _get implemented') }
+        this._put = async (key, value)  => { console.warn('ERROR! Database', realmData.id, 'has no _put implemented') }
+        this._getAllLocal = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _getAllLocal implemented') }
+        this._removeLocal = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _removeLocal implemented') }
     }
 
     async start(onProgress = () => {}) {
 
-        this.dht = await this.assetSync.dhtPlugin.addDHT(this.dhtProtocol)
+        console.log('Opening database for realm', this.realmData.id)
+
         this.network = await this.assetSync.networkPlugin.joinNetwork(this.realmData.id)
-        this.dht.on('put', (key, val, peer) => database.emit('put', key, val, peer))
-        this.dht.on('removed', (key, val) => database.emit('removed', key, val))
         
         this.network.on('message', (message) => {
             const { opcode, content } = JSON.parse(message.data)
             this.emit(opcode, content, message.from)
         })
+    
+        this.on(NETWORKING_OPCODES.OBJECT.CREATE, (content, peerID) => {
+            const { uuid, data } = content
+            this._put(uuid, JSON.stringify(data))
+        })
+        this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, (content, peerID) => {
+            const { uuid, data } = content
+            this._put(uuid, JSON.stringify(data))
+        })
+        this.on(NETWORKING_OPCODES.OBJECT.DESTROY, (content, peerID) => {
+            const { uuid, data } = content
+            this._removeLocal(uuid, JSON.stringify(data))
+        })
+        this.on(NETWORKING_OPCODES.OBJECT.MOVE, (content, peerID) => {
+            // const { uuid, data } = JSON.parse(content)
+            // this._put(uuid, data)
+        })
+        this.on(NETWORKING_OPCODES.OBJECT.GROUP, (content, peerID) => {
+            // const { uuid, data } = JSON.parse(content)
+            // this._put(uuid, data)
+        })
         
         // resolve at least one peer on network (so we can join the realm)
-        console.log('Loading database...')
-        onProgress({ message: 'Loading database...' })
+        onProgress({ message: 'Connected to network...' })
         if(!this.realmData.global)
             await this.joinNetwork()
 
-        console.log('Joined network...')
-        onProgress({ message: 'Joined network' })
-        // get all objects
+        onProgress({ message: 'Loading database' })
+
+        // if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
+        //     await realmProcedural(this)
+        // }
+
+        if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.NONE) {
+            await realmBasic(this)
+        }
+        
+        console.log('Loaded', (await this._getAllLocal()).length, 'objects from ')
         // start physics
 
     }
@@ -41,28 +77,13 @@ export default class RealmDatabase extends EventEmitter {
     }
 
     sendToAll(opcode, content) {
-        this.network.sendToAll(JSON.stringify({ opcode, content }))
+        this.network.broadcast(JSON.stringify({ opcode, content }))
     }
 
-    sendTo(opcode, content, peerID) {
+    sendTo(peerID, opcode, content) {
         this.network.sendTo(peerID, JSON.stringify({ opcode, content }))
     }
 
-    async _get(key) {
-        return await this.assetSync.dhtPlugin.get({ key, protocol: this.dhtProtocol })
-    }
-
-    async _put(key, value) {
-        return await this.assetSync.dhtPlugin.put({ key, value, protocol: this.dhtProtocol })
-    }
-
-    async _getAllLocal() {
-        return await this.assetSync.dhtPlugin.getAllLocal(this.dhtProtocol)
-    }
-
-    async _removeLocal(key) {
-        return await this.assetSync.dhtPlugin.removeLocal({ key, protocol: this.dhtProtocol })
-    }
 
     // === API === //
 
@@ -84,7 +105,7 @@ export default class RealmDatabase extends EventEmitter {
         console.log('createObject', uuid, data)
         try {
             await this._put(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, data)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, { uuid, data })
             return true
         } catch (error) {
             console.log(error)
@@ -97,6 +118,7 @@ export default class RealmDatabase extends EventEmitter {
         console.log('getObjects')
         const results = []
         results.push(...await this._getAllLocal())
+        console.log(results)
         return results
     }
 
@@ -105,7 +127,7 @@ export default class RealmDatabase extends EventEmitter {
         console.log('updateObject', uuid, data)
         try {
             await this._put(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, data)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, { uuid, data })
             return true
         } catch (error) {
             console.log(error)
@@ -118,7 +140,7 @@ export default class RealmDatabase extends EventEmitter {
         console.log('dereferenceObject', uuid, data)
         try {
             await this._removeLocal(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY, data)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid, data })
             return true
         } catch (error) {
             console.log(error)
