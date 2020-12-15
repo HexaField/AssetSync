@@ -14,12 +14,13 @@ Read about AssetSync & Conjure [here](https://medium.com/@joshfield999)
 [Join the conversation on discord!](https://discord.com/invite/ExBxEN2)
 
 ## Architecture
-![Conjure](./images/Server_Client_Info_v4_small.jpg)
+![Conjure](./images/Sever_Client_Info_Page_Update_small.jpg)
 
 ## Conjure Progress Goals 2020 Q4
 
 - [x] Migration to AssetSync
 - [ ] Basic realm object system working on DHTs
+- [ ] Video Conferencing
 
 ## Conjure Progress Goals 2021 Q1
 
