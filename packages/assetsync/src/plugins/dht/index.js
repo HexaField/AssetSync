@@ -3,6 +3,8 @@ import { PluginBase } from '../../PluginBase.js'
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { isNode } from '@AssetSync/common'
+import * as utils from './utils.js'
+
 
 export class DHTPlugin extends PluginBase {
 
@@ -95,8 +97,13 @@ export class DHTPlugin extends PluginBase {
         if(!this.dhts[protocol || this._defaultProtocol]) return []
         const dht = this.dhts[protocol || this._defaultProtocol]
         const entries = []
-        for await (const entry of dht.datastore._all()) {
-            entries.push(entry)
+        for await (const entry of dht.datastore._all({})) {
+            const record = utils.decodeRecord(entry.value)
+            entries.push({
+                key: uint8ArrayToString(record.key),
+                value: uint8ArrayToString(record.value),
+                timeReceived: record.timeReceived
+            })
         }
         return entries
     }

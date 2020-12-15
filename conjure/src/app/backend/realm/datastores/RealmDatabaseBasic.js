@@ -163,7 +163,6 @@ export default async (realmDatabase) => {
     // content = [...{ key, value }]
     realmDatabase.on(OPCODES_SYNCED_DATABASE.receiveEntries, async (content, peerID) => {
         for (let entry of content) {
-            console.log(entry)
             await realmDatabase._put(entry.key, entry.value, entry.timeReceived)
             realmDatabase.emit(NETWORKING_OPCODES.OBJECT.RECEIVE, { uuid: entry.key, data: entry.value })
         }

@@ -114,10 +114,6 @@ export default class Realm extends EventEmitter
         this.database = await this.world.conjure.realms.addDatabase(this.realmData, ({ message }) => {
             this.conjure.loadingScreen.setText(message, false)
         })
-
-        for(let obj of await this.database.getObjects()) {
-            this.loadObjectFromPeer(obj.uuid, obj.data);
-        }
         
         this.database.on(NETWORKING_OPCODES.OBJECT.RECEIVE, this.onObjectCreate)
         this.database.on(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
@@ -125,6 +121,10 @@ export default class Realm extends EventEmitter
         this.database.on(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
         this.database.on(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
         this.database.on(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+
+        for(let obj of await this.database.getObjects()) {
+            this.loadObjectFromPeer(obj.uuid, obj.data);
+        }
 
         // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
         // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)

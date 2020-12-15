@@ -1,4 +1,6 @@
 import kad from './kad/index.min.js'
+import Libp2pRepo from './libp2p-repo/dist/index.min.js'
+window.Libp2pRepo = Libp2pRepo
 
 export function config() {
     return {
@@ -14,8 +16,13 @@ export function config() {
                 window.Libp2pWebsockets,
                 window.Libp2pWebrtcStar
             ],
-            streamMuxer: [window.Libp2pMplex],
-            connEncryption: [window.Libp2pNoise, window.Libp2pSecio],
+            streamMuxer: [
+                window.Libp2pMplex
+            ],
+            connEncryption: [
+                // window.Libp2pNoise,
+                window.Libp2pSecio
+            ],
             pubsub: window.Libp2pGossipsub,
             dht: kad
         },
@@ -36,20 +43,6 @@ export function config() {
 // todo: add custom config options
 
 export default async function (options) {
-
-    // dynamic imports here since webworkers can't access DOM scripts
-    await import('https://unpkg.com/libp2p@0.29.4/dist/index.min.js')
-    await import('https://unpkg.com/libp2p-mplex@0.10.1/dist/index.min.js')
-    await import('https://unpkg.com/libp2p-secio@0.13.1/dist/index.min.js')
-    await import('https://bundle.run/buffer@6.0.3')
-    window.Buffer = window.buffer.Buffer
-    await import('https://unpkg.com/libp2p-noise@2.0.1/dist/index.min.js')
-    await import('https://unpkg.com/libp2p-websockets@0.14.0/dist/index.min.js')
-    // await import('https://unpkg.com/libp2p-bootstrap@0.12.1/dist/index.min.js')
-    await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')
-    // await import('https://unpkg.com/libp2p-kad-dht@0.20.3/dist/index.min.js')
-
-    await import('https://unpkg.com/libp2p-webrtc-star@0.20.4/dist/index.min.js') // we can't use webrtc in webworker
 
     const node = await self.Libp2p.create(options || config())
     await node.start()

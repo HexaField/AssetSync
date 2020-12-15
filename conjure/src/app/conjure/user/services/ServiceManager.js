@@ -74,7 +74,7 @@ export default class ServiceManager {
         for (let service of Object.values(this.services)) {
             let ids = await service.getRealms()
             for (let i in ids) {
-                if (await this.conjure.realms.getRealm(ids[i].id))
+                if (await this.conjure.realms.getRealmById(ids[i].id))
                     if (realm) 
                         realmsFound.push(ids[i])
             }

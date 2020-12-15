@@ -44,6 +44,8 @@ export default class RealmHandler {
 
     async initialise() {
         await this.preloadGlobalRealms()
+        console.log(await this.getRealms())
+        console.log(this.assetSync.dhtPlugin.dht.datastore)
     }
 
     async preloadGlobalRealms() {
@@ -66,7 +68,7 @@ export default class RealmHandler {
     // async loadPinnedRealms() {
     //     try {
     //         const data = await this.assetSync.storagePlugin.readFile('recent_realms.json')
-    //         if (!data)
+    //         if (!data)`
     //             return []
     //         return JSON.parse(data) || []
     //     }

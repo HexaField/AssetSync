@@ -44,8 +44,8 @@ export default class RealmDatabase extends EventEmitter {
             this._removeLocal(uuid, JSON.stringify(data))
         })
         this.on(NETWORKING_OPCODES.OBJECT.MOVE, (content, peerID) => {
-            // const { uuid, data } = JSON.parse(content)
-            // this._put(uuid, data)
+            const { uuid, data } = JSON.parse(content)
+            this._put(uuid, data)
         })
         this.on(NETWORKING_OPCODES.OBJECT.GROUP, (content, peerID) => {
             // const { uuid, data } = JSON.parse(content)

@@ -3,21 +3,6 @@ import test from 'ava'
 import createLibp2p from './dht/create-libp2p.js'
 import Peer from './dht/peer.js'
 import delay from 'delay'
-// import KadDHT from '../../common/src/libp2pkaddht/src/index.js'
-// import KadDHT from 'libp2p-kad-dht'
-
-import uint8ArrayFromString from 'uint8arrays/from-string.js'
-import uint8ArrayToString from 'uint8arrays/to-string.js'
-
-/**
- * DISCLAIMER!
- *    due to the fact that im too lazy to figure out how to get libp2p
- *    to work with the dht with the relay, im just gonna leave the onPut test as
- *    the only one here since it's really the only thing that needs to be tested
- * 
- * TODO: Figure out how to get this working without needing to use the signalling server
-*/
-
 
 async function createPeers(peerCount = 2) {
 
@@ -32,59 +17,63 @@ async function createPeers(peerCount = 2) {
     return peers
 }
 
-// test.serial('can put and get to DHT', async (t) => {
+test.serial('can put and get to DHT', async (t) => {
 
-//     const peers = await createPeers()
+    const peers = await createPeers()
 
-//     const key = Math.random().toString(36)
-//     const value = Math.random().toString(36)
+    const key = Math.random().toString(36)
+    const value = Math.random().toString(36)
 
-//     return new Promise((resolve) => {
+    return new Promise((resolve) => {
 
-//         peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
-//             await delay(100) // wait for connection to complete
-//             await peers[0].dhtPlugin.put({ key, value })
-//         })
+        peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
+            await delay(100) // wait for connection to complete
+            await peers[0].dhtPlugin.put({ key, value })
+        })
 
-//         peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
-//             await delay(500) // wait for entry to propagate
-//             const result = await peers[1].dhtPlugin.get({ key, timeout: 1000 })
-//             resolve(result)
-//         })
+        peers[1].libp2pPlugin.on('peer:connect', async (connection) => {
+            await delay(500) // wait for entry to propagate
+            const result = await peers[1].dhtPlugin.get({ key, timeout: 1000 })
+            resolve(result)
+        })
 
-//     }).then((result) => {
-//         t.is(result, value)
-//     })
-// })
+    }).then(async (result) => {
+        t.is(result, value)
+        await peers[0].libp2pPlugin._libp2p.stop()
+        await peers[1].libp2pPlugin._libp2p.stop()
+    })
+})
 
-// test.serial('onPut event', async (t) => {
+test.serial('onPut event', async (t) => {
 
-//     const peers = await createPeers()
+    const peers = await createPeers()
 
-//     const key = Math.random().toString(36)
-//     const value = Math.random().toString(36)
+    const key = Math.random().toString(36)
+    const value = Math.random().toString(36)
 
-//     return new Promise((resolve) => {
+    return new Promise((resolve) => {
 
-//         peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
-//             await delay(100) // 
-//             try {
-//                 await peers[0].dhtPlugin.put({ key, value, minPeers: 1 })
-//             } catch (error) {
-//                 console.error(error)
-//             }
-//         })
+        peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
+            await delay(100) // 
+            try {
+                await peers[0].dhtPlugin.put({ key, value, minPeers: 1 })
+            } catch (error) {
+                console.error(error)
+            }
+        })
 
-//         peers[1].dhtPlugin.dht.on('put', (key, value, from) => {
-//             resolve({ key, value, from })
-//         })
+        peers[1].dhtPlugin.dht.on('put', (key, value, from) => {
+            resolve({ key, value, from })
+        })
 
-//     }).then((result) => {
-//         t.is(result.key, key)
-//         t.is(result.value, value)
-//         t.is(result.from, peers[0].libp2pPlugin.getPeerID())
-//     })
-// })
+    }).then(async (result) => {
+        t.is(result.key, key)
+        t.is(result.value, value)
+        t.is(result.from, peers[0].libp2pPlugin.getPeerID())
+        await peers[0].libp2pPlugin._libp2p.stop()
+        await peers[1].libp2pPlugin._libp2p.stop()
+    })
+})
 
 test.serial('custom DHT', async (t) => {
 
@@ -126,10 +115,64 @@ test.serial('custom DHT', async (t) => {
             }
         })
 
-    }).then((result) => {
+    }).then(async (result) => {
         t.is(result, value)
+        await peers[0].libp2pPlugin._libp2p.stop()
+        await peers[1].libp2pPlugin._libp2p.stop()
     })
 })
 
+
+test.serial('put event', async (t) => {
+
+    const peers = await createPeers()
+
+    const key = Math.random().toString(36)
+    const value = Math.random().toString(36)
+
+    return new Promise((resolve) => {
+
+        peers[0].libp2pPlugin.on('peer:connect', async (connection) => {
+            await delay(100) // 
+            try {
+                await peers[0].dhtPlugin.put({ key, value, minPeers: 1 })
+            } catch (error) {
+                console.error(error)
+            }
+        })
+
+        peers[1].dhtPlugin.dht.on('put', (key, value, from) => {
+            resolve({ key, value, from })
+        })
+
+    }).then(async (result) => {
+        t.is(result.key, key)
+        t.is(result.value, value)
+        t.is(result.from, peers[0].libp2pPlugin.getPeerID())
+        await peers[0].libp2pPlugin._libp2p.stop()
+        await peers[1].libp2pPlugin._libp2p.stop()
+    })
+})
+
+test.serial('getAllLocal', async (t) => {
+
+    const [peer] = await createPeers(1)
+
+    const key = Math.random().toString(36)
+    const value = Math.random().toString(36)
+
+    return new Promise(async (resolve) => {
+
+            // await delay(100)
+        await peer.dhtPlugin.put({ key, value })
+        resolve(await peer.dhtPlugin.getAllLocal())
+
+    }).then(async (result) => {
+        t.is(result.length, 1)
+        t.is(result[0].key, key)
+        t.is(result[0].value, value)
+        await peer.libp2pPlugin._libp2p.stop()
+    })
+})
 
 // TODO: add test for opening, putting, closing, opening and getting an entry in datastore with DHT
