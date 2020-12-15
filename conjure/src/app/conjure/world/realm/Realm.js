@@ -321,6 +321,7 @@ export default class Realm extends EventEmitter
 
     async loadObject(data)
     {
+        if(!data || typeof data !== 'string') return
         try
         {
             // if(data.images)

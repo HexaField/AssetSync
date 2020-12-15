@@ -98,7 +98,7 @@ export default class World
 
     async joinRealm(realmData, args = {})
     {
-        if(!args.force && this.realm && realmData.getID() === this.realm.realmID) return false
+        if(!args.force && this.realm && realmData.id === this.realm.realmID) return false
         if(this.realm)
         {
             this.lastRealmID = this.realm.realmID

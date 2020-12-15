@@ -63,18 +63,22 @@ export default async (realmDatabase) => {
             const keyArray = uint8ArrayFromString(key)
             const entry = await datastoreObjects.get(utils.bufferToKey(keyArray))
             const record = utils.decodeRecord(entry)
-            return uint8ArrayToString(record.value)
+            return {
+                key: uint8ArrayToString(record.key),
+                value: uint8ArrayToString(record.value),
+                timeReceived: record.timeReceived
+            }
         } catch (err) {
             console.log(err)
             return undefined
         }
     }
 
-    realmDatabase._put = async (key, value) => {
+    realmDatabase._put = async (key, value, time) => {
         try {
             const keyArray = uint8ArrayFromString(key)
             const valueArray = uint8ArrayFromString(value)
-            const record = await utils.createPutRecord(keyArray, valueArray)
+            const record = await utils.createPutRecord(keyArray, valueArray, time)
             await datastoreObjects.put(utils.bufferToKey(keyArray), record)
             return true
         } catch (err) {
@@ -105,6 +109,7 @@ export default async (realmDatabase) => {
         try {
             const keyArray = uint8ArrayFromString(key)
             await datastoreObjects.delete(utils.bufferToKey(keyArray))
+            await datastoreObjects.put(utils.bufferToKey(keyArray), uint8ArrayFromString(''))
             return true
         } catch (err) {
             console.log(err)
@@ -124,8 +129,9 @@ export default async (realmDatabase) => {
     }
 
     const lastSynced = await getLastSynced()
-    console.log('Last synced at', lastSynced || 0)
-    if(!lastSynced) {
+    if(lastSynced) {
+        console.log('Last synced at', new Date(lastSynced).toLocaleString())
+    } else {
         await putMetadata('lastSynced', String(0))
     }
 
@@ -138,8 +144,8 @@ export default async (realmDatabase) => {
 
     // content = lastUpdated
     realmDatabase.on(OPCODES_SYNCED_DATABASE.requestKeys, async (content, peerID) => {
-        // if(content < await getLastSynced())
-        realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
+        if(isNode && content < await getLastSynced())
+            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
     })
 
     // content = [...{ key, timeReceived }]
@@ -157,7 +163,8 @@ export default async (realmDatabase) => {
     // content = [...{ key, value }]
     realmDatabase.on(OPCODES_SYNCED_DATABASE.receiveEntries, async (content, peerID) => {
         for (let entry of content) {
-            await realmDatabase._put(entry.key, entry.value)
+            console.log(entry)
+            await realmDatabase._put(entry.key, entry.value, entry.timeReceived)
             realmDatabase.emit(NETWORKING_OPCODES.OBJECT.RECEIVE, { uuid: entry.key, data: entry.value })
         }
 
@@ -174,8 +181,9 @@ export default async (realmDatabase) => {
 
     async function getEntriesByKeys(keys) {
         let entries = []
-        for (let key of keys)
-            entries.push({ key, value: await realmDatabase._get(key) })
+        for (let key of keys) {
+            entries.push(await realmDatabase._get(key))
+        }
         return entries
     }
 

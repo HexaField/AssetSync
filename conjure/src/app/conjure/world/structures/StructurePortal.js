@@ -41,7 +41,7 @@ export default class StructurePortal
     destroy()
     {
         if(this.group.body)
-            this.conjure.physics.destroy(this.group.body)
+            this.conjure.physics.destroy(this.group)
         this.group.parent.remove(this.group)
     }
 }

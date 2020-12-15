@@ -129,18 +129,18 @@ export default class ScreenRealmSettings extends ScreenBase
 
     async createRealm()
     {
-        // replace with dht
         if(this.isCreating)
         {
             await this.screenManager.conjure.realms.createRealm(this.data)
             console.log('Successfully made realm!', this.data)
-            this.screenManager.showScreen(this.screenManager.screenRealms)
+            this.screenManager.hideLastOpenScreen(this.screenManager.screenRealms)
+            this.screenManager.conjure.world.joinRealm(this.data)
             this.data = undefined // must reset data
         }
         else
         {
             this.data.timestamp = Date.now()
-            await this.screenManager.conjure.realms.updateRealm(this.data)
+            await this.screenManager.conjure.realms.updateRealm(new RealmData(this.data))
             this.screenManager.conjure.getWorld().forceReloadCurrentRealm()
         }
     }

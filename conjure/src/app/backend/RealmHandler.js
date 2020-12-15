@@ -31,10 +31,14 @@ export default class RealmHandler {
     }
 
     receiveFromDHT(key, value, from) {
-        if(value) {
-            this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
-        } else {
-            this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+        try {
+            if(value) {
+                this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+            } else {
+                this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+            }
+        } catch (err) {
+            console.log(err, JSON.stringify(value, null, 2))
         }
     }
 
@@ -93,7 +97,8 @@ export default class RealmHandler {
     }
 
     async createRealm(realmData) {
-        await this.put(realmData.id, realmData)
+        // await this.put(realmData.id, realmData) // takes a long time with current dht
+        this.put(realmData.id, JSON.stringify(realmData))
         await this.addDatabase(realmData)
     }
 

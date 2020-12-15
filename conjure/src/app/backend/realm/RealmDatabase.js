@@ -54,8 +54,9 @@ export default class RealmDatabase extends EventEmitter {
         
         // resolve at least one peer on network (so we can join the realm)
         onProgress({ message: 'Connected to network...' })
-        if(!this.realmData.global)
-            await this.joinNetwork()
+
+        // if(!this.realmData.global)
+        //     await this.joinNetwork()
 
         onProgress({ message: 'Loading database' })
 
@@ -102,7 +103,7 @@ export default class RealmDatabase extends EventEmitter {
 
     // create
     async createObject({ uuid, data }) {
-        console.log('createObject', uuid, data)
+        // console.log('createObject', uuid, data)
         try {
             await this._put(uuid, JSON.stringify(data))
             this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, { uuid, data })
@@ -115,7 +116,7 @@ export default class RealmDatabase extends EventEmitter {
 
     // read
     async getObjects(position, distance) {
-        console.log('getObjects')
+        // console.log('getObjects')
         const results = []
         results.push(...await this._getAllLocal())
         console.log(results)
@@ -124,7 +125,7 @@ export default class RealmDatabase extends EventEmitter {
 
     // update
     async updateObject({ uuid, data }) {
-        console.log('updateObject', uuid, data)
+        // console.log('updateObject', uuid, data)
         try {
             await this._put(uuid, JSON.stringify(data))
             this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, { uuid, data })
@@ -137,7 +138,7 @@ export default class RealmDatabase extends EventEmitter {
 
     // delete
     async dereferenceObject({ uuid, data }) {
-        console.log('dereferenceObject', uuid, data)
+        // console.log('dereferenceObject', uuid, data)
         try {
             await this._removeLocal(uuid, JSON.stringify(data))
             this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid, data })
@@ -150,6 +151,6 @@ export default class RealmDatabase extends EventEmitter {
 
     // transact
     async transactObject({ uuid, data }) {
-        console.log('transactObject', uuid, data)
+        // console.log('transactObject', uuid, data)
     }
 }

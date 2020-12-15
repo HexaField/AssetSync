@@ -1,7 +1,7 @@
 import { isNode, EventDispatcher, isWebWorker } from '@AssetSync/common'
 
 import Assets from './backend/Assets.js'
-import RealmHandler from './backend/Realms.js'
+import RealmHandler from './backend/RealmHandler.js'
 import Profiles from './backend/Profiles.js'
 
 export default async function (args) {
@@ -37,17 +37,17 @@ class App extends EventDispatcher {
         }
         
         this.assetSync.dhtPlugin.dht.on('put', (key, value, from) => {
-            console.log('Received dht entry ' + key)
+            console.log('Received dht entry', key, value)
             const entryKey = key.split(':')
             switch(entryKey[0]) {
-                case this.realms.dhtType: this.realms.receiveFromDHT(key, value, from); break;
-                case this.assets.dhtType: this.assets.receiveFromDHT(key, value, from); break;
+                case this.realms.dhtType: this.realms.receiveFromDHT(entryKey[1], value, from); break;
+                case this.assets.dhtType: this.assets.receiveFromDHT(entryKey[1], value, from); break;
                 default: break;
             }
         })
 
         this.assetSync.dhtPlugin.dht.on('removed', (key, value) => {
-            console.log('Removed dht entry ' + key)
+            console.log('Removed dht entry', key, value)
             const entryKey = key.split(':')
             switch(entryKey[0]) {
                 case this.realms.dhtType: this.realms.receiveFromDHT(key); break;
