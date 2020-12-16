@@ -13,7 +13,7 @@ export const GLOBAL_REALMS = {
     LOBBY: {
         id: 'Lobby',
         name: 'Lobby',
-        timestamp: 0,
+        timestamp: -1,
         worldSettings: {
             features: ['Lobby'],
             worldGeneratorType: REALM_WORLD_GENERATORS.NONE
@@ -22,7 +22,7 @@ export const GLOBAL_REALMS = {
     GALLERY: {
         id: 'Gallery',
         name: 'Art Gallery',
-        timestamp: 0,
+        timestamp: -1,
         worldData: {
             playsAudio: true
         },
@@ -34,7 +34,7 @@ export const GLOBAL_REALMS = {
     CAMPFIRE: {
         id: 'Campfire',
         name: 'Campfire',
-        timestamp: 0,
+        timestamp: -1,
         worldData: {
             playsAudio: true
         },
@@ -45,15 +45,20 @@ export const GLOBAL_REALMS = {
     },
 }
 
+function randomString(length) {
+    return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+}
+
 export default class RealmData
 {  
-    constructor(params = {})
+    constructor(params)
     {
-        const now = Date.now()
-        this.id = String(params.id || now)
+        if(!params || !params.id || !params.name) throw new Error('Error: Invalid realm data! ' + params)
+
+        this.id = String(params.id || randomString(8))
         this.name = params.name || 'New Realm'
-        this.timestamp = now
-        this.iconURL = params.iconURL
+        this.timestamp = params.timestamp || (new Date()).toUTCString()
+        this.iconURL = params.iconURL || ''
         this.global = Boolean(params.global)
 
         // temp until DIDs is in

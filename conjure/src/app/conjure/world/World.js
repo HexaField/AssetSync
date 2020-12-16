@@ -76,7 +76,7 @@ export default class World
             realms[realm.id] = realm
         }
         
-        return Object.values(realms)
+        return Object.values(realms).sort((a, b) => { return a.timestamp > b.timestamp})
     }
 
     async getRealm(id)

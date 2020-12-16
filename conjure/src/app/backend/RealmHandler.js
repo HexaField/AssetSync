@@ -18,7 +18,7 @@ export default class RealmHandler {
     // value: realmData
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
+        return JSON.parse(await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key }))
     }
 
     async put(key, value) {
@@ -40,50 +40,22 @@ export default class RealmHandler {
     async initialise() {
         await this.preloadGlobalRealms()
         for(let realm of await this.getRealms()) {
-            if(realm.key.substring(0, 7) === '/realm/') {
-                await this.addDatabase(JSON.parse(realm.value))
-            }
+            await this.addDatabase(realm)
         }
-        if(!isNode)
-            console.log(await this.getRealms())
     }
 
     async preloadGlobalRealms() {
         for(let realm of Object.values(GLOBAL_REALMS)) {
-            const realmData = new RealmData(realm)
-            realmData.global = true
-            await this.addDatabase(realmData)
+            realm.global = true
+            await this.addDatabase(realm)
         }
     }
 
-    // async savePinnedRealms() {
-    //     try {
-    //         await this.assetSync.storagePlugin.writeFile('recent_realms.json', JSON.stringify(this.pinnedRealms))
-    //     } catch (error) {
-    //         console.log('ConjureDatabase: could not save recent realms', this.pinnedRealms, 'with error', error);
-    //         // this.conjure.getGlobalHUD().log('Failed to read recent realms')
-    //     }
-    // }
-
-    // async loadPinnedRealms() {
-    //     try {
-    //         const data = await this.assetSync.storagePlugin.readFile('recent_realms.json')
-    //         if (!data)`
-    //             return []
-    //         return JSON.parse(data) || []
-    //     }
-    //     catch (error) {
-    //         console.log('ConjureDatabase: could not read recent realms with error', error);
-    //         // this.conjure.getGlobalHUD().log('Failed to load recent realms list')
-    //         return
-    //     }
-    // }
-
     // API
 
-    // async updateRealm(realmData) {
-    //     await this.addRealms(realmData)
-    // }
+    async updateRealm(realmData) {
+        await this.createRealm(realmData)
+    }
 
     async forgetRealm(realmData) {
         await this.assetSync.dhtPlugin.removeLocal({ key: realmData.id })
@@ -91,7 +63,9 @@ export default class RealmHandler {
     }
 
     async getRealms() {
-        return await this.assetSync.dhtPlugin.getAllLocal()
+        return (await this.assetSync.dhtPlugin.getAllLocal())
+            .filter((realm) => { return realm.key.substring(0, 7) === '/realm/' })
+            .map((realm) => { return JSON.parse(realm.value) })
     }
 
     async getRealmById(id) {
@@ -104,12 +78,8 @@ export default class RealmHandler {
         await this.addDatabase(realmData)
     }
 
-    updateRealm(id) {
-
-    }
-
-    getDatabase(id) {
-        return this.realms[id]
+    getDatabase(realmData) {
+        return this.realms[realmData.id || realmData]
     }
 
     async addDatabase(realmData, onProgress) {
@@ -117,7 +87,7 @@ export default class RealmHandler {
     }
 
     async _createDatabase(realmData, onProgress) {
-        const database = new RealmDatabase(realmData, this.assetSync, this.dhtProtocol)
+        const database = new RealmDatabase(new RealmData(realmData), this.assetSync, this.dhtProtocol)
         await database.start(onProgress)
         this.realms[realmData.id] = database
         return database

@@ -31,7 +31,7 @@ export default class UserRemote extends User
         this.timeoutLimit = 603 * 60 // if don't receive a heartbeat for 3 seconds, die
         this.timeoutCount = 0
 
-        this.makeConnection(peerID)
+        // this.makeConnection(peerID)
     }
 
     onCreate()

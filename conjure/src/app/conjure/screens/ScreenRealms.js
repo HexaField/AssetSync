@@ -95,15 +95,8 @@ export default class ScreenRealms extends ScreenBase
 
     async forgetRealm(realmData)
     {
-        for(let realm of await this.screenManager.conjure.getRealms()) // get all stored realms
-        {
-            if(realm.id === realmData.realmData.id)
-            {
-                // await this.screenManager.conjure.pinRealm(realmData.realmData, !realmData.pinned)
-                // this.getRealms()
-                // return
-            }
-        }
+        await this.screenManager.conjure.realms.forgetRealm(realmData)
+        this.getRealms()
     }
     
     async joinRealm(id)
