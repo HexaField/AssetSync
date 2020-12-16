@@ -46,7 +46,11 @@ export async function startAssetSync(proxy) {
             dhtConstructor = window.Libp2pKadDht
         }
         dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
-        connectionPlugin = new ConnectionPlugin()
+        connectionPlugin = new ConnectionPlugin({
+            peerOptions: {
+                config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:104.131.116.173:5349' }] },
+            }
+        })
     }
 
     const storagePlugin = new StoragePlugin()

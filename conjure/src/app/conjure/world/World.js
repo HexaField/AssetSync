@@ -158,10 +158,6 @@ export default class World
         this.spawnLocation = spawn
         this.user.teleport(spawn.x, spawn.y, spawn.z)
         
-        // this.realm.sendData(NETWORKING_OPCODES.USER.JOIN, {
-        //     username: this.conjure.getProfile().getUsername()
-        // })
-
         this.conjure.setConjureMode(CONJURE_MODE.EXPLORE)
         return true
     }    

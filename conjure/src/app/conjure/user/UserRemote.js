@@ -30,6 +30,8 @@ export default class UserRemote extends User
         this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
         this.timeoutLimit = 603 * 60 // if don't receive a heartbeat for 3 seconds, die
         this.timeoutCount = 0
+
+        this.makeConnection(peerID)
     }
 
     onCreate()
@@ -78,5 +80,61 @@ export default class UserRemote extends User
         // this.conjure.physics.destroy(this.group.body)
         // this.scene.remove(this.group)
         // this.timedOut = true
+    }
+
+    async makeConnection(peerID) {
+        
+        const successfulDirectConnection = await new Promise(async (resolve) => {
+
+            try {
+                
+                const isInitiator = this.conjure.assetSync.networkPlugin.getPeerID() > peerID // always deterministic
+                const conn = await this.conjure.assetSync.connectionPlugin.createConnection(peerID, isInitiator)
+                
+                console.log('isInitiator', isInitiator)
+
+                conn.on('ready', () => {
+
+                    // this.conjure.world.realm.sendTo = (opcode, content, peerID) => {
+                    //     this.conjure.assetSync.connectionPlugin.sendToPeer(this.conjure.networkingSchemas.toBuffer(opcode, content), peerID)
+                    // }
+
+                    // this.conjure.world.realm.sendData = (opcode, content) => {
+                    //     this.conjure.assetSync.connectionPlugin.sendToAll(this.conjure.networkingSchemas.toBuffer(opcode, content))
+                    // }
+
+                    resolve(true)
+                })
+
+                conn.on('error', () => resolve(false))
+                conn.on('close', () => resolve(false))
+
+                if(isInitiator) {
+                    this.conjure.world.realm.sendTo('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
+                }
+
+                this.conjure.world.realm.database.on('connection.signal.' + peerID, async (signalData, from) => {
+                    console.log('connection.signal.' + peerID)
+                    if(from !== peerID)
+                        return
+                    conn.signal(signalData)
+                    conn.on('signal', () => {
+                        this.conjure.world.realm.sendTo('connection.signal.' + this.conjure.assetSync.networkPlugin.getPeerID(), conn.peerData, peerID)
+                    })
+                })
+
+                // conn.on('message', buffer => {
+                //     const { opcode, content } = this.conjure.networkingSchemas.fromBuffer(buffer)
+                //     this.conjure.world.realm.database.emit(opcode, content, peerID)
+                // })
+            } catch(err) {
+                console.log('CONNECTION ERROR', err)
+                resolve(false)
+            }
+        })
+        if(successfulDirectConnection)
+            console.log('Direct connection establish to', peerID)
+        else
+            console.log('Could not establish direct connection to', peerID, '. Falling back to libp2p.')
     }
 }
