@@ -1,0 +1,1 @@
+import{l as e,c as a}from"./constants-83de7adf.js";const{names:s}=a,{TextEncoder:o}=e,i=new o;function c(t){const r=new Uint8Array(t.length);for(let n=0;n<t.length;n++)r[n]=t.charCodeAt(n);return r}function u(t,r="utf8"){if(r==="utf8"||r==="utf-8")return i.encode(t);if(r==="ascii")return c(t);const n=s[r];if(!n)throw new Error("Unknown base");return n.decode(t)}var f=u;export{f};

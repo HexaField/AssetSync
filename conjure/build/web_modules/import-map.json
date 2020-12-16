@@ -5,11 +5,15 @@
     "@enable3d/ammo-physics": "./@enable3d/ammo-physics.js",
     "@geckos.io/typed-array-buffer-schema": "./@geckos.io/typed-array-buffer-schema.js",
     "abi-decoder": "./abi-decoder.js",
+    "base32.js": "./base32js.js",
     "big-integer": "./big-integer.js",
     "discord-oauth2": "./discord-oauth2.js",
     "enable3d": "./enable3d.js",
     "events": "./events.js",
+    "hyperdiff": "./hyperdiff.js",
     "idb-keyval": "./idb-keyval.js",
+    "interface-datastore": "./interface-datastore.js",
+    "libp2p-record": "./libp2p-record.js",
     "lodash": "./lodash.js",
     "omggif": "./omggif.js",
     "three-spritetext": "./three-spritetext.js",
@@ -31,6 +35,8 @@
     "three/examples/jsm/shaders/FXAAShader.js": "./three/examples/jsm/shaders/FXAAShader.js",
     "three/src/loaders/FileLoader": "./three/src/loaders/FileLoader.js",
     "three/src/loaders/LoadingManager": "./three/src/loaders/LoadingManager.js",
-    "three/src/textures/CanvasTexture": "./three/src/textures/CanvasTexture.js"
+    "three/src/textures/CanvasTexture": "./three/src/textures/CanvasTexture.js",
+    "uint8arrays/from-string.js": "./uint8arrays/from-string.js",
+    "uint8arrays/to-string.js": "./uint8arrays/to-string.js"
   }
 }
