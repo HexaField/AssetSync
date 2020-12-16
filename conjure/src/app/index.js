@@ -69,6 +69,7 @@ class App extends EventDispatcher {
     async loadConjure() {
         const { startConjure } = await import('./conjure/Conjure.js')
         startConjure(this)
+        window.assetSync = this.assetSync
     }
 
 }

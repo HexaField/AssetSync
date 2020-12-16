@@ -10,8 +10,10 @@ import GossipSub from 'libp2p-gossipsub'
 import KadDHT from 'libp2p-kad-dht'
 // import KadDHT from '../../../../common/src/libp2pkaddht/src/index.js'
 import wrtc from 'wrtc'
+import config from './dhtConfig.js'
+import dhtConfig from './dhtConfig.js'
 
-export function config() {
+export function defaultNodeConfig() {
     return {
         addresses: {
             listen: [
@@ -43,16 +45,7 @@ export function config() {
                 //     filter: filters.all
                 // }
             },
-            dht: {
-                protocolPrefix: '/conjure',
-                kBucketSize: 20,
-                enabled: true,
-                randomWalk: {
-                    enabled: true,
-                    interval: 300e3,
-                    timeout: 10e3
-                }
-            }
+            dht: dhtConfig
         }
     }
 }
@@ -60,7 +53,7 @@ export function config() {
 // todo: add custom config options
 
 export default async function (options) {
-    const node = await Libp2p.create(options || config())
+    const node = await Libp2p.create(options || defaultNodeConfig())
     await node.start()
     return node
 }

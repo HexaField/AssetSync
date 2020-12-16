@@ -52,7 +52,6 @@ export default class HUDGlobal extends ScreenBase
 
     log(...text)
     {
-        console.log(...text)
         this.console.log(text)
     }
 

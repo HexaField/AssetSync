@@ -93,11 +93,11 @@ export class DHTPlugin extends PluginBase {
         delete this.dhts[protocol]
     }
 
-    async getAllLocal(protocol) {
+    async getAllLocal({ protocol, queryOptions } = {}) {
         if(!this.dhts[protocol || this._defaultProtocol]) return []
         const dht = this.dhts[protocol || this._defaultProtocol]
         const entries = []
-        for await (const entry of dht.datastore._all({})) {
+        for await (const entry of dht.datastore.query(queryOptions || {})) {
             const record = utils.decodeRecord(entry.value)
             entries.push({
                 key: uint8ArrayToString(record.key),
@@ -113,7 +113,7 @@ export class DHTPlugin extends PluginBase {
             const keyArray = uint8ArrayFromString(key)
             return await this.dhts[protocol || this._defaultProtocol].removeLocal(keyArray)
         } catch(error) {
-            console.log('Failed to remove from dht: ', error)
+            console.log('Failed to remove', key ,'from dht: ', error)
         }
     }
 
@@ -123,7 +123,7 @@ export class DHTPlugin extends PluginBase {
             const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
             return uint8ArrayToString(result)
         } catch(error) {
-            console.log('Failed to get from dht: ', error)
+            console.log('Failed to get', key ,'from dht: ', error)
         }
     }
 
@@ -131,7 +131,7 @@ export class DHTPlugin extends PluginBase {
         try {
             return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
         } catch(error) {
-            console.log('Failed to put to dht: ', error)
+            console.log('Failed to put', key ,'to dht: ', error)
         }
     }
 }

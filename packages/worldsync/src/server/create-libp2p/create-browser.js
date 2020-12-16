@@ -1,8 +1,9 @@
 import kad from './kad/index.min.js'
 import Libp2pRepo from './libp2p-repo/dist/index.min.js'
 window.Libp2pRepo = Libp2pRepo
+import dhtConfig from './dhtConfig.js'
 
-export function config() {
+export function defaultBrowserConfig() {
     return {
         addresses: {
             listen: [
@@ -27,16 +28,7 @@ export function config() {
             dht: kad
         },
         config: {
-            dht: {
-                protocolPrefix: '/conjure',
-                kBucketSize: 20,
-                enabled: true,
-                randomWalk: {
-                    enabled: true,
-                    interval: 300e3,
-                    timeout: 10e3
-                }
-            }
+            dht: dhtConfig
         }
     }
 }
@@ -44,7 +36,7 @@ export function config() {
 
 export default async function (options) {
 
-    const node = await self.Libp2p.create(options || config())
+    const node = await self.Libp2p.create(options || defaultBrowserConfig())
     await node.start()
     return node
 }

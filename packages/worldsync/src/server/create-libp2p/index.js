@@ -4,20 +4,20 @@ import mergeOptions from 'merge-options'
 export default async function (options = {}) {
     if (isNode) {
         const { startRepo } = await import('./libp2p-repo/src/index.js')
-        const { default: Libp2p, config } = await import('./create-node.js')
+        const { default: Libp2p, defaultNodeConfig } = await import('./create-node.js')
 
         if (options.repoPath) {
             try {
                 const { peerId, keychain, repo, print, isNew } = await startRepo({
                     repo: options.repoPath,
-                    libp2pConfig: config()
+                    libp2pConfig: defaultNodeConfig()
                 })
 
 
                 const dhtDatastore = await repo.openDatastore('dht')
 
                 const { datastore, keys } = repo
-                const libp2pConfig = mergeOptions(config(), {
+                const libp2pConfig = mergeOptions(defaultNodeConfig(), {
                     peerId,
                     datastore,
                     keychain,
@@ -43,7 +43,7 @@ export default async function (options = {}) {
         await import('https://bundle.run/buffer@6.0.3')
         window.Buffer = window.buffer.Buffer
         // await import('./libp2p-repo/dist/index.min.js')
-        const { default: Libp2p, config } = await import('./create-browser.js')
+        const { default: Libp2p, defaultBrowserConfig } = await import('./create-browser.js')
 
         // dynamic imports here since webworkers can't access DOM scripts
         await import('https://unpkg.com/libp2p@0.29.4/dist/index.min.js')
@@ -61,13 +61,13 @@ export default async function (options = {}) {
             try {
                 const { peerId, keychain, repo, print, isNew } = await window.Libp2pRepo.startRepo({
                     repo: options.repoPath,
-                    libp2pConfig: config()
+                    libp2pConfig: defaultBrowserConfig()
                 })
 
                 const dhtDatastore = await repo.openDatastore('dht')
 
                 const { datastore, keys } = repo
-                const libp2pConfig = mergeOptions(config(), {
+                const libp2pConfig = mergeOptions(defaultBrowserConfig(), {
                     peerId,
                     datastore,
                     keychain,

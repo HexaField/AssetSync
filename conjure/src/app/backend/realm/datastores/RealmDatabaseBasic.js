@@ -90,7 +90,7 @@ export default async (realmDatabase) => {
     realmDatabase._getAllLocal = async () => {
         try {
             const entries = []
-            for await (const entry of datastoreObjects._all({})) {
+            for await (const entry of datastoreObjects.query({})) {
                 const record = utils.decodeRecord(entry.value)
                 entries.push({
                     key: uint8ArrayToString(record.key),

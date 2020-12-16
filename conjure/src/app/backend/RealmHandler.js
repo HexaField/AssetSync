@@ -1,19 +1,14 @@
 import RealmDatabase from "./realm/RealmDatabase.js"
 import RealmData, { GLOBAL_REALMS } from './realm/RealmData.js'
+import { isNode } from "@AssetSync/common"
 
 export default class RealmHandler {
     constructor(assetSync) {
         this.assetSync = assetSync
-        this.pinnedRealms = [] // just a list of IDs
-
-        // this is hardcoded to clean up old realms as we are in rapid development
-        this.earliestRealmTime = 1599176386000
-        this.databases = {}
+        
         this.databasePlugin = assetSync.syncedDatabasePlugin
 
-        this.dhtType = 'realm'
-
-        this.dhtProtocol = '/realms/' // id is added between these
+        this.dhtProtocol = '/realm/' // id is added between these
         // this.dhtVersion = '/1.0.0' // not currently impelemented
         this.realms = {}
     }
@@ -23,11 +18,11 @@ export default class RealmHandler {
     // value: realmData
 
     async get(key) {
-        return await this.assetSync.dhtPlugin.get({ key: this.dhtType + ':' + key })
+        return await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put({ key: this.dhtType + ':' + key, value })
+        return await this.assetSync.dhtPlugin.put({ key: this.dhtProtocol + key, value, minPeers: '1' })
     }
 
     receiveFromDHT(key, value, from) {
@@ -44,8 +39,13 @@ export default class RealmHandler {
 
     async initialise() {
         await this.preloadGlobalRealms()
-        console.log(await this.getRealms())
-        console.log(this.assetSync.dhtPlugin.dht.datastore)
+        for(let realm of await this.getRealms()) {
+            if(realm.key.substring(0, 7) === '/realm/') {
+                await this.addDatabase(JSON.parse(realm.value))
+            }
+        }
+        if(!isNode)
+            console.log(await this.getRealms())
     }
 
     async preloadGlobalRealms() {
