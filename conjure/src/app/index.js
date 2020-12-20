@@ -22,7 +22,7 @@ class App extends EventDispatcher {
 
         this.assets = new Assets(this.assetSync)
         this.realms = new RealmHandler(this.assetSync)
-        await this.realms.initialise()
+        this.realms.initialise()
         this.profiles = new Profiles(this.assetSync)
 
         this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')

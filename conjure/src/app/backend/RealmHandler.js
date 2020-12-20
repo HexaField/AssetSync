@@ -1,5 +1,5 @@
 import RealmDatabase from "./realm/RealmDatabase.js"
-import RealmData, { GLOBAL_REALMS } from './realm/RealmData.js'
+import RealmData, { GLOBAL_REALMS, REALM_TYPES } from './realm/RealmData.js'
 import { isNode } from "@AssetSync/common"
 
 export default class RealmHandler {
@@ -16,11 +16,13 @@ export default class RealmHandler {
     // value: realmData
 
     async get(key, saveLocal) {
-        const value = await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
-        if(saveLocal) {
-            await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
-        }
-        return JSON.parse(value)
+        try {
+            const value = await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
+            if(saveLocal) {
+                await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
+            }
+            return JSON.parse(value)
+        } catch (err) { return undefined }
     }
 
     async put(key, value) {
@@ -66,7 +68,7 @@ export default class RealmHandler {
 
     async getRealms() {
         return (await this.assetSync.dhtPlugin.getAllLocal())
-            .filter((realm) => { return realm.key.substring(0, 7) === '/realm/' })
+            .filter((realm) => { return realm.key.substring(0, 7) === '/realm/' && realm.value !== undefined && realm.value !== '' })
             .map((realm) => { return JSON.parse(realm.value) })
     }
 
@@ -75,9 +77,10 @@ export default class RealmHandler {
     }
 
     async createRealm(realmData) {
-        // await this.put(realmData.id, realmData) // takes a long time with current dht
-        this.put(realmData.id, JSON.stringify(realmData))
-        await this.addDatabase(realmData)
+        if(realmData.type === REALM_TYPES.NONE) {
+            this.put(realmData.id, JSON.stringify(realmData))
+            await this.addDatabase(realmData)
+        }
     }
 
     getDatabase(realmData) {

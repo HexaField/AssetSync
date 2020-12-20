@@ -1,3 +1,9 @@
+export const REALM_TYPES = {
+    NONE: 'None',
+    GLOBAL: 'Global',
+    EPHEMERAL: 'Ephemeral'
+}
+
 export const REALM_WORLD_GENERATORS = {
     NONE: 'None',
     // INFINITE_WORLD: 'Infinite World',
@@ -59,7 +65,7 @@ export default class RealmData
         this.name = params.name
         this.timestamp = params.timestamp || (new Date()).toUTCString()
         this.iconURL = params.iconURL || ''
-        this.global = Boolean(params.global)
+        this.type = params.type || REALM_TYPES.NONE
 
         // temp until DIDs is in
 

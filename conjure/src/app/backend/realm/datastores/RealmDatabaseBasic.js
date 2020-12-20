@@ -6,6 +6,7 @@ import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { isNode, number } from '@AssetSync/common'
 import diff from 'hyperdiff'
 import { NETWORKING_OPCODES } from '../../Constants.js'
+import { REALM_TYPES } from '../RealmData.js'
 
 const OPCODES_SYNCED_DATABASE = {
     addEntry: 'addEntry',
@@ -20,14 +21,14 @@ const OPCODES_SYNCED_DATABASE = {
 
 export default async (realmDatabase) => {
     let datastoreObjects
-    if(realmDatabase.assetSync.transportPlugin._libp2p.repo) {
+    if(realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
         datastoreObjects = await realmDatabase.assetSync.transportPlugin._libp2p.repo.openDatastore(realmDatabase.dhtProtocol + '/objects')
     } else {
         datastoreObjects = new MemoryDatastore()
     }
 
     let datastoreMetadata
-    if(realmDatabase.assetSync.transportPlugin._libp2p.repo) {
+    if(realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
         datastoreMetadata = await realmDatabase.assetSync.transportPlugin._libp2p.repo.openDatastore(realmDatabase.dhtProtocol + '/metadata')
     } else {
         datastoreMetadata = new MemoryDatastore()

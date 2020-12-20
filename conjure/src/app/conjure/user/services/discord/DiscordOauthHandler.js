@@ -1,6 +1,4 @@
-import * as THREE from 'three'
-import * as DiscordOauth2 from 'discord-oauth2'
-// import crypto from 'crypto'
+import DiscordOauth2 from 'discord-oauth2'
 
 export default class DiscordOauthHandler
 {  
@@ -24,10 +22,10 @@ export default class DiscordOauthHandler
         this.url = this.oauth.generateAuthUrl({
             scope: "identify guilds",
             responseType: 'token',
-            state: crypto.randomBytes(16).toString("hex"), 
+            state: window.crypto.getRandomValues(new Uint32Array(16)).toString("hex"), 
         });
 
-        const access_token = self.basicStorage.getItem('discordAccessToken')
+        const access_token = self.simpleStorage.get('discordAccessToken')
         if(access_token)
             return await this.getUser(access_token)
 
@@ -37,12 +35,12 @@ export default class DiscordOauthHandler
     logOut()
     {
         if(!this.loggedIn) return
-        // let access_token = self.basicStorage.getItem('discordAccessToken');
+        // let access_token = self.simpleStorage.getItem('discordAccessToken');
         // if(!access_token) return
         // const credentials = Buffer.from(`${this.clientId}`).toString("base64"); 
 
         // this.oauth.revokeToken(access_token, credentials).then((response) => {
-            self.basicStorage.removeItem('discordAccessToken');
+            self.simpleStorage.del('discordAccessToken');
             this.userData = undefined;
             this.setLoggedIn(false);
         // }); 
@@ -82,7 +80,7 @@ export default class DiscordOauthHandler
             const user_data = await this.oauth.getUser(access_token)
             
             console.log("Successfully logged into discord!");
-            self.basicStorage.setItem('discordAccessToken', access_token)
+            self.simpleStorage.set('discordAccessToken', access_token)
             this.setLoggedIn(true)
             console.log(user_data)
             this.userData = user_data;
@@ -92,7 +90,7 @@ export default class DiscordOauthHandler
         catch(error)
         {
             console.log('Sorry, could not log you in. Your session may have expired.')
-            self.basicStorage.removeItem('discordAccessToken')
+            self.simpleStorage.del('discordAccessToken')
             this.userData = undefined;
             this.setLoggedIn(false)
         }
@@ -102,7 +100,7 @@ export default class DiscordOauthHandler
     {
         return await new Promise((resolve, reject) => {
             try{
-                const access_token = self.basicStorage.getItem('discordAccessToken')
+                const access_token = self.simpleStorage.get('discordAccessToken')
                 this.oauth.getUserGuilds(access_token).then((user_guilds) => {
                     resolve(user_guilds);
                 })

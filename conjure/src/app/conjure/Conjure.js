@@ -362,6 +362,13 @@ class Conjure extends EventEmitter
         this.getScreens().update(args)
     }
 
+    makeUrl() {
+        const url = new URL(location.origin)
+        if(this.world.realm)
+            url.searchParams.append('r', this.world.realm.realmID)
+        return url
+    }
+
     resizeCanvas(width, height)
     {
         if(!width || !height) return

@@ -5,7 +5,7 @@ import User from '../user/User.js'
 import UserRemote from '../user/UserRemote.js'
 import { CONJURE_MODE } from '../Conjure.js'
 import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
-import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS } from '../../backend/realm/RealmData.js'
+import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS, REALM_TYPES } from '../../backend/realm/RealmData.js'
 import _ from 'lodash'
 
 export default class World
@@ -91,7 +91,7 @@ export default class World
     async preloadGlobalRealms() {
         for(let realm of Object.values(GLOBAL_REALMS)) {
             const realmData = new RealmData(realm)
-            realmData.global = true
+            realmData.type = REALM_TYPES.GLOBAL
             this.globalRealms.push(realmData)
         }
     }

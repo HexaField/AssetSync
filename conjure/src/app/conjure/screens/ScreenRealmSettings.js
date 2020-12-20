@@ -1,7 +1,7 @@
 import ScreenBase from './ScreenBase'
 import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementJSONTree from './elements/ScreenElementJSONTree'
-import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../backend/realm/RealmData.js'
+import { REALM_WORLD_GENERATORS, REALM_WHITELIST, REALM_TYPES } from '../../backend/realm/RealmData.js'
 import RealmData from '../../backend/realm/RealmData.js'
 
 export default class ScreenRealmSettings extends ScreenBase
@@ -18,25 +18,31 @@ export default class ScreenRealmSettings extends ScreenBase
         this.updateData = this.updateData.bind(this)
         this.selectFromList = this.selectFromList.bind(this)
         this.selectedFromList = this.selectedFromList.bind(this)
+        this.createEphemeral = this.createEphemeral.bind(this)
         this.isCreating = false
 
         this.jsonTree = new ScreenElementJSONTree(this, this, { width: this.width, height: this.height, alwaysUpdate: true })
         this.registerElement(this.jsonTree)
 
-        this.cancelButton = new ScreenElementButton(this, this, { x : -this.width / 3, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight });
+        this.cancelButton = new ScreenElementButton(this, this, { x : -this.width / 3, y: -this.height / 2 + 0.25, width: this.buttonWidth, height: this.buttonHeight });
         this.cancelButton.setText('Cancel');
         this.cancelButton.setOnClickCallback(() => { this.data = {}; this.fromService = false; this.screenManager.hideLastOpenScreen() });
         this.registerElement(this.cancelButton);
 
-        this.createButton = new ScreenElementButton(this, this, { x : 0, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight });
+        this.createButton = new ScreenElementButton(this, this, { x : 0, y: -this.height / 2 + 0.25, width: this.buttonWidth, height: this.buttonHeight });
         this.createButton.setText('Create');
         this.createButton.setOnClickCallback(this.createRealm);
         this.registerElement(this.createButton);
 
-        this.createFromServiceButton = new ScreenElementButton(this, this, { x : this.width / 3, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight });
+        this.createFromServiceButton = new ScreenElementButton(this, this, { x : this.width / 3, y: -this.height / 2 + 0.25, width: this.buttonWidth, height: this.buttonHeight });
         this.createFromServiceButton.setText('Create From Service');
         this.createFromServiceButton.setOnClickCallback(this.selectFromList);
         this.registerElement(this.createFromServiceButton);
+
+        this.createEphemeralButton = new ScreenElementButton(this, this, { x : this.width / 3, y: -this.height / 2 + 0.1, width: this.buttonWidth, height: this.buttonHeight });
+        this.createEphemeralButton.setText('Create Emphemeral');
+        this.createEphemeralButton.setOnClickCallback(this.createEphemeral);
+        this.registerElement(this.createEphemeralButton);
 
         this.data = undefined
     }
@@ -88,7 +94,7 @@ export default class ScreenRealmSettings extends ScreenBase
                             items: Object.values(REALM_WORLD_GENERATORS)
                         }
                     }
-                },
+                }
             }
         }
     }
@@ -149,6 +155,15 @@ export default class ScreenRealmSettings extends ScreenBase
         this.screenManager.showScreen(this.screenManager.screenList)
         this.screenManager.screenList.setOnSelectCallback(this.selectedFromList)
         this.screenManager.screenList.setList((await this.screenManager.conjure.getProfile().getServiceManager().getPotentialRealms()).filter(realm => realm.owner), 'name')
+    }
+
+    async createEphemeral() {
+        const data = RealmData.create()
+        data.type = REALM_TYPES.EPHEMERAL
+        await this.screenManager.conjure.realms.createRealm(data)
+        this.screenManager.hideLastOpenScreen(this.screenManager.screenRealms)
+        this.screenManager.conjure.world.joinRealm(data)
+        this.data = undefined
     }
 
     selectedFromList(item)
