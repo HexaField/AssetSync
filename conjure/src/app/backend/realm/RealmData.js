@@ -55,8 +55,8 @@ export default class RealmData
     {
         if(!params || !params.id || !params.name) throw new Error('Error: Invalid realm data! ' + params)
 
-        this.id = String(params.id || randomString(8))
-        this.name = params.name || 'New Realm'
+        this.id = params.id
+        this.name = params.name
         this.timestamp = params.timestamp || (new Date()).toUTCString()
         this.iconURL = params.iconURL || ''
         this.global = Boolean(params.global)
@@ -73,6 +73,14 @@ export default class RealmData
 
         // user data
         this.worldData = params.worldData || {}
+    }
+
+    static create(temp) {
+        const id = randomString(8)
+        return new RealmData({
+            id,
+            name: temp ? id : 'New Realm'
+        })
     }
 
     getWorldSettings()

@@ -113,8 +113,7 @@ export default class ScreenRealmSettings extends ScreenBase
         {
             this.createButton.setText('Create')
             this.createFromServiceButton.setHidden(false)
-            if(!this.data)
-                this.data = new RealmData(args.data)
+            this.data = args.data ? new RealmData(args.data) : RealmData.create()
             this.jsonTree.updateTree(this.data, this.updateData)
         }
         else

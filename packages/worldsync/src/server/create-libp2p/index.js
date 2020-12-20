@@ -53,7 +53,7 @@ export default async function (options = {}) {
         await import('https://unpkg.com/libp2p-websockets@0.14.0/dist/index.min.js')
         // await import('https://unpkg.com/libp2p-bootstrap@0.12.1/dist/index.min.js')
         await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')
-        // await import('https://unpkg.com/libp2p-kad-dht@0.20.3/dist/index.min.js')
+        await import('https://unpkg.com/libp2p-kad-dht@0.20.4/dist/index.min.js')
         
         await import('https://unpkg.com/libp2p-webrtc-star@0.20.4/dist/index.min.js') // we can't use webrtc in webworker
 

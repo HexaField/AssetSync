@@ -10,7 +10,6 @@ import GossipSub from 'libp2p-gossipsub'
 import KadDHT from 'libp2p-kad-dht'
 // import KadDHT from '../../../../common/src/libp2pkaddht/src/index.js'
 import wrtc from 'wrtc'
-import config from './dhtConfig.js'
 import dhtConfig from './dhtConfig.js'
 
 export function defaultNodeConfig() {

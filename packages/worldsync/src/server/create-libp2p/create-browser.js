@@ -1,4 +1,4 @@
-import kad from './kad/index.min.js'
+// import kad from './kad/index.min.js'
 import Libp2pRepo from './libp2p-repo/dist/index.min.js'
 window.Libp2pRepo = Libp2pRepo
 import dhtConfig from './dhtConfig.js'
@@ -25,7 +25,7 @@ export function defaultBrowserConfig() {
                 window.Libp2pSecio
             ],
             pubsub: window.Libp2pGossipsub,
-            dht: kad
+            dht: window.Libp2pKadDht
         },
         config: {
             dht: dhtConfig

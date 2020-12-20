@@ -85,7 +85,7 @@ export default class World
             if(id === realm.id)
                 return realm
         
-        return await this.conjure.realms.getRealmById(id)
+        return await this.conjure.realms.getRealmById(id, true)
     }
 
     async preloadGlobalRealms() {

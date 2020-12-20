@@ -41,7 +41,7 @@ export const decodeBase32 = (raw) => {
  * @returns {Uint8Array}
  */
 export const createPutRecord = (key, value, time) => {
-  const timeReceived = time ? new Date(time) : new Date.now()
+  const timeReceived = time ? new Date(time) : new Date()
   const rec = new Record(key, value, timeReceived)
 
   return rec.serialize()

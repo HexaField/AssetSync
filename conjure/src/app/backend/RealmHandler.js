@@ -5,8 +5,6 @@ import { isNode } from "@AssetSync/common"
 export default class RealmHandler {
     constructor(assetSync) {
         this.assetSync = assetSync
-        
-        this.databasePlugin = assetSync.syncedDatabasePlugin
 
         this.dhtProtocol = '/realm/' // id is added between these
         // this.dhtVersion = '/1.0.0' // not currently impelemented
@@ -17,8 +15,12 @@ export default class RealmHandler {
     // key: realmId
     // value: realmData
 
-    async get(key) {
-        return JSON.parse(await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key }))
+    async get(key, saveLocal) {
+        const value = await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
+        if(saveLocal) {
+            await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
+        }
+        return JSON.parse(value)
     }
 
     async put(key, value) {
@@ -58,7 +60,7 @@ export default class RealmHandler {
     }
 
     async forgetRealm(realmData) {
-        await this.assetSync.dhtPlugin.removeLocal({ key: realmData.id })
+        await this.assetSync.dhtPlugin.removeLocal({ key: this.dhtProtocol + realmData.id })
         await this.removeDatabase(realmData)
     }
 
@@ -68,8 +70,8 @@ export default class RealmHandler {
             .map((realm) => { return JSON.parse(realm.value) })
     }
 
-    async getRealmById(id) {
-        return await this.get(id)
+    async getRealmById(id, saveLocal) {
+        return await this.get(id, saveLocal)
     }
 
     async createRealm(realmData) {

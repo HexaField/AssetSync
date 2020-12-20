@@ -108,12 +108,23 @@ export class DHTPlugin extends PluginBase {
         return entries
     }
 
-    async removeLocal({ key, protocol}) {
+    async removeLocal({ key, protocol }) {
         try {
             const keyArray = uint8ArrayFromString(key)
             return await this.dhts[protocol || this._defaultProtocol].removeLocal(keyArray)
         } catch(error) {
             console.log('Failed to remove', key ,'from dht: ', error)
+        }
+    }
+
+    async putLocal({ key, value, protocol }) {
+        try {
+            const keyArray = uint8ArrayFromString(key)
+            const valArray = uint8ArrayFromString(value)
+            const record = await utils.createPutRecord(keyArray, valArray)
+            return await this.dhts[protocol || this._defaultProtocol].datastore.put(utils.bufferToKey(keyArray), record)
+        } catch(error) {
+            console.log('Failed to put', key ,'locally: ', error)
         }
     }
 
