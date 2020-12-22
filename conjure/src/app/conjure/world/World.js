@@ -106,10 +106,7 @@ export default class World
             this.destroyAllRemoteUsers()
             this.realm = undefined
         }
-
-
         
-        // console.log('Joining realm', realmData)
         this.conjure.setConjureMode(CONJURE_MODE.LOADING)
         this.conjure.loadingScreen.setText('Joining realm...', false)
 
@@ -146,9 +143,20 @@ export default class World
         this.conjure.loadingScreen.setText('Loading realm...', false)
         await this.realm.load()
 
-        this.realm.database.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
-        this.realm.database.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
-        this.realm.database.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
+
+        this.realm.database.network.on('message', (message) => {
+            try {
+                const { opcode, content } = JSON.parse(message.data)
+                this.realm.emit(opcode, content, message.from)
+            } catch (err) {
+                const { opcode, content } = this.conjure.networkingSchemas.decode(message.data)
+                // console.log(opcode, content)
+                this.realm.emit(opcode, content, message.from)
+            }
+        })
+        this.realm.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
+        this.realm.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
+        this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
         this.realm.sendData(NETWORKING_OPCODES.USER.METADATA, {
             username: this.conjure.getProfile().getUsername()
@@ -257,7 +265,7 @@ export default class World
         //     if(!interact)
         //         this.conjure.screenManager.hudExplore.interact.setObject();
         // }
-        if(this.user.group && this.user.group.body)
+        if(this.realm && this.user.group && this.user.group.body)
             this.getWorldUpdates(updateArgs)
     }
 
@@ -279,23 +287,23 @@ export default class World
             // if(!deltaUpdate)
             //     this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
             
-            const pos = this.user.group.getWorldPosition(this.vec3).multiplyScalar(100).round().multiplyScalar(0.01)
+            const pos = this.user.group.getWorldPosition(this.vec3)
             const position = {
-                x: this.roundInt(pos.x, 2),
-                y: this.roundInt(pos.y, 2),
-                z: this.roundInt(pos.z, 2)
+                x: Math.round(pos.x * 1000),
+                y: Math.round(pos.y * 1000),
+                z: Math.round(pos.z * 1000),
             }
             const quat = this.user.group.getWorldQuaternion(this.quat)
             const rotation = {
-                x: this.roundInt(quat._x, 2),
-                y: this.roundInt(quat._y, 2),
-                z: this.roundInt(quat._z, 2),
-                w: this.roundInt(quat._w, 2)
+                x: Math.round(quat._x * 1000),
+                y: Math.round(quat._y * 1000),
+                z: Math.round(quat._z * 1000),
+                w: Math.round(quat._w * 1000)
             }
             const velocity = {
-                x: this.roundInt(this.user.group.body.velocity.x, 2),
-                y: this.roundInt(this.user.group.body.velocity.x, 2),
-                z: this.roundInt(this.user.group.body.velocity.y, 2),
+                x: Math.round(this.user.group.body.velocity.x * 1000),
+                y: Math.round(this.user.group.body.velocity.y * 1000),
+                z: Math.round(this.user.group.body.velocity.z * 1000)
             }
             let payload = {
                 position,
@@ -312,14 +320,18 @@ export default class World
 
     async sendData(opcode, data)
     {
-        if(this.realm)
-            await this.realm.sendData(opcode, data);
+        if(!this.realm) return
+        // const message = this.conjure.networkingSchemas.encode(opcode, data)
+        // await this.realm.network.broadcast(message)
+        this.realm.sendData(opcode, data)
     }
 
     async sendTo(opcode, data, peerID)
     {
-        if(this.realm)
-            await this.realm.sendTo(opcode, data, peerID);
+        if(!this.realm) return
+        // const message = this.conjure.networkingSchemas.encode(opcode, data)
+        // await this.realm.network.sendTo(peerId, message)
+        this.realm.sendTo(opcode, data, peerID)
     }
 
     // TODO: if user joins with same discordID and diff peerID, need to figure out implications

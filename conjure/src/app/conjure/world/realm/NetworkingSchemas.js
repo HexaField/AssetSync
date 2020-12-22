@@ -1,23 +1,26 @@
 import * as Schema from '@geckos.io/typed-array-buffer-schema'
 import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
+import uint8ArrayFromString from 'uint8arrays/from-string.js'
+import uint8ArrayToString from 'uint8arrays/to-string.js'
+
 
 const SCHEMA_POSITION = Schema.BufferSchema.schema('position', {
-    x: Schema.float32,
-    y: Schema.float32,
-    z: Schema.float32,
+    x: Schema.int16,
+    y: Schema.int16,
+    z: Schema.int16,
 })
 
 const SCHEMA_VELOCITY = Schema.BufferSchema.schema('velocity', {
-    x: Schema.float32,
-    y: Schema.float32,
-    z: Schema.float32,
+    x: Schema.int16,
+    y: Schema.int16,
+    z: Schema.int16,
 })
 
 const SCHEMA_QUATERNION = Schema.BufferSchema.schema('quaternion', {
-    _x: Schema.float32,
-    _y: Schema.float32,
-    _z: Schema.float32,
-    _w: Schema.float32,
+    x: Schema.int16,
+    y: Schema.int16,
+    z: Schema.int16,
+    w: Schema.int16,
 })
 
 export class NetworkingSchemas {
@@ -48,22 +51,24 @@ export class NetworkingSchemas {
         this.schemaIDs[schema.id] = { model, schema }
     }
 
-    toBuffer(opcode, content) {
+    encode(opcode, content) {
         if (!this.schemas[opcode]) {
             return
         }
         const data = new Uint8Array(this.schemas[opcode].model.toBuffer(content))
-        return data
+        return uint8ArrayToString(data)
     }
 
-    fromBuffer(buf) {
-        const buffer = new Uint8Array(buf)
-        if(buffer.length < 5) return {}
-        const id = getSchemaIdFromBuffer(buffer.buffer)
-        if(!this.schemaIDs[id]) return {}
-        const content = this.schemaIDs[id].model.fromBuffer(buffer.buffer)
-        const opcode = this.schemaIDs[id].schema.name
-        return { opcode, content }
+    decode(data) {
+        try {
+            const buffer = new Uint8Array(uint8ArrayFromString(data))
+            if(buffer.length < 5) return {}
+            const id = getSchemaIdFromBuffer(buffer.buffer)
+            if(!this.schemaIDs[id]) return {}
+            const content = this.schemaIDs[id].model.fromBuffer(buffer.buffer)
+            const opcode = this.schemaIDs[id].schema.name
+            return { opcode, content }
+        } catch(err) { return {} }
     }
 }
 

@@ -126,15 +126,7 @@ export default class Realm extends EventEmitter
             this.loadObjectFromPeer(obj.uuid, obj.data);
         }
 
-        // await this.world.realmHandler.subscribe(this.realmID, this.onObjectCreate, this.onObjectDestroy )
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.UPDATE, this.onObjectUpdate)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
-        // this.addNetworkProtocolCallback(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
-
         this.network = this.database.network
-
         this.database.on(NETWORKING_OPCODES.USER.METADATA, async ({ username }, peerID) => {
             
             if(!this.world.remoteUsers[peerID]) {

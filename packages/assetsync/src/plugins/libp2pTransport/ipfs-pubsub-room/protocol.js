@@ -1,1 +1,0 @@
-export default '/assetsync/1.0.0'

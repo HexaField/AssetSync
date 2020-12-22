@@ -27,8 +27,13 @@ export default class RealmDatabase extends EventEmitter {
         this.network = await this.assetSync.networkPlugin.joinNetwork(this.realmData.id)
         
         this.network.on('message', (message) => {
-            const { opcode, content } = JSON.parse(message.data)
-            this.emit(opcode, content, message.from)
+            try {
+                if(typeof message.data !== 'string') return
+                const { opcode, content } = JSON.parse(message.data)
+                this.emit(opcode, content, message.from)
+            } catch (err) {
+
+            }
         })
     
         this.on(NETWORKING_OPCODES.OBJECT.CREATE, (content, peerID) => {

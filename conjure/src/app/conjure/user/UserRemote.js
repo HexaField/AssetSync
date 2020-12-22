@@ -19,7 +19,6 @@ export default class UserRemote extends User
         this.peerID = peerID // libp2p
         
         this.velocity = new THREE.Vector3()
-        console.log(data)
 
         this.username = data.username
         this.group.name = data.username
@@ -42,7 +41,6 @@ export default class UserRemote extends User
 
     updateInfo(data)
     {
-
         this.timeoutCount = 0
         if(data.username)
         {
@@ -67,10 +65,11 @@ export default class UserRemote extends User
 
     setPhysics(physics)
     {
+        console.log(physics)
         this.timeoutCount = 0
-        this.group.position.set(physics.position.x, physics.position.y, physics.position.z)
-        this.group.quaternion.set(physics.rotation.x, physics.rotation.y, physics.rotation.z, physics.rotation.w)
-        this.velocity.set(physics.velocity.x, physics.velocity.y, physics.velocity.z)
+        this.group.position.set(physics.position.x * 0.001, physics.position.y * 0.001, physics.position.z * 0.001)
+        this.group.quaternion.set(physics.rotation.x * 0.001, physics.rotation.y * 0.001, physics.rotation.z * 0.001, physics.rotation.w * 0.001)
+        this.velocity.set(physics.velocity.x * 0.001, physics.velocity.y * 0.001, physics.velocity.z * 0.001)
         // this.group.body.needUpdate = true
     }
 

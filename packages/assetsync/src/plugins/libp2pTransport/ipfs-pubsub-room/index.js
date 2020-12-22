@@ -2,14 +2,14 @@ import diff from 'hyperdiff'
 import EventEmitter from 'events'
 import clone from 'lodash.clonedeep'
 
-import PROTOCOL from './protocol.js'
 import Connection from './connection.js'
-import encoding from './encoding.js'
-import decoding from './decoding.js'
 import directConnection from './direct-connection-handler.js'
+import uint8ArrayFromString from 'uint8arrays/from-string.js'
+import uint8ArrayToString from 'uint8arrays/to-string.js'
 
 const DEFAULT_OPTIONS = {
-  pollInterval: 1000
+  pollInterval: 1000,
+  protocolPrefix: 'default'
 }
 
 let index = 0
@@ -17,9 +17,10 @@ let index = 0
 export default class PubSubRoom extends EventEmitter {
   constructor (libp2p, topic, options) {
     super()
-    this._libp2p = libp2p.libp2p || libp2p
+    this._libp2p = libp2p
     this._topic = topic
     this._options = Object.assign({}, clone(DEFAULT_OPTIONS), clone(options))
+    this._protocol = this._options.protocolPrefix + '/pubsub-room/1.0.0'
     this._peers = []
     this._connections = {}
 
@@ -35,7 +36,7 @@ export default class PubSubRoom extends EventEmitter {
       this._options.pollInterval
     )
 
-    this._libp2p.handle(PROTOCOL, directConnection.handler)
+    this._libp2p.handle(this._protocol, directConnection.handler)
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
 
     this._libp2p.pubsub.on(this._topic, this._handleMessage)
@@ -58,16 +59,14 @@ export default class PubSubRoom extends EventEmitter {
       this._connections[peer].stop()
     })
     directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
-    this._libp2p.unhandle(PROTOCOL, directConnection.handler)
+    this._libp2p.unhandle(this._protocol, directConnection.handler)
 
     await this._libp2p.pubsub.removeListener(this._topic, this._handleMessage)
     await this._libp2p.pubsub.unsubscribe(this._topic)
   }
 
   async broadcast (_message) {
-    if(!_message) return
-    const message = encoding(_message)
-
+    const message = uint8ArrayFromString(_message)
     await this._libp2p.pubsub.publish(this._topic, message)
   }
 
@@ -100,7 +99,7 @@ export default class PubSubRoom extends EventEmitter {
       topicIDs: [this._topic],
       topicCIDs: [this._topic]
     }
-    conn.push(encoding(JSON.stringify(msg)))
+    conn.push(uint8ArrayFromString(JSON.stringify(msg)))
   }
 
   async _pollPeers () {
@@ -127,7 +126,7 @@ export default class PubSubRoom extends EventEmitter {
   }
 
   _onMessage (message) {
-    message.data = decoding(message.data)
+    message.data = uint8ArrayToString(message.data)
     if(message.from !== this._libp2p.peerId.toB58String())
         this.emit('message', message)
   }

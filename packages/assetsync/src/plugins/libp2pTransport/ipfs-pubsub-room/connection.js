@@ -2,8 +2,6 @@ import EventEmitter from 'events'
 import pipe from 'it-pipe'
 import PeerId from 'peer-id'
 
-import PROTOCOL from './protocol.js'
-
 export default class Connection extends EventEmitter {
   constructor (remoteId, libp2p, room) {
     super()
@@ -47,7 +45,7 @@ export default class Connection extends EventEmitter {
     }
 
     const remotePeerId = await PeerId.createFromB58String(this._remoteId)
-    const { stream } = await this._libp2p.dialProtocol(remotePeerId, PROTOCOL)
+    const { stream } = await this._libp2p.dialProtocol(remotePeerId, this._room._protocol)
     this._connection = new FiFoMessageQueue()
 
     pipe(this._connection, stream, async (source) => {
