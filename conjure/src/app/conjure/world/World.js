@@ -188,7 +188,6 @@ export default class World {
         if (!realm) return false
 
         let realmData = new RealmData(realm)
-        if (!realmData) return false
 
         if (!await this.joinRealm(realmData, args))
             await this.joinRealmByID(this.lastRealmID, args)

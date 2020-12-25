@@ -18,11 +18,14 @@ export default class RealmHandler {
     async get(key, saveLocal) {
         try {
             const value = await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
-            if(saveLocal) {
-                await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
+            if(value) {
+                if(saveLocal) {
+                    await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
+                }
+                return JSON.parse(value)
             }
-            return JSON.parse(value)
-        } catch (err) { return undefined }
+        } catch (err) { }
+        return undefined 
     }
 
     async put(key, value) {
@@ -32,6 +35,7 @@ export default class RealmHandler {
     receiveFromDHT(key, value, from) {
         try {
             if(value) {
+                this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
                 this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
             } else {
                 this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
