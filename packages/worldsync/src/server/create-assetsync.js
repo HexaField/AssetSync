@@ -19,6 +19,7 @@ export async function startAssetSync(proxy) {
 
     let assetSync = new AssetSync()
     let networkPlugin, dhtPlugin, connectionPlugin
+    const minPeers = 1
 
     if (isWebWorker && proxy) {
 
@@ -33,7 +34,7 @@ export async function startAssetSync(proxy) {
 
         const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
         
-        const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: 0 })
+        const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (window.worldSync.config.urlParams.noPeers === 'true' ? 0 : minPeers) })
         await assetSync.register({ transportPlugin })
         networkPlugin = new NetworkPlugin({ transportPlugin })
         let dhtConstructor

@@ -52,7 +52,7 @@ export async function server(startGame, worldSyncMain) {
         // we need to pipe in the client proxy
 
         // for now, just fake some stuff
-        const assetSync = await startAssetSync()
+        const assetSync = await startAssetSync(worldSyncMain)
         // window.canvas = worldSync.canvas
         startGame({ assetSync, worldSync: worldSyncMain })
     }
