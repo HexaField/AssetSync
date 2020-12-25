@@ -1,5 +1,8 @@
+import * as THREE from 'three'
 import ScreenBase from './ScreenBase'
 import ScreenElementButton from './elements/ScreenElementButton'
+import ScreenElementSprite from './elements/ScreenElementSprite'
+import { easyPlane } from '../util/MeshTemplates'
 
 export default class ScreenSettings extends ScreenBase
 {  
@@ -15,15 +18,34 @@ export default class ScreenSettings extends ScreenBase
         this.getCamButton.setOnClickCallback(this.toggleCam)
         this.registerElement(this.getCamButton)
 
-        this.allowCamButton = new ScreenElementButton(this, this, { y: this.height / 2 - 0.3, width: this.buttonWidth, height: this.buttonHeight, text: 'Allow Incoming Streams' });
+        this.allowCamButton = new ScreenElementButton(this, this, { y: this.height / 2 - 0.25, width: this.buttonWidth, height: this.buttonHeight, text: 'Allow Incoming Streams' });
         this.allowCamButton.setOnClickCallback(this.toggleFeeds)
         this.registerElement(this.allowCamButton)
+
+        this.camPreview = easyPlane({ width: this.buttonWidth * 1.2, height: this.buttonWidth, material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }) });
+        this.camPreview.position.set(0, this.height / 2 - 0.55, 0.1)
+        this.group.add(this.camPreview)
     }
     
     async toggleCam() {
         await this.conjure.toggleMediaStream()
         const enabled = this.conjure.userMediaStream !== undefined
         this.getCamButton.setText(enabled ? 'Disable Camera and Microphone' : 'Enable Camera and Microphone')
+        
+        if(enabled) {
+            const video = document.createElement('video')
+            this.camPreview.material.map = new THREE.VideoTexture(video)
+            if ('srcObject' in video) {
+                video.srcObject = this.conjure.userMediaStream
+            } else {
+                video.src = window.URL.createObjectURL(this.conjure.userMediaStream) // for older browsers
+            }
+            video.play()
+            this.camPreview.material.needsUpdate = true
+        } else {
+            this.camPreview.material.map =  undefined
+        }
+
     }
 
     async toggleFeeds() {

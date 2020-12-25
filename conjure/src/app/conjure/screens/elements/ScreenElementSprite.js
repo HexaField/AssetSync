@@ -21,6 +21,7 @@ export default class ScreenElementSprite extends ScreenElementBase
     {
         this.texture = texture;
         this.icon.material.map = texture;
+        this.icon.material.needsUpdate = true
     }
 
     setIconScale(scale)
@@ -46,8 +47,7 @@ export default class ScreenElementSprite extends ScreenElementBase
             this.loadCallback()
         if(this.texture)
             this.icon.material.map = this.texture;
-        // this.texture.needsUpdate = true;
-        // this.icon.material.needsUpdate = true
+        this.icon.material.needsUpdate = true
     }
 
     setValue(tex)
