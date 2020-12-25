@@ -364,12 +364,16 @@ class Conjure extends EventEmitter
     }
 
     async updateIngoingMediaStream() {
+        await this.audioManager.create(false)
         for(let user of Object.values(this.world.remoteUsers)) {
             user.getIncomingMediaStreams()
         }
     }
 
     async toggleMediaStream() {
+        // if(this.world.realm.realmData) {
+        //     // do verification of realm here
+        // }
         if(this.userMediaStream === undefined) {
             const stream = await this._getUserMediaStream()
             if(!stream.ended && stream.active) {
@@ -388,6 +392,7 @@ class Conjure extends EventEmitter
     async _getUserMediaStream() {
         if(!this.userMediaStream) {
             try {
+                await this.audioManager.create(false)
                 this.userMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             } catch (err) {
                 console.log('Failed to get media streams!', err)

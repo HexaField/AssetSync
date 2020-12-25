@@ -65,10 +65,13 @@ export class AudioManager
         if(!this.audioListener) return
 
         let sound = new THREE.PositionalAudio(this.audioListener)
-        sound.setMediaElementSource(mediaElement)
+        console.log(mediaElement, typeof mediaElement)
+        typeof mediaElement === HTMLMediaElement ? sound.setMediaElementSource(mediaElement) : sound.setMediaStreamSource(mediaElement)
         sound.setVolume(args.volume === undefined ? 1 : args.volume);
         sound.setRefDistance(args.refDistance === undefined ? 20 : args.refDistance);
         mesh.userData.sound = sound
+        mesh.add(sound)
+        console.log(sound)
 
         this.sources.push(mesh)
     }

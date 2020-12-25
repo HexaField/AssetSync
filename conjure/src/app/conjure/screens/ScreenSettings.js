@@ -41,6 +41,7 @@ export default class ScreenSettings extends ScreenBase
                 video.src = window.URL.createObjectURL(this.conjure.userMediaStream) // for older browsers
             }
             video.play()
+            video.volume = 0
             this.camPreview.material.needsUpdate = true
         } else {
             this.camPreview.material.map =  undefined

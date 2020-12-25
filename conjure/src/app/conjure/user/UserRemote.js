@@ -79,9 +79,10 @@ export default class UserRemote extends User {
         if(this.video) {
             // this.video.parentNode.removeChild(this.video)
         }
-
+        
         const video = document.createElement('video')
         this.videoScreen.material.map = new THREE.VideoTexture(video)
+        this.conjure.getAudioManager().createFromMediaSource(stream, this.videoScreen, { refDistance: 20 })
         this.videoScreen.visible = true
 
         this.video = video
@@ -93,6 +94,7 @@ export default class UserRemote extends User {
         }
 
         video.play()
+        video.volume = 0
     }
 
     onCreate() {
