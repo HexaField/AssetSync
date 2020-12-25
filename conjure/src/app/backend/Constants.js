@@ -2,9 +2,10 @@ export const NETWORKING_OPCODES = {
     HEARTBEAT: 0,
     USER: {
         METADATA: 10,
-        MOVE: 11,
-        ANIMATION: 12,
-        LEAVE: 13,
+        REQUEST_METADATA: 11,
+        MOVE: 12,
+        ANIMATION: 13,
+        LEAVE: 14,
     },
     OBJECT: {
         CREATE: 20,

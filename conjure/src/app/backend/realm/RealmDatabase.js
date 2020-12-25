@@ -28,11 +28,11 @@ export default class RealmDatabase extends EventEmitter {
         
         this.network.on('message', (message) => {
             try {
-                if(typeof message.data !== 'string') return
+                // if(typeof message.data !== 'string') return
                 const { opcode, content } = JSON.parse(message.data)
                 this.emit(opcode, content, message.from)
             } catch (err) {
-
+                console.log('hmm bad message', err, message)
             }
         })
     

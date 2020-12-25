@@ -46,16 +46,17 @@ export default async function (options = {}) {
         const { default: Libp2p, defaultBrowserConfig } = await import('./create-browser.js')
 
         // dynamic imports here since webworkers can't access DOM scripts
-        await import('https://unpkg.com/libp2p@0.29.4/dist/index.min.js')
+        // await import('https://unpkg.com/libp2p@0.30.0/dist/index.min.js')
+        
+
         await import('https://unpkg.com/libp2p-mplex@0.10.1/dist/index.min.js')
         await import('https://unpkg.com/libp2p-secio@0.13.1/dist/index.min.js')
         // await import('https://unpkg.com/libp2p-noise@2.0.1/dist/index.min.js')
-        await import('https://unpkg.com/libp2p-websockets@0.14.0/dist/index.min.js')
-        // await import('https://unpkg.com/libp2p-bootstrap@0.12.1/dist/index.min.js')
+        await import('https://unpkg.com/libp2p-websockets@0.15.0/dist/index.min.js')
         await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')
         await import('https://unpkg.com/libp2p-kad-dht@0.20.4/dist/index.min.js')
         
-        await import('https://unpkg.com/libp2p-webrtc-star@0.20.4/dist/index.min.js') // we can't use webrtc in webworker
+        await import('https://unpkg.com/libp2p-webrtc-star@0.20.5/dist/index.min.js')
 
         if (options.repoPath) {
             try {

@@ -31,6 +31,7 @@ class Conjure extends EventEmitter
         this.worldSync = worldSync
         this.canvas = worldSync.canvas
         this.urlParams = worldSync.config.urlParams
+        this.allowIncomingFeeds = false
         
         this.start()
     }
@@ -360,6 +361,39 @@ class Conjure extends EventEmitter
 
         this.getWorld().update(args)
         this.getScreens().update(args)
+    }
+
+    async updateIngoingMediaStream() {
+        for(let user of Object.values(this.world.remoteUsers)) {
+            user.getIncomingMediaStreams()
+        }
+    }
+
+    async toggleMediaStream() {
+        if(this.userMediaStream === undefined) {
+            const stream = await this._getUserMediaStream()
+            if(!stream.ended && stream.active) {
+                for(let user of Object.values(this.world.remoteUsers)) {
+                    user.addMedia(stream)
+                }
+                return
+            }
+        }
+        for(let user of Object.values(this.world.remoteUsers)) {
+            user.removeMedia()
+        }
+        this.userMediaStream = undefined
+    }
+
+    async _getUserMediaStream() {
+        if(!this.userMediaStream) {
+            try {
+                this.userMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            } catch (err) {
+                console.log('Failed to get media streams!', err)
+            }
+        }
+        return this.userMediaStream
     }
 
     makeUrl() {

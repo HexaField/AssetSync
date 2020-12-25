@@ -43,11 +43,7 @@ export default class Realm extends EventEmitter
     }
 
     async preload()
-    {
-        if(this.realmData.getData().worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
-            this.terrain = new Terrain(this.conjure, this.world.group, this.realmData.getWorldSettings())
-        }
-        
+    {        
         if(this.realmData.getData().worldData.playsAudio) {
            await this.conjure.getAudioManager().create(true)
         }
@@ -76,9 +72,13 @@ export default class Realm extends EventEmitter
                     break
                 }
 
+                case 'Platform': {
+                    this.terrain = new Platform(this.conjure, this.world.group)
+                    break
+                }
+
                 case 'Lobby': {
                     let f = new FeatureLobby(this)
-                    this.terrain = new Platform(this.conjure, this.world.group)
                     await f.preload()
                     this.features.push(f)
                     break
@@ -86,7 +86,6 @@ export default class Realm extends EventEmitter
                 
                 case 'Discord': {
                     let f = new FeatureDiscord(this)
-                    this.terrain = new Platform(this.conjure, this.world.group)
                     await f.preload()
                     this.features.push(f)
                     break
@@ -127,21 +126,6 @@ export default class Realm extends EventEmitter
         }
 
         this.network = this.database.network
-        this.database.on(NETWORKING_OPCODES.USER.METADATA, async ({ username }, peerID) => {
-            
-            if(!this.world.remoteUsers[peerID]) {
-                this.sendTo(NETWORKING_OPCODES.USER.METADATA, {
-                    username: this.conjure.getProfile().getUsername()
-                }, peerID)         
-                CONSOLE.log('User ', peerID, ' has joined the realm')
-                console.log('User ', peerID, ' has joined the realm')
-            }
-        })
-        
-        this.network.on('onPeerLeave', (peerID) => {
-            CONSOLE.log('User ', peerID, ' has left the realm')
-            this.world.onUserLeave(peerID)
-        })
         
         this.loading = false
     }

@@ -8,10 +8,8 @@ import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
 import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS, REALM_TYPES } from '../../backend/realm/RealmData.js'
 import _ from 'lodash'
 
-export default class World
-{
-    constructor(conjure)
-    {
+export default class World {
+    constructor(conjure) {
         this.conjure = conjure
         this.scene = this.conjure.scene
 
@@ -29,7 +27,7 @@ export default class World
         this.updateCountMax = 60 / this.updatesPerSecond;
 
         this.interactMaxDistance = 4
-        
+
         this.deltaThreshold = 0.1;
 
         this.vec3 = new THREE.Vector3();
@@ -45,85 +43,73 @@ export default class World
         this.onUserAnimation = this.onUserAnimation.bind(this)
     }
 
-    async loadDefault()
-    {
-        if(this.conjure.urlParams.r)
-        {
-            if(await this.joinRealmByID(this.conjure.urlParams.r))
+    async loadDefault() {
+        if (this.conjure.urlParams.r) {
+            if (await this.joinRealmByID(this.conjure.urlParams.r))
                 return
         }
-        else
-        {
-            if(await this.joinRealmByID(await self.simpleStorage.get('conjure-profile-lastJoinedRealm')))
+        else {
+            if (await this.joinRealmByID(await self.simpleStorage.get('conjure-profile-lastJoinedRealm')))
                 return
 
         }
         await this.joinRealmByID('Lobby')
     }
 
-    async getRealms()
-    {
+    async getRealms() {
         let realms = {}
-        
-        for(let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
-            realms[realm.id] = new RealmData(realm)
-        
-        for(let realm of await this.conjure.realms.getRealms())  
+
+        for (let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
             realms[realm.id] = new RealmData(realm)
 
-        for(let realm of this.globalRealms)
-        {
+        for (let realm of await this.conjure.realms.getRealms())
+            realms[realm.id] = new RealmData(realm)
+
+        for (let realm of this.globalRealms) {
             realms[realm.id] = realm
         }
-        
-        return Object.values(realms).sort((a, b) => { return a.timestamp > b.timestamp})
+
+        return Object.values(realms).sort((a, b) => { return a.timestamp > b.timestamp })
     }
 
-    async getRealm(id)
-    {
-        for(let realm of this.globalRealms)
-            if(id === realm.id)
+    async getRealm(id) {
+        for (let realm of this.globalRealms)
+            if (id === realm.id)
                 return realm
-        
+
         return await this.conjure.realms.getRealmById(id, true)
     }
 
     async preloadGlobalRealms() {
-        for(let realm of Object.values(GLOBAL_REALMS)) {
+        for (let realm of Object.values(GLOBAL_REALMS)) {
             const realmData = new RealmData(realm)
             realmData.type = REALM_TYPES.GLOBAL
             this.globalRealms.push(realmData)
         }
     }
 
-    async joinRealm(realmData, args = {})
-    {
-        if(!args.force && this.realm && realmData.getID() === this.realm.realmID) return false
-        if(this.realm)
-        {
+    async joinRealm(realmData, args = {}) {
+        if (!args.force && this.realm && realmData.getID() === this.realm.realmID) return false
+        if (this.realm) {
             this.lastRealmID = this.realm.realmID
             await this.realm.leave()
             this.destroyAllRemoteUsers()
             this.realm = undefined
         }
-        
+
         this.conjure.setConjureMode(CONJURE_MODE.LOADING)
         this.conjure.loadingScreen.setText('Joining realm...', false)
 
-        if(realmData.whitelist)
-        {
-            if(realmData.whitelist.type === REALM_WHITELIST.SERVICE)
-            {
-                if(!this.conjure.getProfile().getServiceManager().getServiceLinked('Discord')) return false
+        if (realmData.whitelist) {
+            if (realmData.whitelist.type === REALM_WHITELIST.SERVICE) {
+                if (!this.conjure.getProfile().getServiceManager().getServiceLinked('Discord')) return false
                 // if(!realmData.whitelist.ids.includes(this.conjure.getProfile().getServiceManager().getService('Discord').data.discordID)) return false
             }
-            if(realmData.whitelist.type === REALM_WHITELIST.PASSCODE)
-            {
+            if (realmData.whitelist.type === REALM_WHITELIST.PASSCODE) {
                 this.conjure.setConjureMode(CONJURE_MODE.LOADING)
                 this.conjure.loadingScreen.setPasscodeVisible(true)
                 console.log('Waiting for valid passcode...')
-                if(!await this.waitForPasscode(realmData.whitelist.ids))
-                {
+                if (!await this.waitForPasscode(realmData.whitelist.ids)) {
                     console.log('Maybe another time...')
                     return false
                 }
@@ -137,113 +123,109 @@ export default class World
 
         this.realm = new Realm(this, realmData)
         await self.simpleStorage.set('conjure-profile-lastJoinedRealm', realmData.getID()) // make a thing for this
-        
+
         this.conjure.loadingScreen.setText('Pre-loading realm...', false)
         await this.realm.preload()
         this.conjure.loadingScreen.setText('Loading realm...', false)
         await this.realm.load()
 
 
-        this.realm.database.network.on('message', (message) => {
-            try {
-                const { opcode, content } = JSON.parse(message.data)
-                this.realm.emit(opcode, content, message.from)
-            } catch (err) {
-                const { opcode, content } = this.conjure.networkingSchemas.decode(message.data)
-                // console.log(opcode, content)
-                this.realm.emit(opcode, content, message.from)
-            }
-        })
-        this.realm.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
-        this.realm.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
-        this.realm.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
+        // this.realm.database.network.on('message', (message) => {
+        //     try {
+        //         const { opcode, content } = JSON.parse(message.data)
+        //         this.realm.emit(opcode, content, message.from)
+        //     } catch (err) {
+        //         const { opcode, content } = this.conjure.networkingSchemas.decode(message.data)
+        //         // console.log(opcode, content)
+        //         this.realm.emit(opcode, content, message.from)
+        //     }
+        // })
+        this.realm.database.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
+        this.realm.database.on(NETWORKING_OPCODES.USER.REQUEST_METADATA, (data, peerID) => { this.sendMetadata(peerID) })
+        this.realm.database.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
+        this.realm.database.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
 
-        this.realm.sendData(NETWORKING_OPCODES.USER.METADATA, {
-            username: this.conjure.getProfile().getUsername()
+        this.realm.database.network.on('onPeerLeave', (peerID) => {
+            // CONSOLE.log('User ', peerID, ' has left the realm')
+            this.world.onUserLeave(peerID)
         })
+    
+        this.sendMetadata()
+        this.requestMetadata()
 
         let spawn = realmData.worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
         this.user.teleport(spawn.x, spawn.y, spawn.z)
-        
+
         this.conjure.setConjureMode(CONJURE_MODE.EXPLORE)
         return true
-    }    
-    
-    async forceReloadCurrentRealm()
-    {
+    }
+
+    async forceReloadCurrentRealm() {
         await this.getRealms()
         await this.joinRealmByID(this.realm.realmID, { force: true })
     }
 
-    async waitForPasscode(passcodes)
-    {
+    async waitForPasscode(passcodes) {
         return new Promise((resolve) => {
             this.conjure.loadingScreen.setPasscodeCallback(
                 async (attempt) => {
-                    if(attempt === undefined)
+                    if (attempt === undefined)
                         resolve(false)
-                    if(passcodes.includes(attempt))
+                    if (passcodes.includes(attempt))
                         resolve(true)
                 }
             )
         })
     }
 
-    async joinRealmByID(id, args = {})
-    {
-        if(!id) return false
-        if(this.realm && this.realm.loading)
+    async joinRealmByID(id, args = {}) {
+        if (!id) return false
+        if (this.realm && this.realm.loading)
             return false
 
         let realm = await this.getRealm(id, true)
-        if(!realm) return false
-        
+        if (!realm) return false
+
         let realmData = new RealmData(realm)
-        if(!realmData) return false
-        
-        if(!await this.joinRealm(realmData, args))
+        if (!realmData) return false
+
+        if (!await this.joinRealm(realmData, args))
             await this.joinRealmByID(this.lastRealmID, args)
         return true
     }
 
-    getScreensDisabled()
-    {
-        if(!this.realm) return false
-        if(this.realm.realmData.worldData.disableScreens)
+    getScreensDisabled() {
+        if (!this.realm) return false
+        if (this.realm.realmData.worldData.disableScreens)
             return true
         return false
     }
 
     // { delta, input, mouseRaycaster, worldRaycaster, conjure }
 
-    update(updateArgs)
-    {
+    update(updateArgs) {
         this.user.update(updateArgs);
-        if(this.realm)
+        if (this.realm)
             this.realm.update(updateArgs)
-        
+
         let interact = false;
         let interactDistance = this.interactMaxDistance;
-        for(let remoteUser of Object.values(this.remoteUsers))
-        {
-            if(remoteUser.timedOut) continue
+        for (let remoteUser of Object.values(this.remoteUsers)) {
+            if (remoteUser.timedOut) continue
 
             remoteUser.update(updateArgs)
-            if(remoteUser && remoteUser.group) // make sure we havent destroyed user in update loop
-                if(!interact && this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
-                {
+            if (remoteUser && remoteUser.group) // make sure we havent destroyed user in update loop
+                if (!interact && this.conjure.conjureMode === CONJURE_MODE.EXPLORE) {
                     let intersections = this.conjure.worldRaycaster.intersectObject(remoteUser.group, true);
-                    if(intersections.length > 0 && intersections[0].distance < interactDistance)
-                    {
+                    if (intersections.length > 0 && intersections[0].distance < interactDistance) {
                         interactDistance = intersections[0].distance;
                         interact = true;
                         this.conjure.screenManager.hudExplore.interact.setObject(remoteUser, INTERACT_TYPES.USER);
                     }
                 }
         }
-        if(this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
-        {
+        if (this.conjure.conjureMode === CONJURE_MODE.EXPLORE) {
             // TODO: this uses the old audio manager to find audio sources, should add a worker-side list of media elements and use that instead
             // let intersections = this.conjure.worldRaycaster.intersectObjects(this.conjure.getAudioManager().getSources(), true);
             // if(intersections.length > 0 && intersections[0].distance < interactDistance)
@@ -265,7 +247,7 @@ export default class World
         //     if(!interact)
         //         this.conjure.screenManager.hudExplore.interact.setObject();
         // }
-        if(this.realm && this.user.group && this.user.group.body)
+        if (this.realm && this.user.group && this.user.group.body)
             this.getWorldUpdates(updateArgs)
     }
 
@@ -273,117 +255,132 @@ export default class World
         return parseFloat(String(int)).toFixed(num)
     }
 
-    getWorldUpdates()
-    {
+    getWorldUpdates() {
         let deltaUpdate = true;
         this.updateCount++;
-        if(this.updateCount > this.savePeriod * 60)
-        {
-            this.updateCount = 0; 
+        if (this.updateCount > this.savePeriod * 60) {
+            this.updateCount = 0;
             deltaUpdate = false;
         }
-        if(this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
+        if (this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
         {
             // if(!deltaUpdate)
             //     this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
-            
+
             const pos = this.user.group.getWorldPosition(this.vec3)
             const position = {
-                x: Math.round(pos.x * 1000),
-                y: Math.round(pos.y * 1000),
-                z: Math.round(pos.z * 1000),
+                x: Math.round(pos.x * 100),
+                y: Math.round(pos.y * 100),
+                z: Math.round(pos.z * 100),
             }
             const quat = this.user.group.getWorldQuaternion(this.quat)
             const rotation = {
-                x: Math.round(quat._x * 1000),
-                y: Math.round(quat._y * 1000),
-                z: Math.round(quat._z * 1000),
-                w: Math.round(quat._w * 1000)
+                x: Math.round(quat._x * 100),
+                y: Math.round(quat._y * 100),
+                z: Math.round(quat._z * 100),
+                w: Math.round(quat._w * 100)
             }
             const velocity = {
-                x: Math.round(this.user.group.body.velocity.x * 1000),
-                y: Math.round(this.user.group.body.velocity.y * 1000),
-                z: Math.round(this.user.group.body.velocity.z * 1000)
+                x: Math.round(this.user.group.body.velocity.x * 100),
+                y: Math.round(this.user.group.body.velocity.y * 100),
+                z: Math.round(this.user.group.body.velocity.z * 100)
             }
             let payload = {
                 position,
                 rotation,
                 velocity
             }
-            if(deltaUpdate || !_.isEqual(this.lastUserUpdate, payload))
-            {
+            if (deltaUpdate || !_.isEqual(this.lastUserUpdate, payload)) {
                 this.sendData(NETWORKING_OPCODES.USER.MOVE, payload);
                 this.lastUserUpdate = payload;
             }
         }
     }
 
-    async sendData(opcode, data)
-    {
-        if(!this.realm) return
+    async sendData(opcode, data) {
+        if (!this.realm) return
         // const message = this.conjure.networkingSchemas.encode(opcode, data)
         // await this.realm.network.broadcast(message)
         this.realm.sendData(opcode, data)
     }
 
-    async sendTo(opcode, data, peerID)
-    {
-        if(!this.realm) return
+    async sendTo(opcode, data, peerID) {
+        if (!this.realm) return
         // const message = this.conjure.networkingSchemas.encode(opcode, data)
         // await this.realm.network.sendTo(peerId, message)
         this.realm.sendTo(opcode, data, peerID)
     }
 
-    // TODO: if user joins with same discordID and diff peerID, need to figure out implications
+    sendMetadata(peerID) {
+        if(peerID) {
+            this.realm.sendTo(NETWORKING_OPCODES.USER.METADATA, {
+                username: this.conjure.getProfile().getUsername()
+            }, peerID)
+        } else {
+            this.realm.sendData(NETWORKING_OPCODES.USER.METADATA, {
+                username: this.conjure.getProfile().getUsername()
+            })
+        }
+    }
 
-    onUserData(data, peerID)
-    {
-        if(this.remoteUsers[peerID]) {
+    requestMetadata(peerID) {
+        if(peerID) {
+            this.realm.sendTo(NETWORKING_OPCODES.USER.REQUEST_METADATA, {}, peerID)
+        } else {
+            this.realm.sendData(NETWORKING_OPCODES.USER.REQUEST_METADATA, {})
+        }
+    }
+
+    onUserData(data, peerID) {
+        if (this.remoteUsers[peerID]) {
             this.remoteUsers[peerID].updateInfo(data);
         }
         else {
+            // this.sendMetadata(peerID)
             this.remoteUsers[peerID] = new UserRemote(this.conjure, data, peerID)
             window.CONSOLE.log(data.username + ' has joined')
+            this.remoteUsers[peerID].getConnection()
         }
     }
-    
-    
-    destroyAllRemoteUsers()
-    {
-        for(let remoteUser of Object.values(this.remoteUsers)) {
+
+
+    destroyAllRemoteUsers() {
+        for (let remoteUser of Object.values(this.remoteUsers)) {
             // this.conjure.physics.destroy(this.users[u].group.body)
             this.scene.remove(remoteUser.group)
             delete this.remoteUsers[remoteUser.peerID]
         }
     }
 
-    onUserLeave(peerID)
-    {
-        if(!this.remoteUsers[peerID]) return
-        
+    onUserLeave(peerID) {
+        if (!this.remoteUsers[peerID]) return
+
         window.CONSOLE.log(this.remoteUsers[peerID].username + ' has left')
         // this.conjure.physics.destroy(this.users[u].group.body)
         this.scene.remove(this.remoteUsers[peerID].group)
         delete this.remoteUsers[peerID]
     }
 
-    onUserAnimation(data, peerID)
-    {
-        if(!this.remoteUsers[peerID]) return
-        
+    onUserAnimation(data, peerID) {
+        if (!this.remoteUsers[peerID]) {
+            this.requestMetadata(peerID)
+            return
+        }
+
         this.remoteUsers[peerID].setAction(data.name.trim(), data.fadeTime, data.once, data.startTime)
     }
-    
-    onUserMove(data, peerID)
-    {
-        if(!this.remoteUsers[peerID]) return
-        
+
+    onUserMove(data, peerID) {
+        if (!this.remoteUsers[peerID]) {
+            this.requestMetadata(peerID)
+            return
+        }
+
         this.remoteUsers[peerID].setPhysics(data)
     }
 
-    getObjects()
-    {
-        if(!this.realm) return []
+    getObjects() {
+        if (!this.realm) return []
         return this.realm.getObjectManager().objects
     }
 }

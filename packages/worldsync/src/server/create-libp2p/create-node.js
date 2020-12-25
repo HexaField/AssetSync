@@ -1,6 +1,6 @@
 import Libp2p from 'libp2p'
-import WS from 'libp2p-websockets'
-// import filters from 'libp2p-websockets/src/filters.js'
+import WebSockets from 'libp2p-websockets'
+import filters from 'libp2p-websockets/src/filters.js'
 import WebrtcStar from 'libp2p-webrtc-star'
 import TCP from 'libp2p-tcp'
 import Multiplex from 'libp2p-mplex'
@@ -16,14 +16,15 @@ export function defaultNodeConfig() {
     return {
         addresses: {
             listen: [
-                '/dns4/floating-retreat-57828.herokuapp.com/tcp/443/wss/p2p-webrtc-star/'
+                '/dns4/boiling-hamlet-91904.herokuapp.com/tcp/443/wss/p2p-webrtc-star', // this uses socket.io V2
+                // '/dns4/floating-retreat-57828.herokuapp.com/tcp/443/wss/p2p-webrtc-star/' // this uses a socket.io V3
                 // '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
                 // '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
             ]
         },
         modules: {
             transport: [
-                TCP, WS, WebrtcStar
+                TCP, WebSockets, WebrtcStar
             ],
             streamMuxer: [
                 Multiplex
@@ -40,11 +41,12 @@ export function defaultNodeConfig() {
                 [WebrtcStar.prototype[Symbol.toStringTag]]: {
                     wrtc
                 },
-                // [WS.prototype[Symbol.toStringTag]]: {
-                //     filter: filters.all
-                // }
+                [WebSockets.prototype[Symbol.toStringTag]]: {
+                    filter: filters.all
+                }
             },
-            dht: dhtConfig
+            dht: dhtConfig,
+            exposeRawConn: true
         }
     }
 }

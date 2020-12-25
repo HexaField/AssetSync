@@ -21,7 +21,7 @@ export const GLOBAL_REALMS = {
         name: 'Lobby',
         timestamp: -1,
         worldSettings: {
-            features: ['Lobby'],
+            features: ['Lobby', 'Platform'],
             worldGeneratorType: REALM_WORLD_GENERATORS.NONE
         }
     },
@@ -42,10 +42,10 @@ export const GLOBAL_REALMS = {
         name: 'Campfire',
         timestamp: -1,
         worldData: {
-            playsAudio: true
+            // playsAudio: true
         },
         worldSettings: {
-            features: ['Campfire'],
+            features: ['Campfire', 'Platform'],
             worldGeneratorType: REALM_WORLD_GENERATORS.NONE
         }
     },

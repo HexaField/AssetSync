@@ -31,7 +31,7 @@
         "omggif": "^1.0.10",
         "platform": "^1.3.6",
         "simplex-noise": "^2.4.0",
-        "snowpack": "^2.14.1",
+        "snowpack": "^2.18.5",
         "snowpack-plugin-import-map": "^1.1.1",
         "three": "^0.122.0",
         "three-spritetext": "^1.5.2",
