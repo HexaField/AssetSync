@@ -45,7 +45,7 @@ import libp2p from './server/create-libp2p/index.js'
 
 
 export { server } from './server/index.js'
-export { client } from './client/index.js'
+// export { client } from './client/index.js'
 
 export default async function createWorldSync(args = {}) {
     const worldsync = new WorldSync()
@@ -161,8 +161,8 @@ class WorldSync {
 
             // }
 
-            if(args.client)
-                this._client = args.client(this)
+            // if(args.client)
+            //     this._client = args.client(this)
         }
 
     }
