@@ -3,8 +3,7 @@ import { PluginBase } from '../../PluginBase.js'
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { isNode } from '@AssetSync/common'
-import * as utils from './utils.js'
-
+import * as utils from '@AssetSync/common/src/datastore-utils.js'
 
 export class DHTPlugin extends PluginBase {
 

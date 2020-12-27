@@ -33,10 +33,10 @@ export default class DiscordHandler
     async logOut()
     {
         if(!this.loggedIn) return;
-        let accessToken = JSON.parse(self.basicStorage.getItem('discordAccessToken'));
+        let accessToken = JSON.parse(window.clientDatastore.get('discordAccessToken'));
         const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64"); 
         const response = await this.oauth.revokeToken(accessToken.access_token, credentials)
-        await self.simpleStorage.del('discordAccessToken');
+        await window.clientDatastore.del('discordAccessToken');
         this.userData = undefined;
         this.setLoggedIn(false);
     }
@@ -60,7 +60,7 @@ export default class DiscordHandler
 
         if(window.localStorage.getItem('discordAccessToken'))
         {
-            let accessToken = JSON.parse(await self.simpleStorage.get('discordAccessToken'));
+            let accessToken = JSON.parse(await window.clientDatastore.get('discordAccessToken'));
             try {
                 const access_token = this.oauth.tokenRequest({
                     refreshToken: accessToken.refresh_token,
@@ -70,13 +70,13 @@ export default class DiscordHandler
                 if(access_token)
                 {
                     console.log("Successfully logged into discord with refresh token!");
-                    await self.simpleStorage.set('discordAccessToken', JSON.stringify(access_token));
+                    await window.clientDatastore.put('discordAccessToken', JSON.stringify(access_token));
                     this.setLoggedIn(true);
                     await this.getUser(access_token);
                 }
             } catch (error) {
                 console.log(error);
-                await self.simpleStorage.clear('discordAccessToken');
+                await window.clientDatastore.del('discordAccessToken');
                 this.userData = undefined;
                 this.setLoggedIn(false);
             }
@@ -114,13 +114,13 @@ export default class DiscordHandler
             if(access_token)
             {
                 console.log("Successfully logged into discord!");
-                await self.simpleStorage.set('discordAccessToken', JSON.stringify(access_token));
+                await window.clientDatastore.put('discordAccessToken', JSON.stringify(access_token));
                 this.setLoggedIn(true);
                 await this.getUser(access_token);
             }   
         } catch(error) {
             console.log(error);
-            await self.simpleStorage.del('discordAccessToken');
+            await window.clientDatastore.del('discordAccessToken');
             this.userData = undefined;
             this.setLoggedIn(false);
         }
@@ -137,7 +137,7 @@ export default class DiscordHandler
     {
         return await new Promise(async (resolve, reject) => {
             try{
-                const user_guilds = await this.oauth.getUserGuilds(JSON.parse(await self.simpleStorage.get('discordAccessToken')).access_token)
+                const user_guilds = await this.oauth.getUserGuilds(JSON.parse(await window.clientDatastore.get('discordAccessToken')).access_token)
                 resolve(user_guilds);
             } catch(error) {
                 reject(error)

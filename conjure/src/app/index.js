@@ -2,7 +2,7 @@ import { isNode, EventDispatcher, isWebWorker } from '@AssetSync/common'
 
 import Assets from './backend/Assets.js'
 import RealmHandler from './backend/RealmHandler.js'
-import Profiles from './backend/Profiles.js'
+import ClientDatastore from './backend/ClientDatastore.js'
 
 export default async function (args) {
     new App(args)
@@ -23,7 +23,6 @@ class App extends EventDispatcher {
         this.assets = new Assets(this.assetSync)
         this.realms = new RealmHandler(this.assetSync)
         this.realms.initialise()
-        this.profiles = new Profiles(this.assetSync)
 
         this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')
 
@@ -67,9 +66,15 @@ class App extends EventDispatcher {
     }
 
     async loadConjure() {
+        
+        this.clientDatastore = new ClientDatastore(this.assetSync)
+        await this.clientDatastore.initialise()
+        window.clientDatastore = this.clientDatastore
+        
+        window.assetSync = this.assetSync
+        
         const { startConjure } = await import('./conjure/Conjure.js')
         startConjure(this)
-        window.assetSync = this.assetSync
     }
 
 }

@@ -80,6 +80,7 @@ export default async function (options = {}) {
                 })
 
                 const libp2p = await Libp2p(libp2pConfig)
+                libp2p.repo = repo
                 return libp2p
             } catch (error) {
                 console.log('Failed to start repo, using memory instead...', error)

@@ -2,11 +2,11 @@ import AssetSync, {
     
     Libp2pPlugin,
     NetworkPlugin,
-    RemoteNetworkPlugin,
+    // RemoteNetworkPlugin,
     DHTPlugin,
-    RemoteDHTPlugin,
-    StoragePlugin,
-    ConnectionPlugin
+    // RemoteDHTPlugin,
+    // StoragePlugin,
+    // ConnectionPlugin
 
 } from '@AssetSync/AssetSync'
 
@@ -18,44 +18,43 @@ import libp2p from './create-libp2p/index.js'
 export async function startAssetSync(proxy) {
 
     let assetSync = new AssetSync()
-    let networkPlugin, dhtPlugin, connectionPlugin
-    const minPeers = 1
+    let networkPlugin, dhtPlugin
+    const minPeers = 0
 
-    if (isWebWorker && proxy) {
+    // if (isWebWorker && proxy) {
 
-        networkPlugin = new RemoteNetworkPlugin()
-        networkPlugin.setTarget(proxy)
-        dhtPlugin = new RemoteDHTPlugin()
-        dhtPlugin.setTarget(proxy)
-        // connectoin proxy
+    //     networkPlugin = new RemoteNetworkPlugin()
+    //     networkPlugin.setTarget(proxy)
+    //     dhtPlugin = new RemoteDHTPlugin()
+    //     dhtPlugin.setTarget(proxy)
+    //     // connectoin proxy
 
+    // } else {
+
+    const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
+    
+    const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (window.worldSync.config.urlParams.noPeers === 'true' ? 0 : minPeers) })
+    await assetSync.register({ transportPlugin })
+    networkPlugin = new NetworkPlugin({ transportPlugin })
+    let dhtConstructor
+    if(isNode) {
+        const { default: dht } = await import('libp2p-kad-dht')
+        dhtConstructor = dht
     } else {
-
-
-        const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
-        
-        const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (window.worldSync.config.urlParams.noPeers === 'true' ? 0 : minPeers) })
-        await assetSync.register({ transportPlugin })
-        networkPlugin = new NetworkPlugin({ transportPlugin })
-        let dhtConstructor
-        if(isNode) {
-            const { default: dht } = await import('libp2p-kad-dht')
-            dhtConstructor = dht
-        } else {
-            dhtConstructor = window.Libp2pKadDht
-        }
-        dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
-        connectionPlugin = new ConnectionPlugin({
-            peerOptions: {
-                config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:104.131.116.173:5349' }] },
-            }
-        })
+        dhtConstructor = window.Libp2pKadDht
     }
+    dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
+    // connectionPlugin = new ConnectionPlugin({
+    //     peerOptions: {
+    //         config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:104.131.116.173:5349' }] },
+    //     }
+    // })
+// }
 
-    const storagePlugin = new StoragePlugin()
+    // const storagePlugin = new StoragePlugin()
     // const syncedDatabasePlugin = new SyncedDatabasePlugin({ networkPlugin })
 
-    await assetSync.register({ networkPlugin, dhtPlugin, storagePlugin, connectionPlugin })
+    await assetSync.register({ networkPlugin, dhtPlugin })
     await assetSync.initialise()
 
     return assetSync

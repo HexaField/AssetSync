@@ -1,6 +1,6 @@
 
 import { MemoryDatastore } from 'interface-datastore'
-import * as utils from './utils.js'
+import * as utils from '@AssetSync/common/src/datastore-utils.js'
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { isNode, number } from '@AssetSync/common'

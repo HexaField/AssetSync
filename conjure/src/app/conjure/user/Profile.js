@@ -2,23 +2,19 @@
 import { generateUUID } from '@AssetSync/common'
 import ServiceManager from './services/ServiceManager.js'
 
-export default class Profile
-{  
-    constructor(conjure)
-    {
+export default class Profile {
+    constructor(conjure) {
         this.conjure = conjure
         this.isLoaded = false
-        this.lastUpdated = 0
 
         // data
         this.profileData = {}
         this.makeDefaultProfile()
-     
+
         this.serviceManager = new ServiceManager(conjure)
     }
 
-    makeDefaultProfile()
-    {
+    makeDefaultProfile() {
         this.profileData = {
             id: generateUUID(),
             username: 'New User ' + Math.round(Math.random() * 10000)
@@ -29,60 +25,55 @@ export default class Profile
     getProfile() { return this.profileData }
     getID() { return this.profileData.id }
     getUsername() { return this.profileData.username }
-    
-    setUsername(newName)
-    {
+
+    setUsername(newName) {
         this.profileData.username = newName
         // this.conjure.getWorld().sendData(NETWORKING_OPCODES.USER.UPDATE, { username: this.getUsername() })
     }
 
-    createProfile()
-    {
-        if(this.isLoaded) return
+    createProfile() {
+        if (this.isLoaded) return
         this.saveProfile()
         this.setProfileLoaded(true)
     }
 
-    removeProfile()
-    {
-        if(!this.isLoaded) return
+    removeProfile() {
+        if (!this.isLoaded) return
         this.makeDefaultProfile()
         this.setProfileLoaded(false)
     }
 
-    async loadFromDatabase()
-    {
-        let data = await this.conjure.profiles.get()
+    async loadFromDatabase() {
+        let data
+        try {
+            data = JSON.parse(await window.clientDatastore.get('profile'))
+        } catch (err) { console.log(err) }
+        console.log(data)
 
-        if(!data || data.timestamp < this.lastUpdated || !data.data) return
-        this.lastUpdated = data.timestamp
+        if (!data) return
 
-        if(data.data.profile)
-            this.setProfileFromDatabase(data.data.profile)
-        if(data.data.services)
-            this.getServiceManager().setServicesFromDatabase(data.data.services)
+        if (data.profile)
+            this.setProfileFromDatabase(data.profile)
+        if (data.services)
+            this.getServiceManager().setServicesFromDatabase(data.services)
     }
 
-    saveProfile()
-    {
+    saveProfile() {
         // replace with dht
-        this.conjure.profiles.put({ profile: this.profileData, services: this.getServiceManager().getServiceAsJson() })
+        window.clientDatastore.put('profile', JSON.stringify({ profile: this.profileData, services: this.getServiceManager().getServiceAsJson() }))
     }
 
-    setProfileFromDatabase(data)
-    {
+    setProfileFromDatabase(data) {
         this.profileData = data
         this.setProfileLoaded(true)
 
         this.conjure.getGlobalHUD().log('Successfully loaded profile!')
     }
 
-    setProfileLoaded(loaded)
-    {
+    setProfileLoaded(loaded) {
         this.conjure.getScreens().screenProfile.setProfileLoaded(loaded)
         this.isLoaded = loaded
-        if(loaded)
-        {
+        if (loaded) {
             this.conjure.getScreens().screenProfile.setProfileName(this.getUsername()) // eventually change this to update all profile info on screen
         }
     }

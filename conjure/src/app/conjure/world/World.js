@@ -7,6 +7,7 @@ import { CONJURE_MODE } from '../Conjure.js'
 import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
 import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS, REALM_TYPES } from '../../backend/realm/RealmData.js'
 import _ from 'lodash'
+import { number } from '@AssetSync/common'
 
 export default class World {
     constructor(conjure) {
@@ -49,7 +50,7 @@ export default class World {
                 return
         }
         else {
-            if (await this.joinRealmByID(await self.simpleStorage.get('conjure-profile-lastJoinedRealm')))
+            if (await this.joinRealmByID(number(await window.clientDatastore.get('conjure-profile-lastJoinedRealm'))))
                 return
 
         }
@@ -122,7 +123,7 @@ export default class World {
         // ----------- //
 
         this.realm = new Realm(this, realmData)
-        await self.simpleStorage.set('conjure-profile-lastJoinedRealm', realmData.getID()) // make a thing for this
+        await window.clientDatastore.put('conjure-profile-lastJoinedRealm', String(realmData.getID())) // make a thing for this
 
         this.conjure.loadingScreen.setText('Pre-loading realm...', false)
         await this.realm.preload()

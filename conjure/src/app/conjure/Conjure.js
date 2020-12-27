@@ -38,27 +38,6 @@ class Conjure extends EventEmitter
 
     async start()
     {
-        const conjureDataStoreName = 'conjureSimpleDataStore'
-        const customStore = new Store(conjureDataStoreName, conjureDataStoreName);
-        
-        self.simpleStorage = {
-          async get(key) {
-            return await getIDBItem(key, customStore);
-          },
-          async set(key, val) {
-            return await setIDBItem(key, val, customStore);
-          },
-          async del(key) {
-            return await delIDBItem(key, customStore);
-          },
-          async clear() {
-            return await clearIDBItem(customStore);
-          },
-          async keys() {
-            return await keysIDBItem(customStore);
-          },
-        };
-
         await this.init()
         await this.preload()
         await this.create()

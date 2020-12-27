@@ -6,9 +6,12 @@
     "type": "module",
     "scripts": {
         "start": "npm-run-all --parallel start:*",
+        "clean:browser": "rm -rf build",
+        "build:browser": "snowpack build",
         "start:browser": "snowpack dev",
-        "start:node": "nodemon --trace-warnings src/index.js",
-        "build": "snowpack build"
+        "clean:node": "rm -rf bin",
+        "build:node": "pkg src/index.js --targets node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path bin/",
+        "start:node": "nodemon --trace-warnings src/index.js --watch src/app/backend src/packages"
     },
     "dependencies": {},
     "devDependencies": {
@@ -22,14 +25,13 @@
         "cross-blob": "^2.0.0",
         "discord-oauth2": "^2.6.0",
         "enable3d": "^0.19.1",
-        "file-type": "^14.7.1",
         "hyperdiff": "^2.0.7",
         "idb-keyval": "^3.2.0",
         "lodash": "^4.17.19",
         "nodemon": "^2.0.4",
         "npm-run-all": "^4.1.5",
         "omggif": "^1.0.10",
-        "platform": "^1.3.6",
+        "pkg": "^4.4.9",
         "simplex-noise": "^2.4.0",
         "snowpack": "^2.18.5",
         "snowpack-plugin-import-map": "^1.1.1",
