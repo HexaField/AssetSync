@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import Terrain from './Terrain'
 import FeatureArtGallery from '../features/FeatureArtGallery'
 import FeatureLobby from '../features/FeatureLobby'
-import { REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../../backend/realm/RealmData'
+import { REALM_TYPES, REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../../backend/realm/RealmData'
 import Platform from '../Platform'
 import ObjectManager from './ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
@@ -109,17 +109,46 @@ export default class Realm extends EventEmitter
         for(let feature of this.features)
             await feature.load()
 
-        console.log(this.realmData)
         this.database = await this.world.conjure.realms.addDatabase(this.realmData, ({ message }) => {
             this.conjure.loadingScreen.setText(message, false)
         })
+
+        this.database.network.on('message', (message) => {
+            try {
+                const { opcode, content } = JSON.parse(message.data)
+                this.emit(opcode, content, message.from)
+            } catch (err) {
+                // const { opcode, content } = this.conjure.networkingSchemas.decode(message.data)
+                // console.log(opcode, content)
+                // this.realm.emit(opcode, content, message.from)
+                console.log('hmm bad message', err, message)
+            }
+        })
+
+        this.database.network.on('onPeerJoin', (peerID) => {
+            // CONSOLE.log('User ', peerID, ' has left the realm')
+            this.world.sendMetadata(peerID)
+            this.world.requestMetadata(peerID)
+        })
+
+        this.database.network.on('onPeerLeave', (peerID) => {
+            // CONSOLE.log('User ', peerID, ' has left the realm')
+            this.world.onUserLeave(peerID)
+        })
+
+        this.on(NETWORKING_OPCODES.USER.METADATA, this.world.onUserData)
+        this.on(NETWORKING_OPCODES.USER.REQUEST_METADATA, (data, peerID) => { this.world.sendMetadata(peerID) })
+        this.on(NETWORKING_OPCODES.USER.MOVE, this.world.onUserMove)
+        this.on(NETWORKING_OPCODES.USER.ANIMATION, this.world.onUserAnimation)
+        this.on(NETWORKING_OPCODES.USER.LEAVE, (data, peerID) => { this.world.onUserLeave(peerID) })
+
         
-        this.database.on(NETWORKING_OPCODES.OBJECT.RECEIVE, this.onObjectCreate)
-        this.database.on(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
-        this.database.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, this.onObjectUpdate)
-        this.database.on(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
-        this.database.on(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
-        this.database.on(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+        this.on(NETWORKING_OPCODES.OBJECT.RECEIVE, this.onObjectCreate)
+        this.on(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
+        this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, this.onObjectUpdate)
+        this.on(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
+        this.on(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
+        this.on(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
 
         for(let obj of await this.database.getObjects()) {
             this.loadObjectFromPeer(obj.uuid, obj.data);
@@ -132,8 +161,11 @@ export default class Realm extends EventEmitter
 
     async leave()
     {
+        this.removeAllListeners()
         this.getObjectManager().destroyAllObjects()
-        await this.conjure.realms.removeDatabase(this.realmData)
+        // add check to see if database should be removed (global realms etc)
+        if(this.realmData.type === REALM_TYPES.EPHEMERAL)
+            await this.conjure.realms.removeDatabase(this.realmData)
         
         if(this.terrain)
             this.terrain.destroy()

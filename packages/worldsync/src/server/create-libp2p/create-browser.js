@@ -6,6 +6,7 @@ import Libp2p from './libp2p.min.js'
 window.Libp2p = Libp2p
 
 export function defaultBrowserConfig() {
+    console.log(Object.assign({}, window.Libp2pWebrtcStar))
     return {
         addresses: {
             listen: [

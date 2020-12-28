@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { Store, get as getIDBItem, set as setIDBItem, keys as keysIDBItem, del as delIDBItem, clear as clearIDBItem } from 'idb-keyval';
 import EventEmitter from 'events'
 import { isWebWorker } from '@AssetSync/common'
+import { REALM_TYPES } from '../backend/realm/RealmData.js';
 
 export const CONJURE_MODE = {
     LOADING: 'Loading',
@@ -235,16 +236,16 @@ class Conjure extends EventEmitter
         // this.resizeCanvas() // trigger this to set up screen anchors
         this.screenManager.hudGlobal.showScreen(true)
         
-        if(isWebWorker) {
-            const { AudioWrapper } = await import('./AudioWrapper.js')
-            this.audioManager = new AudioWrapper(this)
+        // if(isWebWorker) {
+        //     const { AudioWrapper } = await import('./AudioWrapper.js')
+        //     this.audioManager = new AudioWrapper(this)
             
-            const { VideoWrapper } = await import('./VideoWrapper.js')
-            this.videoWrapper = new VideoWrapper(this)
-        } else {
+        //     const { VideoWrapper } = await import('./VideoWrapper.js')
+        //     this.videoWrapper = new VideoWrapper(this)
+        // } else {
             const { AudioManager } = await import('./AudioManager.js')
             this.audioManager = new AudioManager(this)
-        }
+        // }
         this.screenManager.hudGlobal.audioControls.setAudioManager(this.audioManager)
 
         this.loadingScreen.setText('Loading World...')
@@ -350,10 +351,11 @@ class Conjure extends EventEmitter
     }
 
     async toggleMediaStream() {
-        // if(this.world.realm.realmData) {
-        //     // do verification of realm here
-        // }
-        if(this.userMediaStream === undefined) {
+        if(!this.hasMediaStream()) {
+            if(this.world.realm.realmData.type === REALM_TYPES.GLOBAL) {
+                return
+                // do verification of realm here
+            }
             const stream = await this._getUserMediaStream()
             if(!stream.ended && stream.active) {
                 for(let user of Object.values(this.world.remoteUsers)) {
@@ -364,17 +366,25 @@ class Conjure extends EventEmitter
         }
         for(let user of Object.values(this.world.remoteUsers)) {
             user.removeMedia()
+            user.removeVideo()
         }
         this.userMediaStream = undefined
     }
 
+    hasMediaStream() {
+        return this.userMediaStream !== undefined
+    }
+
     async _getUserMediaStream() {
-        if(!this.userMediaStream) {
+        // console.log('Attempting to get media stream...')
+        if(!this.hasMediaStream()) {
             try {
-                await this.audioManager.create(false)
+                // await this.audioManager.create(false)
                 this.userMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                // console.log('Successfully got media streams!')
             } catch (err) {
                 console.log('Failed to get media streams!', err)
+                this.userMediaStream = undefined
             }
         }
         return this.userMediaStream

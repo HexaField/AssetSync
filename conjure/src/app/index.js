@@ -26,6 +26,11 @@ class App extends EventDispatcher {
 
         this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')
 
+
+        // this.assetSync.transportPlugin._libp2p.connectionManager.on('peer:connect', (connection) => {
+        //     console.log(connection)
+        // })
+
         if(isNode) {
             this.globalNetwork.on('onPeerJoin', (peerId) => {
                 console.log('Peer ' + peerId.substring(0, 8) + ' joined')
@@ -70,7 +75,7 @@ class App extends EventDispatcher {
         this.clientDatastore = new ClientDatastore(this.assetSync)
         await this.clientDatastore.initialise()
         window.clientDatastore = this.clientDatastore
-        
+
         window.assetSync = this.assetSync
         
         const { startConjure } = await import('./conjure/Conjure.js')

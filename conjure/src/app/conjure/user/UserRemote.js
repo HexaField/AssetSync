@@ -43,6 +43,7 @@ export default class UserRemote extends User {
         this.rawConn = conn.rawConn
         this.rawConn.on('stream', stream => {
             this.incomingStream = stream
+            console.log(stream)
             if(this.conjure.allowIncomingFeeds) {
                 this.addVideo(stream)
             }
@@ -60,6 +61,13 @@ export default class UserRemote extends User {
         if(this.conjure.userMediaStream) {
             this.addMedia(this.conjure.userMediaStream)
         }
+        if(this.rawConn._remoteStreams && this.rawConn._remoteStreams.length > 0) {
+            this.incomingStream = this.rawConn._remoteStreams[0]
+            console.log(this.incomingStream)
+            if(this.conjure.allowIncomingFeeds) {
+                this.addVideo(this.incomingStream)
+            }
+        }
     }
 
     getIncomingMediaStreams() {
@@ -67,7 +75,6 @@ export default class UserRemote extends User {
             this.addVideo(this.incomingStream)
         } else {
             if(this.video) {
-                // this.video.parentNode.removeChild(this.video)
                 this.video = undefined
                 this.videoScreen.visible = false
             }
@@ -76,13 +83,12 @@ export default class UserRemote extends User {
 
     addVideo(stream) {
 
-        if(this.video) {
-            // this.video.parentNode.removeChild(this.video)
-        }
-        
+        this.removeVideo()
+
         const video = document.createElement('video')
+        
         this.videoScreen.material.map = new THREE.VideoTexture(video)
-        this.conjure.getAudioManager().createFromMediaSource(stream, this.videoScreen, { refDistance: 20 })
+        this.soundObject = this.conjure.getAudioManager().createFromMediaSource(stream, this.videoScreen, { refDistance: 20 })
         this.videoScreen.visible = true
 
         this.video = video
@@ -95,6 +101,21 @@ export default class UserRemote extends User {
 
         video.play()
         video.volume = 0
+    }
+
+    removeVideo() {
+        if(this.video) {
+            this.soundObject.destroy()
+            // this.video.pause()
+            this.video.src = undefined
+            this.video.srcObject = undefined
+            this.video.removeAttribute('src')
+            this.video.removeAttribute('srcObject')
+            this.video.load()
+            this.video.remove()
+            delete this.video
+            this.removeMedia()
+        }
     }
 
     onCreate() {
@@ -132,10 +153,13 @@ export default class UserRemote extends User {
     }
 
     destroy() {
+        this.removeVideo()
+        this.removeMedia()
         // this.conjure.getWorld().onUserLeave(this.peerID)
         // this.conjure.physics.destroy(this.group.body)
-        // this.scene.remove(this.group)
+        this.conjure.scene.remove(this.group)
         // this.timedOut = true
+
     }
 
     async makeConnection(peerID) {

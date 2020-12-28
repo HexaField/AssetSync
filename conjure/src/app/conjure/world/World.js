@@ -93,9 +93,10 @@ export default class World {
         if (!args.force && this.realm && realmData.getID() === this.realm.realmID) return false
         if (this.realm) {
             this.lastRealmID = this.realm.realmID
+            this.sendData(NETWORKING_OPCODES.USER.LEAVE)
             await this.realm.leave()
             this.destroyAllRemoteUsers()
-            this.realm = undefined
+            delete this.realm
         }
 
         this.conjure.setConjureMode(CONJURE_MODE.LOADING)
@@ -129,27 +130,6 @@ export default class World {
         await this.realm.preload()
         this.conjure.loadingScreen.setText('Loading realm...', false)
         await this.realm.load()
-
-
-        // this.realm.database.network.on('message', (message) => {
-        //     try {
-        //         const { opcode, content } = JSON.parse(message.data)
-        //         this.realm.emit(opcode, content, message.from)
-        //     } catch (err) {
-        //         const { opcode, content } = this.conjure.networkingSchemas.decode(message.data)
-        //         // console.log(opcode, content)
-        //         this.realm.emit(opcode, content, message.from)
-        //     }
-        // })
-        this.realm.database.on(NETWORKING_OPCODES.USER.METADATA, this.onUserData)
-        this.realm.database.on(NETWORKING_OPCODES.USER.REQUEST_METADATA, (data, peerID) => { this.sendMetadata(peerID) })
-        this.realm.database.on(NETWORKING_OPCODES.USER.MOVE, this.onUserMove)
-        this.realm.database.on(NETWORKING_OPCODES.USER.ANIMATION, this.onUserAnimation)
-
-        this.realm.database.network.on('onPeerLeave', (peerID) => {
-            // CONSOLE.log('User ', peerID, ' has left the realm')
-            this.world.onUserLeave(peerID)
-        })
     
         this.sendMetadata()
         this.requestMetadata()
@@ -297,14 +277,14 @@ export default class World {
         }
     }
 
-    async sendData(opcode, data) {
+    async sendData(opcode, data = {}) {
         if (!this.realm) return
         // const message = this.conjure.networkingSchemas.encode(opcode, data)
         // await this.realm.network.broadcast(message)
         this.realm.sendData(opcode, data)
     }
 
-    async sendTo(opcode, data, peerID) {
+    async sendTo(opcode, data = {}, peerID) {
         if (!this.realm) return
         // const message = this.conjure.networkingSchemas.encode(opcode, data)
         // await this.realm.network.sendTo(peerId, message)
@@ -347,7 +327,7 @@ export default class World {
     destroyAllRemoteUsers() {
         for (let remoteUser of Object.values(this.remoteUsers)) {
             // this.conjure.physics.destroy(this.users[u].group.body)
-            this.scene.remove(remoteUser.group)
+            remoteUser.destroy()
             delete this.remoteUsers[remoteUser.peerID]
         }
     }
@@ -357,7 +337,7 @@ export default class World {
 
         window.CONSOLE.log(this.remoteUsers[peerID].username + ' has left')
         // this.conjure.physics.destroy(this.users[u].group.body)
-        this.scene.remove(this.remoteUsers[peerID].group)
+        this.remoteUsers[peerID].destroy()
         delete this.remoteUsers[peerID]
     }
 

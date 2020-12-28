@@ -35,7 +35,7 @@ export default class RealmDatabase extends EventEmitter {
                 console.log('hmm bad message', err, message)
             }
         })
-    
+   
         this.on(NETWORKING_OPCODES.OBJECT.CREATE, (content, peerID) => {
             const { uuid, data } = content
             this._put(uuid, JSON.stringify(data))
