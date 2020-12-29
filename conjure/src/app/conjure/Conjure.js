@@ -193,6 +193,7 @@ class Conjure extends EventEmitter
         await this.load.preload('pin_empty', '/assets/icons/pin_empty.png')
         await this.load.preload('speaker', '/assets/icons/speaker.png')
         await this.load.preload('speakermute', '/assets/icons/speakermute.png')
+        await this.load.preload('global_icon', '/assets/icons/global.png')
 
         await this.load.preload('missing_texture', '/assets/textures/missing_texture.png')
         await this.load.preload('menger_texture', '/assets/textures/menger_texture.png')

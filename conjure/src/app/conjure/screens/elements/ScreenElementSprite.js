@@ -29,24 +29,18 @@ export default class ScreenElementSprite extends ScreenElementBase
         this.icon.scale.set(scale, scale, scale)
     }
 
-    setCallback(callback)
-    {
-        this.loadCallback = callback;
-    }
-
     async load(textureURL)
     {
         if(textureURL)
             this.textureURL = textureURL
         
-        if(!this.textureURL) return;
+        if(!this.textureURL) return
 
         this.texture = await this.screen.screenManager.conjure.load.texture(this.textureURL)
 
-        if(this.loadCallback)
-            this.loadCallback()
         if(this.texture)
-            this.icon.material.map = this.texture;
+            this.icon.material.map = this.texture
+        
         this.icon.material.needsUpdate = true
     }
 

@@ -3,7 +3,7 @@ import pipe from 'it-pipe'
 import PeerId from 'peer-id'
 
 export default class Connection extends EventEmitter {
-  constructor (remoteId, libp2p, room) {
+  constructor(remoteId, libp2p, room) {
     super()
     this.setMaxListeners(64)
     this._remoteId = remoteId
@@ -13,7 +13,7 @@ export default class Connection extends EventEmitter {
     this._connecting = false
   }
 
-  push (message) {
+  push(message) {
     if (this._connection) {
       this._connection.push(message)
 
@@ -29,44 +29,48 @@ export default class Connection extends EventEmitter {
     }
   }
 
-  stop () {
+  stop() {
     if (this._connection) {
       this._connection.end()
     }
   }
 
-  async _connect () {
-    this._connecting = true
+  async _connect() {
+    try {
+      this._connecting = true
 
-    if (!this._isConnectedToRemote()) {
-      this.emit('disconnect')
-      this._connecting = false
-      return // early
-    }
-
-    const remotePeerId = await PeerId.createFromB58String(this._remoteId)
-    const { stream } = await this._libp2p.dialProtocol(remotePeerId, this._room._protocol)
-    this._connection = new FiFoMessageQueue()
-
-    pipe(this._connection, stream, async (source) => {
-      this._connecting = false
-      this.emit('connect', this._connection)
-
-      for await (const message of source) {
-        this.emit('message', message)
-      }
-      stream.close()
-    })
-      .then(() => {
-        stream.close()
+      if (!this._isConnectedToRemote()) {
         this.emit('disconnect')
-      }, (err) => {
+        this._connecting = false
+        return // early
+      }
+
+      const remotePeerId = await PeerId.createFromB58String(this._remoteId)
+      const { stream } = await this._libp2p.dialProtocol(remotePeerId, this._room._protocol)
+      this._connection = new FiFoMessageQueue()
+
+      pipe(this._connection, stream, async (source) => {
+        this._connecting = false
+        this.emit('connect', this._connection)
+
+        for await (const message of source) {
+          this.emit('message', message)
+        }
         stream.close()
-        this.emit('error', err)
       })
+        .then(() => {
+          stream.close()
+          this.emit('disconnect')
+        }, (err) => {
+          stream.close()
+          this.emit('error', err)
+        })
+    } catch (err) {
+    //   console.log(err)
+    }
   }
 
-  _isConnectedToRemote () {
+  _isConnectedToRemote() {
     for (const peerId of this._libp2p.connections.keys()) {
       if (peerId === this._remoteId) {
         return true
@@ -76,15 +80,15 @@ export default class Connection extends EventEmitter {
 }
 
 class FiFoMessageQueue {
-  constructor () {
+  constructor() {
     this._queue = []
   }
 
-  [Symbol.asyncIterator] () {
+  [Symbol.asyncIterator]() {
     return this
   }
 
-  push (message) {
+  push(message) {
     if (this._ended) {
       throw new Error('Message queue ended')
     }
@@ -99,7 +103,7 @@ class FiFoMessageQueue {
     this._queue.push(message)
   }
 
-  end () {
+  end() {
     this._ended = true
     if (this._resolve) {
       this._resolve({
@@ -108,7 +112,7 @@ class FiFoMessageQueue {
     }
   }
 
-  next () {
+  next() {
     if (this._ended) {
       return {
         done: true

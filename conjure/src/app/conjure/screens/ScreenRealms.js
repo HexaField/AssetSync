@@ -3,7 +3,7 @@ import ScreenElementButton from './elements/ScreenElementButton'
 import ScreenElementBase from './elements/ScreenElementBase'
 import ScreenElementTextBox from './elements/ScreenElementTextBox'
 import ScreenElementScroll from './elements/ScreenElementScroll'
-import RealmData from '../../backend/realm/RealmData'
+import RealmData, { REALM_TYPES } from '../../backend/realm/RealmData'
 import ScreenElementSprite from './elements/ScreenElementSprite'
 
 export default class ScreenRealms extends ScreenBase {
@@ -79,12 +79,12 @@ export default class ScreenRealms extends ScreenBase {
             container.registerElement(button)
 
             let icon = new ScreenElementSprite(this, container, { x: -this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
-            icon.load(realm.iconURL ? realm.iconURL : 'default_realm')
+            icon.load(realm.iconURL ? ('https://cors-anywhere.herokuapp.com/' + realm.iconURL) : 'default_realm')
             // icon.setIconScale(0.1)
             container.registerElement(icon)
 
             let forgetIcon = new ScreenElementSprite(this, container, { x: this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
-            forgetIcon.load(realm.global === 'global' ? 'global_icon' : 'pin_full')// : 'pin_empty')
+            forgetIcon.load(realm.type === REALM_TYPES.GLOBAL ? 'global_icon' : 'pin_full')// : 'pin_empty')
             forgetIcon.setIconScale(0.75)
             if (!realm.global) { // todo: properly implement this
                 forgetIcon.setOnClickCallback(this.forgetRealm, realm) // return all the realm info data
