@@ -38,9 +38,11 @@ export default class PostProcessing
     
     render()
     {
-        this.conjure.renderer.clear();
-        this.conjure.camera.layers.set(POSTPROCESSING.BLOOM_SCENE)
-        this.composer.render();
+        if(this.conjure.world.realm && this.conjure.world.realm.realmData.id === 'Lobby') {
+            this.conjure.renderer.clear();
+            this.conjure.camera.layers.set(POSTPROCESSING.BLOOM_SCENE)
+            this.composer.render();
+        }
         
         this.conjure.renderer.clearDepth();
         this.conjure.camera.layers.set(POSTPROCESSING.ENTIRE_SCENE)

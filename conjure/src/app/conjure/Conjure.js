@@ -392,8 +392,10 @@ class Conjure extends EventEmitter
 
     makeUrl() {
         const url = new URL(location.origin)
-        if(this.world.realm)
+        if(this.world.realm) {
             url.searchParams.append('r', this.world.realm.realmID)
+        }
+        url.searchParams.append('network', 'true')
         return url
     }
 

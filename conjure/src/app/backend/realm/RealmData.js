@@ -74,7 +74,7 @@ export default class RealmData
         this.whitelist.ids = this.whitelist.ids || []
 
         this.worldSettings = params.worldSettings || {}
-        this.worldSettings.features = this.worldSettings.features || []
+        this.worldSettings.features = this.worldSettings.features || ['Platform']
         this.worldSettings.worldGeneratorType = this.worldSettings.worldGeneratorType || REALM_WORLD_GENERATORS.NONE 
 
         // user data

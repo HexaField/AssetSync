@@ -43,7 +43,7 @@ export default class UserRemote extends User {
         this.rawConn = conn.rawConn
         this.rawConn.on('stream', stream => {
             this.incomingStream = stream
-            console.log(stream)
+            // console.log(stream)
             if(this.conjure.allowIncomingFeeds) {
                 this.addVideo(stream)
             }
@@ -63,7 +63,7 @@ export default class UserRemote extends User {
         }
         if(this.rawConn._remoteStreams && this.rawConn._remoteStreams.length > 0) {
             this.incomingStream = this.rawConn._remoteStreams[0]
-            console.log(this.incomingStream)
+            // console.log(this.incomingStream)
             if(this.conjure.allowIncomingFeeds) {
                 this.addVideo(this.incomingStream)
             }
