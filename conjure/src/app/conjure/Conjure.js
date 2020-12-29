@@ -353,7 +353,8 @@ class Conjure extends EventEmitter
     async toggleMediaStream() {
         if(!this.hasMediaStream()) {
             if(this.world.realm.realmData.type === REALM_TYPES.GLOBAL) {
-                return
+                if(this.world.realm.realmID !== 'Campfire')
+                    return
                 // do verification of realm here
             }
             const stream = await this._getUserMediaStream()

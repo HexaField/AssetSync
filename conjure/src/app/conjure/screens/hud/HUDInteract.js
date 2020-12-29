@@ -53,6 +53,8 @@ export default class HUDInteract
 
     update(updateArgs)
     {
+        // todo: make this not crash
+        return
         if(this.object && updateArgs.input.isPressed('INTERACT'))
         {
             if(this.type === INTERACT_TYPES.USER)
