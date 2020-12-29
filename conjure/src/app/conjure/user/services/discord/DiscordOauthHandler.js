@@ -72,7 +72,7 @@ export default class DiscordOauthHandler {
             console.log("Successfully logged into discord!");
             await window.clientDatastore.put('discordAccessToken', access_token)
             this.setLoggedIn(true)
-            console.log(user_data)
+            // console.log(user_data)
             this.userData = user_data;
             this.serviceHandler.setData({ discordName: this.userData.username, discordID: this.userData.id });
             return true

@@ -48,7 +48,6 @@ export default class Profile {
         try {
             data = JSON.parse(await window.clientDatastore.get('profile'))
         } catch (err) { console.log(err) }
-        console.log(data)
 
         if (!data) return
 

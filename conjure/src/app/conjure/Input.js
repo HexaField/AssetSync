@@ -5,8 +5,8 @@ import Pinput from './util/pinput'
 
 export default class Input {
     constructor(conjure) {
-        this.conjure = conjure;
-        this.isTouchDevice = Boolean(window.touchDevice)
+        this.conjure = conjure
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)
         this.input = new Pinput();
         this.mouse = new THREE.Vector2();
         this.mouseDelta = new THREE.Vector2();
@@ -15,7 +15,7 @@ export default class Input {
         this.enabled = true;
         this.keybindings = new Keybindings(conjure);
 
-        if (this.isTouchDevice) {
+        if (this.isMobile) {
             this.touchBindings = {}
             this.cameraSensitivity = 4
             this.joystick = new JoyStick()
@@ -54,21 +54,21 @@ export default class Input {
 
     isPressed(key, ignoreBinding, ignoreEnabled) {
         if (!ignoreEnabled) { if (!this.enabled) { return false; } }
-        if (this.isTouchDevice)
+        if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isPressed(ignoreBinding ? key : this.keybindings.getKey(key));
     }
 
     isReleased(key, ignoreBinding, ignoreEnabled) {
         if (!ignoreEnabled) { if (!this.enabled) { return false; } }
-        if (this.isTouchDevice)
+        if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isReleased(ignoreBinding ? key : this.keybindings.getKey(key));
     }
 
     isDown(key, ignoreBinding, ignoreEnabled) {
         if (!ignoreEnabled) { if (!this.enabled) { return false; } }
-        if (this.isTouchDevice)
+        if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isDown(ignoreBinding ? key : this.keybindings.getKey(key));
     }
@@ -95,7 +95,7 @@ export default class Input {
 
     update() {
         this.input.update();
-        if (this.isTouchDevice) {
+        if (this.isMobile) {
         }
         else {
             this.mouseDelta.x = this.input.mouseMovement.x
