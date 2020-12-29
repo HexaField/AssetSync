@@ -36,48 +36,58 @@ export default class UserRemote extends User {
     }
 
     getConnection() {
-        let conn = this.conjure.assetSync.transportPlugin._libp2p.connectionManager.connections.get(this.peerID)
-        if(Array.isArray(conn)) {
-            conn = conn[0]
-        }
-        this.rawConn = conn.rawConn
-        this.rawConn.on('stream', stream => {
-            this.incomingStream = stream
-            // console.log(stream)
-            if(this.conjure.allowIncomingFeeds) {
-                this.addVideo(stream)
+        try {
+            let conn = this.conjure.assetSync.transportPlugin._libp2p.connectionManager.connections.get(this.peerID)
+            if(Array.isArray(conn)) {
+                conn = conn[0]
             }
-        })
-        this.addMedia = (stream) => {
-            this.outgoingStream = stream
-            this.rawConn.addStream(stream)
-        }
-        this.removeMedia = () => {
-            if(this.outgoingStream) {
-                this.rawConn.removeStream(this.outgoingStream)
-                this.outgoingStream = undefined
+            if(!this.rawConn) {
+                conn.rawConn.on('stream', stream => {
+                    this.incomingStream = stream
+                    // console.log(stream)
+                    if(this.conjure.allowIncomingFeeds) {
+                        this.addVideo(stream)
+                    }
+                })
             }
-        }
-        if(this.conjure.userMediaStream) {
-            this.addMedia(this.conjure.userMediaStream)
-        }
-        if(this.rawConn._remoteStreams && this.rawConn._remoteStreams.length > 0) {
-            this.incomingStream = this.rawConn._remoteStreams[0]
-            // console.log(this.incomingStream)
-            if(this.conjure.allowIncomingFeeds) {
-                this.addVideo(this.incomingStream)
+            this.rawConn = conn.rawConn
+            this.addMedia = (stream) => {
+                this.outgoingStream = stream
+                this.rawConn.addStream(stream)
             }
+            this.removeMedia = () => {
+                if(this.outgoingStream) {
+                    this.rawConn.removeStream(this.outgoingStream)
+                    this.outgoingStream = undefined
+                }
+            }
+            if(this.conjure.userMediaStream) {
+                this.addMedia(this.conjure.userMediaStream)
+            }
+            if(this.rawConn._remoteStreams && this.rawConn._remoteStreams.length > 0) {
+                this.incomingStream = this.rawConn._remoteStreams[0]
+                // console.log(this.incomingStream)
+                if(this.conjure.allowIncomingFeeds) {
+                    this.addVideo(this.incomingStream)
+                }
+            }
+        } catch (err) {
+            console.log(err)
         }
     }
 
     getIncomingMediaStreams() {
-        if(this.incomingStream && this.conjure.allowIncomingFeeds) {
-            this.addVideo(this.incomingStream)
-        } else {
-            if(this.video) {
-                this.video = undefined
-                this.videoScreen.visible = false
+        try {
+            if(this.incomingStream && this.conjure.allowIncomingFeeds) {
+                this.addVideo(this.incomingStream)
+            } else {
+                if(this.video) {
+                    this.video = undefined
+                    this.videoScreen.visible = false
+                }
             }
+        } catch (err) {
+            console.log(err)
         }
     }
 

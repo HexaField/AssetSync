@@ -96,13 +96,11 @@ export default class Realm extends EventEmitter
         }
     }
 
-    sendData(opcode, content) {
-        this.network.broadcast(JSON.stringify({ opcode, content }))
-    }
+    // intentionally noop
+    sendData(opcode, content) { }
 
-    sendTo(opcode, content, peerID) {
-        this.network.sendTo(peerID, JSON.stringify({ opcode, content }))
-    }
+    // intentionally noop
+    sendTo(opcode, content, peerID) { }
 
     async load()
     {
@@ -155,6 +153,15 @@ export default class Realm extends EventEmitter
         }
 
         this.network = this.database.network
+        
+        this.sendData = (opcode, content) => {
+            this.network.broadcast(JSON.stringify({ opcode, content }))
+        }
+    
+        this.sendTo = (opcode, content, peerID) => {
+            this.network.sendTo(peerID, JSON.stringify({ opcode, content }))
+        }
+    
         
         this.loading = false
     }
