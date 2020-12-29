@@ -1,1 +1,0 @@
-export default class a{constructor(t){this.walletInfo=t}getInfo(){return this.walletInfo}getAddress(){if(this.walletInfo&&this.walletInfo.addressDetails)return this.walletInfo.addressDetails.address}}

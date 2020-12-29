@@ -174,14 +174,14 @@ export default class ScreenObjectEdit extends ScreenBase
                                 // },
                             },
                         },
-                        label1: {
-                            type: 'label',
-                            label: 'PayID'
-                        },
-                        payID: {
-                            type: 'text',
-                            label: 'payID',
-                        },
+                        // label1: {
+                        //     type: 'label',
+                        //     label: 'PayID'
+                        // },
+                        // payID: {
+                        //     type: 'text',
+                        //     label: 'payID',
+                        // },
                     },
                 },
             }

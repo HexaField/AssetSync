@@ -8,9 +8,10 @@ import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
 import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS, REALM_TYPES } from '../../backend/realm/RealmData.js'
 import _ from 'lodash'
 import { number } from '@AssetSync/common'
-
-export default class World {
+import EventEmitter from 'events'
+export default class World extends EventEmitter {
     constructor(conjure) {
+        super()
         this.conjure = conjure
         this.scene = this.conjure.scene
 
@@ -42,6 +43,9 @@ export default class World {
         this.onUserLeave = this.onUserLeave.bind(this)
         this.onUserMove = this.onUserMove.bind(this)
         this.onUserAnimation = this.onUserAnimation.bind(this)
+        this.refreshKnownRealms = this.refreshKnownRealms.bind(this)
+
+        this.knownRealms = {} // { id: realmData }
     }
 
     async loadDefault() {
@@ -57,36 +61,38 @@ export default class World {
         await this.joinRealmByID('Lobby')
     }
 
-    async getRealms() {
-        let realms = {}
-
-        for (let realm of await this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices())
-            realms[realm.id] = new RealmData(realm)
-
-        for (let realm of await this.conjure.realms.getRealms())
-            realms[realm.id] = new RealmData(realm)
-
-        for (let realm of this.globalRealms) {
-            realms[realm.id] = realm
+    async refreshKnownRealms() {
+        this.knownRealms = {}
+        for (let realmData of this.globalRealms) {
+            this.knownRealms[realmData.id] = realmData
         }
+        for (let realmData of await this.conjure.realms.getPinnedRealms()) {
+            this.knownRealms[realmData.id] = new RealmData(realmData)
+        }
+        this.conjure.getProfile().getServiceManager().getRealmsFromConnectedServices((realmData) => {
+            this.knownRealms[realmData.id] = new RealmData(realmData)
+            this.emit('realm:found', realmData)
+        })
+    }
 
-        return Object.values(realms).sort((a, b) => { return a.timestamp > b.timestamp })
+    getKnownRealms() {
+        return Object.values(this.knownRealms).sort((a, b) => { return a.timestamp > b.timestamp })
     }
 
     async getRealm(id) {
-        for (let realm of this.globalRealms)
-            if (id === realm.id)
-                return realm
+        if(this.knownRealms[id])
+            return this.knownRealms[id]
 
         return await this.conjure.realms.getRealmById(id, true)
     }
 
-    async preloadGlobalRealms() {
+    async preloadRealms() {
         for (let realm of Object.values(GLOBAL_REALMS)) {
             const realmData = new RealmData(realm)
             realmData.type = REALM_TYPES.GLOBAL
             this.globalRealms.push(realmData)
         }
+        await this.refreshKnownRealms()
     }
 
     async joinRealm(realmData, args = {}) {
@@ -143,7 +149,7 @@ export default class World {
     }
 
     async forceReloadCurrentRealm() {
-        await this.getRealms()
+        await this.getKnownRealms()
         await this.joinRealmByID(this.realm.realmID, { force: true })
     }
 
@@ -237,13 +243,13 @@ export default class World {
 
     getWorldUpdates() {
         let deltaUpdate = true;
-        this.updateCount++;
-        if (this.updateCount > this.savePeriod * 60) {
-            this.updateCount = 0;
-            deltaUpdate = false;
-        }
-        if (this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
-        {
+        // this.updateCount++;
+        // if (this.updateCount > this.savePeriod * 60) {
+        //     this.updateCount = 0;
+        //     deltaUpdate = false;
+        // // }
+        // if (this.updateCount % this.updateCountMax === 0) // TODO: add delta updating
+        // {
             // if(!deltaUpdate)
             //     this.sendData(NETWORKING_OPCODES.HEARTBEAT, {})
 
@@ -270,11 +276,11 @@ export default class World {
                 rotation,
                 velocity
             }
-            if (deltaUpdate || !_.isEqual(this.lastUserUpdate, payload)) {
+            if (deltaUpdate) {// || !_.isEqual(this.lastUserUpdate, payload)) {
                 this.sendData(NETWORKING_OPCODES.USER.MOVE, payload);
-                this.lastUserUpdate = payload;
+                // this.lastUserUpdate = payload;
             }
-        }
+        // }
     }
 
     async sendData(opcode, data = {}) {

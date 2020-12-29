@@ -1,13 +1,11 @@
-// import ProfileServiceDiscord from "./discord/ProfileServiceDiscord"
-// import ProfileServicePayID from "./ProfileServicePayID"
+import ProfileServiceDiscord from "./discord/ProfileServiceDiscord"
 
 export default class ServiceManager {
     constructor(conjure) {
         this.conjure = conjure
         this.services = {}
 
-        // this.addService(new ProfileServiceDiscord(this))
-        // this.addService(new ProfileServicePayID(this))
+        this.addService(new ProfileServiceDiscord(this))
     }
 
     getServiceAsJson() {
@@ -69,17 +67,15 @@ export default class ServiceManager {
         return potentialRealmsFound
     }
 
-    async getRealmsFromConnectedServices() {
-        let realmsFound = []
+    async getRealmsFromConnectedServices(callback) {
         for (let service of Object.values(this.services)) {
             let ids = await service.getRealms()
             for (let i in ids) {
-                if (await this.conjure.realms.getRealmById(ids[i].id))
-                    if (realm) 
-                        realmsFound.push(ids[i])
+                if (await this.conjure.realms.getRealmById(ids[i].id)) {
+                    callback(ids[i])
+                }
             }
         }
-        return realmsFound
     }
 
     setServicesFromDatabase(data) {

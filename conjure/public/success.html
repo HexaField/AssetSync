@@ -5,10 +5,9 @@
   </head>
   <body onload="onAuthSuccess()">
     <script type='text/javascript'>
-        function onAuthSuccess()
-        {
-            window.opener.postMessage({ message: "deliverResult", result: window.document.hash }, "*")
-            window.close();
+        function onAuthSuccess() {
+            window.opener.postMessage({ message: "deliverResult", result: window.location.hash }, "*")
+            // window.close();
         }
     </script>
     <noscript>You need to enable JavaScript to run this app.</noscript>

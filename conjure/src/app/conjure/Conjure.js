@@ -254,7 +254,7 @@ class Conjure extends EventEmitter
         // Now load stuff in
         await this.profile.loadFromDatabase()
         await this.profile.getServiceManager().initialiseServices()
-        this.world.preloadGlobalRealms()
+        await this.world.preloadRealms()
         
         // join last loaded realm or get one from the url
         this.setConjureMode(CONJURE_MODE.WAITING)

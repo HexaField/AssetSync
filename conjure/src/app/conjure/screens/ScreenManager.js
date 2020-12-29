@@ -17,9 +17,8 @@ import ScreenAssets from './ScreenAssets'
 import ScreenAssetSelect from './ScreenAssetSelect'
 import ScreenTextureEditor from './ScreenTextureEditor'
 import ScreenUserInteract from './ScreenUserInteract'
-import ScreenUserPay from './ScreenUserPay'
+// import ScreenUserPay from './ScreenUserPay'
 import ScreenServices from './ScreenServices'
-import ScreenPayID from './ScreenPayID'
 import ScreenTextEntry from './ScreenTextEntry'
 import ScreenFeatures from './ScreenFeatures'
 import ScreenList from './ScreenList'
@@ -63,11 +62,7 @@ export default class ScreenManager
         this.screenUserInteract = this.createScreen(new ScreenUserInteract(this, { name:'User Interact', width:1.5, height:1, pauses:true }));
         this.screenFeatures = this.createScreen(new ScreenFeatures(this, { name:'Features', width:1.6, height:0.8, pauses:true }));
 
-        if(this.conjure.getProfile().getServiceManager().getService('PayID'))
-        {
-            this.screenUserPay = this.createScreen(new ScreenUserPay(this, { name:'Pay User', width:1.5, height:0.6, pauses:true }))
-            this.screenPayID = this.createScreen(new ScreenPayID(this, { name:'PayID', width:2.8, height:1.2, pauses:true }));
-        }
+        // this.screenUserPay = this.createScreen(new ScreenUserPay(this, { name:'Pay User', width:1.5, height:0.6, pauses:true }))
         
         this.screenTextEntry = this.createScreen(new ScreenTextEntry(this, { name:'Enter Value', width: 0.8, height: 0.4 }))
         this.screenList = this.createScreen(new ScreenList(this, { name:'Select from list', width: 0.8, height: 1.6 }))

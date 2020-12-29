@@ -107,41 +107,45 @@ export class DHTPlugin extends PluginBase {
         return entries
     }
 
-    async removeLocal({ key, protocol }) {
+    async removeLocal({ key, protocol, log }) {
         try {
             const keyArray = uint8ArrayFromString(key)
             return await this.dhts[protocol || this._defaultProtocol].removeLocal(keyArray)
         } catch(error) {
-            console.log('Failed to remove', key ,'from dht: ', error)
+            if(log)
+                console.log('Failed to remove', key ,'from dht: ', error)
         }
     }
 
-    async putLocal({ key, value, protocol }) {
+    async putLocal({ key, value, protocol, log }) {
         try {
             const keyArray = uint8ArrayFromString(key)
             const valArray = uint8ArrayFromString(value)
             const record = await utils.createPutRecord(keyArray, valArray)
             return await this.dhts[protocol || this._defaultProtocol].datastore.put(utils.bufferToKey(keyArray), record)
         } catch(error) {
-            console.log('Failed to put', key ,'locally: ', error)
+            if(log)
+                console.log('Failed to put', key ,'locally: ', error)
         }
     }
 
-    async get({ key, timeout, protocol }) {
+    async get({ key, timeout, protocol, log }) {
         try {
             const keyArray = uint8ArrayFromString(key)
             const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
             return uint8ArrayToString(result)
         } catch(error) {
-            console.log('Failed to get', key ,'from dht: ', error)
+            if(log)
+                console.log('Failed to get', key ,'from dht: ', error)
         }
     }
 
-    async put({ key, value, minPeers, protocol }) {
+    async put({ key, value, minPeers, protocol, log }) {
         try {
             return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
         } catch(error) {
-            console.log('Failed to put', key ,'to dht: ', error)
+            if(log)
+                console.log('Failed to put', key ,'to dht: ', error)
         }
     }
 }

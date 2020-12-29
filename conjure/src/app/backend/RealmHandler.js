@@ -47,7 +47,7 @@ export default class RealmHandler {
 
     async initialise() {
         await this.preloadGlobalRealms()
-        for(let realm of await this.getRealms()) {
+        for(let realm of await this.getPinnedRealms()) {
             await this.addDatabase(realm)
         }
     }
@@ -70,7 +70,7 @@ export default class RealmHandler {
         await this.removeDatabase(realmData)
     }
 
-    async getRealms() {
+    async getPinnedRealms() {
         return (await this.assetSync.dhtPlugin.getAllLocal())
             .filter((realm) => { return realm.key.substring(0, 7) === '/realm/' && realm.value !== undefined && realm.value !== '' })
             .map((realm) => { return JSON.parse(realm.value) })

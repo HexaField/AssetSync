@@ -7,8 +7,8 @@
     "scripts": {
         "start": "npm-run-all --parallel start:*",
         "clean:browser": "rm -rf build",
-        "build:browser": "snowpack build",
-        "start:browser": "snowpack dev",
+        "build:browser": "NODE_OPTIONS=--max_old_space_size=4096 snowpack build",
+        "start:browser": "NODE_OPTIONS=--max_old_space_size=4096 snowpack dev",
         "clean:node": "rm -rf bin",
         "build:node": "pkg src/index.js --targets node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path bin/",
         "start:node": "nodemon --trace-warnings src/index.js --watch src/app/backend src/packages"
@@ -17,13 +17,9 @@
     "devDependencies": {
         "@forlagshuset/simple-fs": "^0.4.0",
         "@geckos.io/typed-array-buffer-schema": "^1.0.2",
-        "@snowpack/plugin-babel": "^2.1.0",
         "@snowpack/plugin-optimize": "^0.2.5",
-        "@tweenjs/tween.js": "^18",
         "abi-decoder": "^2.3.0",
-        "big-integer": "^1.6.48",
         "cross-blob": "^2.0.0",
-        "discord-oauth2": "^2.6.0",
         "enable3d": "^0.19.1",
         "hyperdiff": "^2.0.7",
         "idb-keyval": "^3.2.0",

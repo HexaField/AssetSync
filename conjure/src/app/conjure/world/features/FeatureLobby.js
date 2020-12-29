@@ -15,7 +15,7 @@ export default class FeatureLobby extends Feature
     async preload()
     {
         this.portals = []
-        this.realmDatas = (await this.realm.world.getRealms()).filter(realmData => realmData.id !== 'Lobby')
+        this.realmDatas = (this.realm.world.getKnownRealms()).filter(realmData => realmData.id !== 'Lobby')
         if(this.realmDatas.length < 8)
             this.realmDatas.push(...new Array(8 - this.realmDatas.length).fill(''))
         this.portalsCount = this.realmDatas.length

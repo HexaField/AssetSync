@@ -12,14 +12,8 @@ function oldBrowser () {
   throw new Error('Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11')
 }
 
-var Buffer = require('safe-buffer').Buffer
-var crypto = global.crypto || global.msCrypto
-
-if (crypto && crypto.getRandomValues) {
-  module.exports = randomBytes
-} else {
-  module.exports = oldBrowser
-}
+// var Buffer = require('safe-buffer').Buffer
+var crypto = globalThis.crypto || globalThis.msCrypto
 
 export default function randomBytes (size, cb) {
   // phantomjs needs to throw

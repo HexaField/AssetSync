@@ -63,11 +63,11 @@ export default class HUDInteract
                 this.screen.screenManager.showScreen(this.screen.screenManager.screenUserPay)
                 this.screen.screenManager.conjure.getWorld().realm.sendTo(NETWORKING_OPCODES.PROFILE.SERVICE.PAYID.REQUESTID, '', this.object.peerID)
             }
-            if(this.type === INTERACT_TYPES.OBJECT && this.object.userData.payID)
-            {
-                this.screen.screenManager.screenUserPay.setObject(this.object)
-                this.screen.screenManager.showScreen(this.screen.screenManager.screenUserPay)
-            }
+            // if(this.type === INTERACT_TYPES.OBJECT && this.object.userData.payID)
+            // {
+            //     this.screen.screenManager.screenUserPay.setObject(this.object)
+            //     this.screen.screenManager.showScreen(this.screen.screenManager.screenUserPay)
+            // }
             if(this.type === INTERACT_TYPES.VIDEO)
             {
                 this.object.userData.media.paused ? this.object.userData.media.play() : this.object.userData.media.pause()

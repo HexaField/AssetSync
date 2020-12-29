@@ -34,13 +34,23 @@ export default class ScreenRealms extends ScreenBase {
         this.scrollPanel = new ScreenElementScroll(this, this, { width: this.width, height: this.height - 0.4 });
         this.registerElement(this.scrollPanel);
 
-        this.createButton = new ScreenElementButton(this, this, { x: -this.width / 4, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Create Realm' });
+        this.createButton = new ScreenElementButton(this, this, { x: -this.width / 3, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Create Realm' });
         this.createButton.setOnClickCallback(this.createRealm)
         this.registerElement(this.createButton)
 
-        this.shareButton = new ScreenElementButton(this, this, { x: this.width / 4, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Get Link' });
+        this.refreshButton = new ScreenElementButton(this, this, { y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Refresh' });
+        this.refreshButton.setOnClickCallback(this.screenManager.conjure.world.refreshKnownRealms)
+        this.registerElement(this.refreshButton)
+
+        this.shareButton = new ScreenElementButton(this, this, { x: this.width / 3, y: -this.height / 2 + 0.2, width: this.buttonWidth, height: this.buttonHeight, text: 'Get Link' });
         this.shareButton.setOnClickCallback(this.shareRealm)
         this.registerElement(this.shareButton)
+
+        this.screenManager.conjure.world.on('realm:found', () => {
+            if(this.active) {
+                this.displayRealms()
+            }
+        })
 
         this.getRealms()
     }
@@ -52,8 +62,8 @@ export default class ScreenRealms extends ScreenBase {
             this.getRealms()
     }
 
-    async getRealms() {
-        this.realms = await this.screenManager.conjure.getWorld().getRealms()
+    getRealms() {
+        this.realms = this.screenManager.conjure.world.getKnownRealms()
         this.displayRealms()
     }
 
@@ -67,7 +77,6 @@ export default class ScreenRealms extends ScreenBase {
         CONSOLE.log('Copied', url, 'to clipboard!')
     }
 
-    // TODO: add realm icons
     displayRealms() {
         this.scrollPanel.removeAllItems()
         for (let realm of this.realms) {
@@ -79,7 +88,7 @@ export default class ScreenRealms extends ScreenBase {
             container.registerElement(button)
 
             let icon = new ScreenElementSprite(this, container, { x: -this.buttonWidth * 0.5, width: this.buttonHeight, height: this.buttonHeight })
-            icon.load(realm.iconURL ? ('https://cors-anywhere.herokuapp.com/' + realm.iconURL) : 'default_realm')
+            icon.load(realm.iconURL ? realm.iconURL : 'default_realm')
             // icon.setIconScale(0.1)
             container.registerElement(icon)
 

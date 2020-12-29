@@ -50,7 +50,7 @@ export default class ScreenObjectCreate extends ScreenBase
             newObject.material = new THREE.MeshPhysicalMaterial({color: this.defaultColour3})
             // newObject.material = createMaterial({thickness: 0.02});
             newObject.layers.enable(POSTPROCESSING.BLOOM_SCENE)
-            newObject.userData.payID = 'menger$conjure.realm'
+            // newObject.userData.payID = 'menger$conjure.realm'
 
             await this.world.realm.createObject(newObject);
         }
