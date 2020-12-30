@@ -379,7 +379,7 @@ class Conjure extends EventEmitter
 
     async _getUserMediaStream() {
         if(!this.mediaStreamHandler) {
-            const { default: mediaStreamHandler } = await import("./MediaStream.js")
+            const { default: mediaStreamHandler } = await import("./mediastreams/MediaStream.js")
             this.mediaStreamHandler = mediaStreamHandler
         }
         console.log('Attempting to get media stream...')

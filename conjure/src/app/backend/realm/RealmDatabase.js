@@ -124,8 +124,14 @@ export default class RealmDatabase extends EventEmitter {
         // console.log('getObjects')
         const results = []
         results.push(...await this._getAllLocal())
-        console.log(results)
-        return results
+        return results.map((obj) => {
+            try {
+                return { uuid: obj.key, data: JSON.parse(obj.value) }
+            } catch (err) {
+                this._removeLocal(obj.key)
+                return {}
+            }
+        })
     }
 
     // update
@@ -145,8 +151,8 @@ export default class RealmDatabase extends EventEmitter {
     async dereferenceObject({ uuid, data }) {
         // console.log('dereferenceObject', uuid, data)
         try {
-            await this._removeLocal(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid, data })
+            await this._removeLocal(uuid)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid })
             return true
         } catch (error) {
             console.log(error)

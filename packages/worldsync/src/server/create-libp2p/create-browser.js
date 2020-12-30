@@ -24,8 +24,8 @@ export function defaultBrowserConfig() {
                 window.Libp2pMplex
             ],
             connEncryption: [
-                // window.Libp2pNoise,
-                window.Libp2pSecio
+                window.Libp2pNoise.NOISE,
+                // window.Libp2pSecio
             ],
             pubsub: window.Libp2pGossipsub,
             dht: window.Libp2pKadDht

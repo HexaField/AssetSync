@@ -29,6 +29,7 @@ export default class HUDInteract
 
     setObject(object, type)
     {
+        return
         if(type === INTERACT_TYPES.VIDEO)
         {
             this.textElement.setText(object.userData.media.paused ? 'Play' : 'Pause')

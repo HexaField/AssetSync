@@ -28,26 +28,29 @@ export default class ScreenSettings extends ScreenBase
     }
     
     async toggleCam() {
-        await this.conjure.toggleMediaStream()
-        const enabled = this.conjure.userMediaStream !== undefined
-        this.getCamButton.setText(enabled ? 'Disable Camera and Microphone' : 'Enable Camera and Microphone')
-        console.log(this.conjure.userMediaStream)
-        if(enabled) {
-            const video = document.createElement('video')
-            this.camPreview.material.map = new THREE.VideoTexture(video)
-            this.camPreview.material.map.format = THREE.RGBAFormat
-            if ('srcObject' in video) {
-                video.srcObject = this.conjure.userMediaStream
+        if(this.loadingStream) return
+        this.conjure.toggleMediaStream().then(() => {
+            const enabled = this.conjure.userMediaStream !== undefined
+            this.getCamButton.setText(enabled ? 'Disable Camera and Microphone' : 'Enable Camera and Microphone')
+            if(enabled) {
+                const video = document.createElement('video')
+                this.camPreview.material.map = new THREE.VideoTexture(video)
+                this.camPreview.material.map.format = THREE.RGBAFormat
+                if ('srcObject' in video) {
+                    video.srcObject = this.conjure.userMediaStream
+                } else {
+                    video.src = window.URL.createObjectURL(this.conjure.userMediaStream) // for older browsers
+                }
+                video.play()
+                video.volume = 0
+                this.camPreview.material.needsUpdate = true
             } else {
-                video.src = window.URL.createObjectURL(this.conjure.userMediaStream) // for older browsers
+                this.camPreview.material.map =  undefined
             }
-            video.play()
-            video.volume = 0
-            this.camPreview.material.needsUpdate = true
-        } else {
-            this.camPreview.material.map =  undefined
-        }
-
+            this.loadingStream = false
+        })
+        this.getCamButton.setText('Loading Media...')
+        this.loadingStream = true
     }
 
     async toggleFeeds() {

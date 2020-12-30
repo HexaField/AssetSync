@@ -290,7 +290,7 @@ export default class Realm extends EventEmitter
 
     async loadObject(data)
     {
-        if(!data || typeof data !== 'string') return
+        if(!data) return
         try
         {
             // if(data.images)
@@ -299,7 +299,10 @@ export default class Realm extends EventEmitter
             //         if(!data.images[i].hash) continue;
             //         data.images[i].url = await this.conjure.assetManager.loadImageAssetFromHash(data.images[i].hash);
             //     }
-            let object = this.loadObjectAssets(JSON.parse(data));
+            if(typeof data === 'string') {
+                data = JSON.parse(data)
+            }
+            let object = this.loadObjectAssets(data);
             // await this.conjure.assetManager.saveAssets(object)
             // console.log(object)
             // this.restorePhysics(object);

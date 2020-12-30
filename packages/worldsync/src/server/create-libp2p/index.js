@@ -50,8 +50,8 @@ export default async function (options = {}) {
         
 
         await import('https://unpkg.com/libp2p-mplex@0.10.1/dist/index.min.js')
-        await import('https://unpkg.com/libp2p-secio@0.13.1/dist/index.min.js')
-        // await import('https://unpkg.com/libp2p-noise@2.0.1/dist/index.min.js')
+        // await import('https://unpkg.com/libp2p-secio@0.13.1/dist/index.min.js')
+        await import('https://unpkg.com/libp2p-noise@2.0.1/dist/index.min.js')
         await import('https://unpkg.com/libp2p-websockets@0.15.0/dist/index.min.js')
         await import('https://unpkg.com/libp2p-gossipsub@0.7.0/dist/index.min.js')
         await import('https://unpkg.com/libp2p-kad-dht@0.20.4/dist/index.min.js')

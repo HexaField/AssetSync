@@ -41,6 +41,7 @@ export default class UserRemote extends User {
             if(Array.isArray(conn)) {
                 conn = conn[0]
             }
+            if(!conn) return
             if(!this.rawConn) {
                 conn.rawConn.on('stream', stream => {
                     this.incomingStream = stream
@@ -52,8 +53,14 @@ export default class UserRemote extends User {
             }
             this.rawConn = conn.rawConn
             this.addMedia = (stream) => {
-                this.outgoingStream = stream
-                this.rawConn.addStream(stream)
+                if(!stream) {
+                    console.log('no stream buddy')
+                    return
+                }
+                try {
+                    this.outgoingStream = stream
+                    this.rawConn.addStream(stream)
+                } catch (err) { console.log(err) }
             }
             this.removeMedia = () => {
                 if(this.outgoingStream) {
