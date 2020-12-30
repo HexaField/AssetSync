@@ -15,6 +15,7 @@ export default async function capture() {
         canvas.height = height
 
         const inputStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        const audioTracks = inputStream.getAudioTracks()
 
         if ('srcObject' in video) {
             video.srcObject = inputStream
@@ -22,16 +23,18 @@ export default async function capture() {
             video.src = window.URL.createObjectURL(inputStream) // for older browsers
         }
         video.play()
-        console.log('Loading net...')
+        video.volume = 0
+        // console.log('Loading net...')
         const net = await bodyPix.load({
             architecture: 'MobileNetV1',
             outputStride: 16,
             multiplier: 1,
             quantBytes: 2
         });
-        console.log('Loaded net!')
+        // console.log('Loaded net!')
 
         const outputStream = canvas.captureStream(60)
+        console.log(outputStream.getTracks())
         loadAndBlur()
 
         async function loadAndBlur() {
@@ -58,6 +61,10 @@ export default async function capture() {
             canvas.getContext('2d').imageSmoothingEnabled = true;
             canvas.getContext('2d').putImageData(imageData, 0, 0)
         }
+
+        audioTracks.forEach((track) => {
+            outputStream.addTrack(track)
+        })
 
         return outputStream
     } catch (err) { console.log(err) }
