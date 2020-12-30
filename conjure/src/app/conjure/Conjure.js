@@ -378,12 +378,16 @@ class Conjure extends EventEmitter
     }
 
     async _getUserMediaStream() {
-        // console.log('Attempting to get media stream...')
+        if(!this.mediaStreamHandler) {
+            const { default: mediaStreamHandler } = await import("./MediaStream.js")
+            this.mediaStreamHandler = mediaStreamHandler
+        }
+        console.log('Attempting to get media stream...')
         if(!this.hasMediaStream()) {
             try {
-                // await this.audioManager.create(false)
-                this.userMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                // console.log('Successfully got media streams!')
+                this.userMediaStream = await this.mediaStreamHandler()
+
+                console.log('Successfully got media streams!')
             } catch (err) {
                 console.log('Failed to get media streams!', err)
                 this.userMediaStream = undefined

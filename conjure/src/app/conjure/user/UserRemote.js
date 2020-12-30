@@ -26,7 +26,7 @@ export default class UserRemote extends User {
         this.nameplate.group.rotation.set(0, Math.PI, 0)
         this.nameplate.group.visible = this.username !== 'undefined' && this.username !== ''
         
-        this.videoScreen = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 0.8), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }))
+        this.videoScreen = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 0.8), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true }))
         this.videoScreen.position.setY(0.6)
         this.nameplate.group.add(this.videoScreen)
         this.videoScreen.visible = false
@@ -98,6 +98,7 @@ export default class UserRemote extends User {
         const video = document.createElement('video')
         
         this.videoScreen.material.map = new THREE.VideoTexture(video)
+        this.videoScreen.material.map.format = THREE.RGBAFormat
         this.soundObject = this.conjure.getAudioManager().createFromMediaSource(stream, this.videoScreen, { refDistance: 20 })
         this.videoScreen.visible = true
 

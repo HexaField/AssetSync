@@ -22,7 +22,7 @@ export default class ScreenSettings extends ScreenBase
         this.allowCamButton.setOnClickCallback(this.toggleFeeds)
         this.registerElement(this.allowCamButton)
 
-        this.camPreview = easyPlane({ width: this.buttonWidth * 1.2, height: this.buttonWidth, material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }) });
+        this.camPreview = easyPlane({ width: this.buttonWidth * 1.2, height: this.buttonWidth, material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true }) });
         this.camPreview.position.set(0, this.height / 2 - 0.55, 0.1)
         this.group.add(this.camPreview)
     }
@@ -31,10 +31,11 @@ export default class ScreenSettings extends ScreenBase
         await this.conjure.toggleMediaStream()
         const enabled = this.conjure.userMediaStream !== undefined
         this.getCamButton.setText(enabled ? 'Disable Camera and Microphone' : 'Enable Camera and Microphone')
-        
+        console.log(this.conjure.userMediaStream)
         if(enabled) {
             const video = document.createElement('video')
             this.camPreview.material.map = new THREE.VideoTexture(video)
+            this.camPreview.material.map.format = THREE.RGBAFormat
             if ('srcObject' in video) {
                 video.srcObject = this.conjure.userMediaStream
             } else {
