@@ -34,7 +34,7 @@ test.serial('can put and get to DHT', async (t) => {
     return new Promise(async (resolve) => {
 
         await peers[0].dhtPlugin.put({ key, value })
-        await delay(500) // wait for entry to propagate
+        await delay(100) // wait for entry to propagate
         const result = await peers[1].dhtPlugin.get({ key, timeout: 1000 })
         resolve(result)
 
@@ -84,7 +84,7 @@ test.serial('custom DHT', async (t) => {
     return new Promise(async (resolve) => {
 
         await peers[0].dhtPlugin.put({ key, value, protocol })
-        await delay(500) // wait for entry to propagate
+        await delay(100) // wait for entry to propagate
         const result = await peers[1].dhtPlugin.get({ key, timeout: 1000, protocol })
         resolve(result)
 

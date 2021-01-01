@@ -1,20 +1,18 @@
-import { isNode, EventDispatcher, isWebWorker } from '@AssetSync/common'
+import { isNode, EventDispatcher } from '@AssetSync/common'
 
 import Assets from './backend/Assets.js'
 import RealmHandler from './backend/RealmHandler.js'
 import ClientDatastore from './backend/ClientDatastore.js'
 
 export default async function (args) {
-    new App(args)
+    return new App(args)
 }
 
 class App extends EventDispatcher {
-    constructor({ assetSync, worldSync }) {
+    constructor({ assetSync }) {
 
         super()
         this.assetSync = assetSync
-        this.worldSync = worldSync
-
         this.start()
     }
 
@@ -61,11 +59,6 @@ class App extends EventDispatcher {
         })
 
         if (!isNode) {
-            if (isWebWorker) {
-                worldSync.addFunction('requestPointerLock')
-                worldSync.addFunction('exitPointerLock')
-                worldSync.addFunction('hasFocus')
-            }
             this.loadConjure()
         }
     }

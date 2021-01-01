@@ -5,7 +5,7 @@
     "scripts": {
         "addtoall": "lerna add $PACKAGE packages/*Sync --dev",
         "setup": "yarn install && lerna bootstrap",
-        "test": "lerna run test",
+        "test": "lerna run test && cd conjure/ && yarn test",
         "build": "yarn test && lerna run clean:build && lerna run build",
         "example": "exit 0",
         "conjure": "yarn setup && cd conjure/ && yarn install && yarn start:browser"

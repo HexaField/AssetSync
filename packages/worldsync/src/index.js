@@ -83,59 +83,59 @@ class WorldSync {
 
             // } else {
 
-                if(args.serverFile && window.Worker) {
-                    // override socketsync with worker since we're running everything in the browser
-                    // starts the server in a worker from the specified file
-                    this._peerSync = await createWorker(args.serverFile)
+                // if(args.serverFile && window.Worker) {
+                //     // override socketsync with worker since we're running everything in the browser
+                //     // starts the server in a worker from the specified file
+                //     this._peerSync = await createWorker(args.serverFile)
 
-                    await new Promise((resolve) => {
-                        this._peerSync.addEventListener('init', resolve)
-                    })
+                //     await new Promise((resolve) => {
+                //         this._peerSync.addEventListener('init', resolve)
+                //     })
 
-                    this._isRunningInWorker = true
+                //     this._isRunningInWorker = true
                     
-                    this._peerSync.sendSize = () => {
-                        this._peerSync.sendEvent({
-                            type: 'size',
-                            width: this._peerSync.canvas.clientWidth,
-                            height: this._peerSync.canvas.clientHeight,
-                        })
-                    }
+                //     this._peerSync.sendSize = () => {
+                //         this._peerSync.sendEvent({
+                //             type: 'size',
+                //             width: this._peerSync.canvas.clientWidth,
+                //             height: this._peerSync.canvas.clientHeight,
+                //         })
+                //     }
                 
-                    this._peerSync.start = (canvas, config) => {
-                        if (canvas.transferControlToOffscreen) { // make sure our browser supports offscreencanvas
+                //     this._peerSync.start = (canvas, config) => {
+                //         if (canvas.transferControlToOffscreen) { // make sure our browser supports offscreencanvas
                             
-                            const offscreen = canvas.transferControlToOffscreen()
-                            this._peerSync.canvas = canvas
-                            this._peerSync.sendEvent({ 
-                                    type: 'start', 
-                                    canvas: offscreen, 
-                                    devicePixelRatio: window.devicePixelRatio, 
-                                    width: window.innerWidth,
-                                    height: window.innerHeight,
-                                    config
-                                },
-                                [offscreen]
-                            )
-                            this._peerSync.sendSize()
-                            window.addEventListener('resize', this._peerSync.sendSize)
+                //             const offscreen = canvas.transferControlToOffscreen()
+                //             this._peerSync.canvas = canvas
+                //             this._peerSync.sendEvent({ 
+                //                     type: 'start', 
+                //                     canvas: offscreen, 
+                //                     devicePixelRatio: window.devicePixelRatio, 
+                //                     width: window.innerWidth,
+                //                     height: window.innerHeight,
+                //                     config
+                //                 },
+                //                 [offscreen]
+                //             )
+                //             this._peerSync.sendSize()
+                //             window.addEventListener('resize', this._peerSync.sendSize)
                 
-                            this._peerSync.addEventListener('addEventListener', (event) => {
-                                window.addEventListener(event.event, this._peerSync.onEvent)
-                            })
+                //             this._peerSync.addEventListener('addEventListener', (event) => {
+                //                 window.addEventListener(event.event, this._peerSync.onEvent)
+                //             })
                 
-                            this._peerSync.addEventListener('removeEventListener', (event) => {
-                                window.removeEventListener(event.event, this._peerSync.onEvent)
-                            })
-                        }
-                    }
+                //             this._peerSync.addEventListener('removeEventListener', (event) => {
+                //                 window.removeEventListener(event.event, this._peerSync.onEvent)
+                //             })
+                //         }
+                //     }
 
-                    if(args.config && args.config.assetSync) {
-                        this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
-                    }
-                    this._peerSync.start(args.canvas, args.config)
+                //     if(args.config && args.config.assetSync) {
+                //         this._networkPlugin = await this._startNetworkPluginForRemoteLibp2p(this._peerSync)
+                //     }
+                //     this._peerSync.start(args.canvas, args.config)
                     
-                } else {
+                // } else {
                     // console.log('ERROR: browser does not support WebWorker')
                     this._server = args.serverFunc(this)
                     this.canvas = args.canvas
@@ -156,7 +156,7 @@ class WorldSync {
                     this.removeEventListener = (event, listener) => {
                         canvas.removeEventListener(event, listener)
                     }
-                }
+                // }
 
             // }
 
@@ -166,49 +166,49 @@ class WorldSync {
 
     }
 
-    async _startNetworkPluginForRemoteLibp2p(remoteHandler) {
+    // async _startNetworkPluginForRemoteLibp2p(remoteHandler) {
 
-        const assetSync = new AssetSync()
-        const transportPlugin = new Libp2pPlugin({ libp2p })
-        const dhtPlugin = new DHTPlugin({ transportPlugin })
-        dhtPlugin.on('dht:added', (...args) => {
-            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:added', ...args] })
-        })
-        dhtPlugin.on('dht:changed', (...args) => {
-            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:changed', ...args] })
-        })
-        dhtPlugin.on('dht:removed', (...args) => {
-            remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:removed', ...args] })
-        })
-        const networkPlugin = new NetworkPlugin({ 
-            transportPlugin,
-            networkEvents: {
-                onPeerJoin: (networkID, peerID) => { 
-                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerJoin', peerID] })
-                },
-                onPeerLeave: (networkID, peerID) => { 
-                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerLeave', peerID] })
-                },
-                onMessage: (networkID, data, from) => { 
-                    remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onMessage', data.opcode, data.content, from] })
-                }
-            }
-        })
+    //     const assetSync = new AssetSync()
+    //     const transportPlugin = new Libp2pPlugin({ libp2p })
+    //     const dhtPlugin = new DHTPlugin({ transportPlugin })
+    //     dhtPlugin.on('dht:added', (...args) => {
+    //         remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:added', ...args] })
+    //     })
+    //     dhtPlugin.on('dht:changed', (...args) => {
+    //         remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:changed', ...args] })
+    //     })
+    //     dhtPlugin.on('dht:removed', (...args) => {
+    //         remoteHandler.sendEvent({ type: 'dhtEvent', data: ['dht:removed', ...args] })
+    //     })
+    //     const networkPlugin = new NetworkPlugin({ 
+    //         transportPlugin,
+    //         networkEvents: {
+    //             onPeerJoin: (networkID, peerID) => { 
+    //                 remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerJoin', peerID] })
+    //             },
+    //             onPeerLeave: (networkID, peerID) => { 
+    //                 remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onPeerLeave', peerID] })
+    //             },
+    //             onMessage: (networkID, data, from) => { 
+    //                 remoteHandler.sendEvent({ type: 'networkEvent-'+networkID, data: ['onMessage', data.opcode, data.content, from] })
+    //             }
+    //         }
+    //     })
 
-        await assetSync.register({ transportPlugin, networkPlugin })
-        await assetSync.initialise()
+    //     await assetSync.register({ transportPlugin, networkPlugin })
+    //     await assetSync.initialise()
 
-        remoteHandler.addRequestOpcodes({
-            leaveAllNetworks: networkPlugin.leaveAllNetworks.bind(networkPlugin),
-            leaveAllClientNetworks: networkPlugin.leaveAllClientNetworks.bind(networkPlugin),
-            joinNetwork: networkPlugin.joinNetwork.bind(networkPlugin),
-            leaveNetwork: networkPlugin.leaveNetwork.bind(networkPlugin),
-            sendTo: networkPlugin.sendTo.bind(networkPlugin),
-            sendData: networkPlugin.sendData.bind(networkPlugin),
-            getPeers: networkPlugin.getPeers.bind(networkPlugin)
-        })
+    //     remoteHandler.addRequestOpcodes({
+    //         leaveAllNetworks: networkPlugin.leaveAllNetworks.bind(networkPlugin),
+    //         leaveAllClientNetworks: networkPlugin.leaveAllClientNetworks.bind(networkPlugin),
+    //         joinNetwork: networkPlugin.joinNetwork.bind(networkPlugin),
+    //         leaveNetwork: networkPlugin.leaveNetwork.bind(networkPlugin),
+    //         sendTo: networkPlugin.sendTo.bind(networkPlugin),
+    //         sendData: networkPlugin.sendData.bind(networkPlugin),
+    //         getPeers: networkPlugin.getPeers.bind(networkPlugin)
+    //     })
 
-        return networkPlugin
-    }
+    //     return networkPlugin
+    // }
 
 }

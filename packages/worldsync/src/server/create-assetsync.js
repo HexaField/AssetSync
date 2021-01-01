@@ -15,21 +15,11 @@ import libp2p from './create-libp2p/index.js'
 
 // args = { }
 
-export async function startAssetSync(proxy) {
+export async function startAssetSync() {
 
     let assetSync = new AssetSync()
     let networkPlugin, dhtPlugin
     const minPeers = 1
-
-    // if (isWebWorker && proxy) {
-
-    //     networkPlugin = new RemoteNetworkPlugin()
-    //     networkPlugin.setTarget(proxy)
-    //     dhtPlugin = new RemoteDHTPlugin()
-    //     dhtPlugin.setTarget(proxy)
-    //     // connectoin proxy
-
-    // } else {
 
     const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
     
@@ -44,16 +34,7 @@ export async function startAssetSync(proxy) {
         dhtConstructor = window.Libp2pKadDht
     }
     dhtPlugin = new DHTPlugin({ transportPlugin, dhtConstructor })
-    // connectionPlugin = new ConnectionPlugin({
-    //     peerOptions: {
-    //         config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:104.131.116.173:5349' }] },
-    //     }
-    // })
-// }
-
-    // const storagePlugin = new StoragePlugin()
-    // const syncedDatabasePlugin = new SyncedDatabasePlugin({ networkPlugin })
-
+    
     await assetSync.register({ networkPlugin, dhtPlugin })
     await assetSync.initialise()
 

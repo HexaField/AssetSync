@@ -1,7 +1,5 @@
 import * as THREE from 'three'
-import { Store, get as getIDBItem, set as setIDBItem, keys as keysIDBItem, del as delIDBItem, clear as clearIDBItem } from 'idb-keyval';
 import EventEmitter from 'events'
-import { isWebWorker } from '@AssetSync/common'
 import { REALM_TYPES } from '../backend/realm/RealmData.js';
 
 export const CONJURE_MODE = {

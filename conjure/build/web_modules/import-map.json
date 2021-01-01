@@ -9,7 +9,6 @@
     "enable3d": "./enable3d.js",
     "events": "./events.js",
     "hyperdiff": "./hyperdiff.js",
-    "idb-keyval": "./idb-keyval.js",
     "interface-datastore": "./interface-datastore.js",
     "lodash": "./lodash.js",
     "omggif": "./omggif.js",
