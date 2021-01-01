@@ -1,9 +1,7 @@
 import * as THREE from 'three'
 
-export default class StructureRoom
-{  
-    constructor(conjure, parentGroup, roomArgs = {})
-    {
+export default class StructureRoom {
+    constructor(conjure, parentGroup, roomArgs = {}) {
         this.conjure = conjure
         this.roomWidth = roomArgs.roomWidth || 10; // X
         this.roomHeight = roomArgs.roomHeight || 4; // Y
@@ -14,7 +12,7 @@ export default class StructureRoom
         parentGroup.add(this.group);
 
         this.wallMaterial = new THREE.MeshStandardMaterial({
-            side:THREE.DoubleSide,
+            side: THREE.DoubleSide,
             roughness: 0.8,
             color: 0xffffff,
             metalness: 0.2,
@@ -23,10 +21,10 @@ export default class StructureRoom
 
         this.floor = new THREE.Group()
         this.floor.name = 'floor'
-        this.floor.add(new THREE.Mesh(new THREE.BoxBufferGeometry(this.roomWidth, this.roomLength, boxDepth),  this.wallMaterial));
+        this.floor.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(this.roomWidth, this.roomLength), this.wallMaterial));
         this.floor.rotateX(Math.PI / 2)
         this.group.add(this.floor);
-        conjure.physics.add.existing(this.floor, { collider:{margin:0.01}, collisionFlags:1, mass:0})
+        conjure.physics.add.existing(this.floor, { shape: 'convexMesh', collider: { margin: 0.01 }, collisionFlags: 1, mass: 0 })
 
         // this.ceiling = new THREE.Group()
         // this.ceiling.name = 'ceiling'
@@ -43,7 +41,7 @@ export default class StructureRoom
         // // this.wallNorth.rotateX(Math.PI / 2)
         // this.group.add(this.wallNorth);
         // conjure.physics.add.existing(this.wallNorth, {shape:'plane', collider:{margin:0.01}, collisionFlags:1, mass:0})
-        
+
         // this.wallSouth = new THREE.Group()
         // this.wallSouth.name = 'wallSouth'
         // this.wallSouth.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(this.roomWidth, this.roomHeight, boxDepth), this.wallMaterial));
@@ -69,8 +67,7 @@ export default class StructureRoom
         // conjure.physics.add.existing(this.wallWest, {shape:'plane', collider:{margin:0.01}, collisionFlags:1, mass:0})
     }
 
-    destroy()
-    {
+    destroy() {
         this.conjure.physics.destroy(this.floor.body)
         // this.conjure.physics.destroy(this.ceiling.body)
         // this.conjure.physics.destroy(this.wallNorth.body)
