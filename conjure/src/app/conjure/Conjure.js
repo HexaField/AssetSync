@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import EventEmitter from 'events'
 import { REALM_TYPES } from '../backend/realm/RealmData.js';
+import { getParams } from '@AssetSync/common'
 
 export const CONJURE_MODE = {
     LOADING: 'Loading',
@@ -19,7 +20,7 @@ export async function startConjure(data)
 
 class Conjure extends EventEmitter
 {
-    constructor({ assetSync, assets, profiles, realms, worldSync })
+    constructor({ assetSync, assets, profiles, realms })
     {
         super()
         
@@ -27,9 +28,8 @@ class Conjure extends EventEmitter
         this.assets = assets
         this.profiles = profiles
         this.realms = realms
-        this.worldSync = worldSync
-        this.canvas = worldSync.canvas
-        this.urlParams = worldSync.config.urlParams
+        this.canvas = document.getElementById('canvas')
+        this.urlParams = getParams()
         this.allowIncomingFeeds = false
         
         this.start()

@@ -9,7 +9,7 @@ export default async function (args) {
 }
 
 class App extends EventDispatcher {
-    constructor({ assetSync }) {
+    constructor({ assetSync } ) {
 
         super()
         this.assetSync = assetSync

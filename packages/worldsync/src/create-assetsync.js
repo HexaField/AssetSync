@@ -10,7 +10,7 @@ import AssetSync, {
 
 } from '@AssetSync/AssetSync'
 
-import { homedir, isBrowser, isNode, isWebWorker } from '@AssetSync/common'
+import { homedir, isNode, getParams } from '@AssetSync/common'
 import libp2p from './create-libp2p/index.js'
 
 // args = { }
@@ -23,7 +23,7 @@ export async function startAssetSync() {
 
     const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
     
-    const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (window.worldSync.config.urlParams.network === 'true' ? minPeers : 0) })
+    const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (getParams().network === 'true' ? minPeers : 0) })
     await assetSync.register({ transportPlugin })
     networkPlugin = new NetworkPlugin({ transportPlugin })
     let dhtConstructor
