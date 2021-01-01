@@ -10,7 +10,7 @@
     [
       "snowpack-plugin-import-map", {
         "imports": {
-          "three": "https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U/min/three.js"
+          "three": " https://cdn.skypack.dev/pin/three@v0.123.0-STd7XeVUbImsNuMmqKGL/min/three.js"
         },
         "extensions": [".js"],
         "dev": true

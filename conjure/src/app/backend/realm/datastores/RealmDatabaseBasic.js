@@ -145,7 +145,7 @@ export default async (realmDatabase) => {
 
     // content = lastUpdated
     realmDatabase.on(OPCODES_SYNCED_DATABASE.requestKeys, async (content, peerID) => {
-        if(isNode && content < await getLastSynced())
+        if(content < await getLastSynced())
             realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
     })
 

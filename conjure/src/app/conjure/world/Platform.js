@@ -15,11 +15,12 @@ export default class Platform
         this.worldNameText.group.position.set(0, 5, 0);
 
         this.floor = new THREE.Group()
-        this.floor.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(this.platformSize, this.platformSize), new THREE.MeshBasicMaterial({ visible: false })));
+        this.floor.name = 'floor'
+        this.floor.add(new THREE.Mesh(new THREE.BoxBufferGeometry(this.platformSize, this.platformSize, 0.1), new THREE.MeshBasicMaterial({ visible: false })));
         this.floor.rotateX(Math.PI / 2)
-        this.floor.position.copy(this.pos)
+        // this.floor.position.copy(this.pos) 
         this.parentGroup.add(this.floor);
-        conjure.physics.add.existing(this.floor, {shape:'plane', collider:{margin:0.01}, collisionFlags:1, mass:0})
+        conjure.physics.add.existing(this.floor, { collider: { margin: 0.01 }, collisionFlags:1, mass:0 })
     }
 
     destroy()

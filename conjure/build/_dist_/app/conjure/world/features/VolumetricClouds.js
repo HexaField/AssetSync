@@ -1,4 +1,4 @@
-import*as t from"https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U/min/three.js";import{ImprovedNoise as g}from"../../../../../web_modules/three/examples/jsm/math/ImprovedNoise.js";import{WEBGL as v}from"../../../../../web_modules/three/examples/jsm/WebGL.js";export default class y{constructor(i={}){v.isWebGL2Available()===!1&&console.log(v.getWebGL2ErrorMessage()),this.threshold=i.threshold,this.opacity=i.opacity,this.range=i.range,this.steps=i.steps;const e=128,c=new Uint8Array(e*e*e);let m=0;const s=.05,d=new g,p=new t.Vector3;for(let r=0;r<e;r++)for(let a=0;a<e;a++)for(let n=0;n<e;n++){const l=1-p.set(n,a,r).subScalar(e/2).divideScalar(e).length();c[m]=(128+128*d.noise(n*s/1.5,a*s,r*s/1.5))*l*l,m++}const o=new t.DataTexture3D(c,e,e,e);o.format=t.RedFormat,o.minFilter=t.LinearFilter,o.magFilter=t.LinearFilter,o.unpackAlignment=1;const h=`#version 300 es
+import*as t from" https://cdn.skypack.dev/pin/three@v0.123.0-STd7XeVUbImsNuMmqKGL/min/three.js";import{ImprovedNoise as g}from"../../../../../web_modules/three/examples/jsm/math/ImprovedNoise.js";import{WEBGL as v}from"../../../../../web_modules/three/examples/jsm/WebGL.js";export default class y{constructor(i={}){v.isWebGL2Available()===!1&&console.log(v.getWebGL2ErrorMessage()),this.threshold=i.threshold,this.opacity=i.opacity,this.range=i.range,this.steps=i.steps;const e=128,c=new Uint8Array(e*e*e);let m=0;const s=.05,d=new g,p=new t.Vector3;for(let r=0;r<e;r++)for(let a=0;a<e;a++)for(let n=0;n<e;n++){const l=1-p.set(n,a,r).subScalar(e/2).divideScalar(e).length();c[m]=(128+128*d.noise(n*s/1.5,a*s,r*s/1.5))*l*l,m++}const o=new t.DataTexture3D(c,e,e,e);o.format=t.RedFormat,o.minFilter=t.LinearFilter,o.magFilter=t.LinearFilter,o.unpackAlignment=1;const u=`#version 300 es
             in vec3 position;
             uniform mat4 modelMatrix;
             uniform mat4 modelViewMatrix;
@@ -12,7 +12,7 @@ import*as t from"https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U
                 vDirection = position - vOrigin;
                 gl_Position = projectionMatrix * mvPosition;
             }
-        `,u=`#version 300 es
+        `,h=`#version 300 es
             precision highp float;
             precision highp sampler3D;
             uniform mat4 modelViewMatrix;
@@ -67,4 +67,4 @@ import*as t from"https://cdn.skypack.dev/pin/three@v0.117.1-NetLzdTnw9ga3y6o633U
                 color = ac;
                 if ( color.a == 0.0 ) discard;
             }
-        `,x=new t.BoxBufferGeometry(i.size.x,i.size.y,i.size.z),f=new t.RawShaderMaterial({uniforms:{base:{value:new t.Color(7965344)},map:{value:o},cameraPos:{value:new t.Vector3},threshold:{value:this.threshold},opacity:{value:this.opacity},range:{value:this.range},steps:{value:this.steps}},vertexShader:h,fragmentShader:u,side:t.BackSide,transparent:!0});return this.mesh=new t.Mesh(x,f),this.mesh}update(i){this.mesh.material.uniforms.cameraPos.value.copy(i.position),this.mesh.rotation.y=-performance.now()/7500}}
+        `,x=new t.BoxBufferGeometry(i.size.x,i.size.y,i.size.z),f=new t.RawShaderMaterial({uniforms:{base:{value:new t.Color(7965344)},map:{value:o},cameraPos:{value:new t.Vector3},threshold:{value:this.threshold},opacity:{value:this.opacity},range:{value:this.range},steps:{value:this.steps}},vertexShader:u,fragmentShader:h,side:t.BackSide,transparent:!0});return this.mesh=new t.Mesh(x,f),this.mesh}update(i){this.mesh.material.uniforms.cameraPos.value.copy(i.position),this.mesh.rotation.y=-performance.now()/7500}}

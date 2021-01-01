@@ -11,6 +11,7 @@ export default class StructurePortal
         this.portalLength = params.portalLength || 1; // Z
 
         this.group = new THREE.Group();
+        this.group.name = 'portal-group-' + params.realmData.id
         parentGroup.add(this.group);
         this.group.position.set(params.position.x, params.position.y, params.position.z)
 
@@ -41,7 +42,7 @@ export default class StructurePortal
     destroy()
     {
         if(this.group.body)
-            this.conjure.physics.destroy(this.group)
+            this.conjure.physics.destroy(this.group.body)
         if(this.group.parent)
             this.group.parent.remove(this.group)
     }

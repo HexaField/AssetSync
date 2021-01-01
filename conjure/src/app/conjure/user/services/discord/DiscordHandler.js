@@ -1,6 +1,6 @@
-import * as THREE from 'three'
-import * as DiscordOauth2 from 'discord-oauth2'
-import randomBytes from '../../../util/randombytes'
+// import * as THREE from 'three'
+// import * as DiscordOauth2 from 'discord-oauth2'
+// import randomBytes from '../../../util/randombytes'
 
 export default class DiscordHandler
 {  
