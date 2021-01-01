@@ -9,21 +9,21 @@ export class DHTPlugin extends PluginBase {
 
     constructor(options = {}) {
         super(options)
-        this._pluginName = 'CORE_DHTPlugin'
+        this._pluginName = 'DHTPlugin'
         this._transportPlugin = options.transportPlugin
         this._dhtConstructor = options.dhtConstructor
         this._datastoreConstructor = options.datastoreConstructor
         this._repoPath = options.repoPath || ''
-        this._removeFunction = options.removeFunction || (() => {})
+        this._removeFunction = options.removeFunction || (() => { })
 
         this.dhts = {}
     }
 
     async start(args = {}) {
         await super.start(args)
-        
-        if(!this._datastoreConstructor) {
-            if(isNode) { 
+
+        if (!this._datastoreConstructor) {
+            if (isNode) {
                 const { default: datastore } = await import('datastore-fs')
                 this._datastoreConstructor = datastore
             } else {
@@ -32,15 +32,15 @@ export class DHTPlugin extends PluginBase {
             }
         }
         this.dht = this._transportPlugin.getTransport()._dht
-        
+
         if (!this.dht)
             throw new Error('No dht found!')
 
         this._repoLocation = this._transportPlugin.getTransport().repo ? this._transportPlugin.getTransport().repo.path : this._repoPath
-        
-        if (!this.dht)
-            throw new Error('No repo location supplied!')
-        
+
+        if (!this._repoLocation)
+            this.warn('No repo location supplied! Will only be using memory.')
+
         this.dht.onPut = (record, peerId) => {
             this.dht.emit('put', uint8ArrayToString(record.key), uint8ArrayToString(record.value), peerId.toB58String())
         }
@@ -61,8 +61,8 @@ export class DHTPlugin extends PluginBase {
     }
 
     async addDHT(protocol, datastore) {
-        if(!protocol) return
-        if(this.dhts[protocol]) return this.dhts[protocol]
+        if (!protocol) return
+        if (this.dhts[protocol]) return this.dhts[protocol]
         const libp2p = this._transportPlugin.getTransport()
         const customDHT = new this._dhtConstructor({
             libp2p: libp2p,
@@ -87,13 +87,13 @@ export class DHTPlugin extends PluginBase {
     }
 
     removeDHT(protocol) {
-        if(!this.dhts[protocol]) return
+        if (!this.dhts[protocol]) return
         this.dhts[protocol].stop()
         delete this.dhts[protocol]
     }
 
     async getAllLocal({ protocol, queryOptions } = {}) {
-        if(!this.dhts[protocol || this._defaultProtocol]) return []
+        if (!this.dhts[protocol || this._defaultProtocol]) return []
         const dht = this.dhts[protocol || this._defaultProtocol]
         const entries = []
         for await (const entry of dht.datastore.query(queryOptions || {})) {
@@ -111,9 +111,9 @@ export class DHTPlugin extends PluginBase {
         try {
             const keyArray = uint8ArrayFromString(key)
             return await this.dhts[protocol || this._defaultProtocol].removeLocal(keyArray)
-        } catch(error) {
-            if(log)
-                console.log('Failed to remove', key ,'from dht: ', error)
+        } catch (error) {
+            if (log)
+                this.log('Failed to remove', key, 'from dht: ', error)
         }
     }
 
@@ -123,9 +123,9 @@ export class DHTPlugin extends PluginBase {
             const valArray = uint8ArrayFromString(value)
             const record = await utils.createPutRecord(keyArray, valArray)
             return await this.dhts[protocol || this._defaultProtocol].datastore.put(utils.bufferToKey(keyArray), record)
-        } catch(error) {
-            if(log)
-                console.log('Failed to put', key ,'locally: ', error)
+        } catch (error) {
+            if (log)
+                this.log('Failed to put', key, 'locally: ', error)
         }
     }
 
@@ -134,18 +134,18 @@ export class DHTPlugin extends PluginBase {
             const keyArray = uint8ArrayFromString(key)
             const result = await this.dhts[protocol || this._defaultProtocol].get(keyArray, { timeout })
             return uint8ArrayToString(result)
-        } catch(error) {
-            if(log)
-                console.log('Failed to get', key ,'from dht: ', error)
+        } catch (error) {
+            if (log)
+                this.log('Failed to get', key, 'from dht: ', error)
         }
     }
 
     async put({ key, value, minPeers, protocol, log }) {
         try {
             return await this.dhts[protocol || this._defaultProtocol].put(uint8ArrayFromString(key), uint8ArrayFromString(value), { minPeers })
-        } catch(error) {
-            if(log)
-                console.log('Failed to put', key ,'to dht: ', error)
+        } catch (error) {
+            if (log)
+                this.log('Failed to put', key, 'to dht: ', error)
         }
     }
 }

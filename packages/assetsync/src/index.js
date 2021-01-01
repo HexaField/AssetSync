@@ -38,6 +38,8 @@ export default class AssetSync {
 
     async initialise() {
         await this._initialisePlugins()
+
+        console.log('=-=-=\nSuccessfully loaded AssetSync!\n=-=-=')
     }
 
     async _initialisePlugins() {

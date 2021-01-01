@@ -87,6 +87,11 @@ export default class RealmHandler {
         }
     }
 
+    /**
+     * 
+     * @param {RealmData} realmData 
+     * @returns {RealmDatabase}
+     */
     getDatabase(realmData) {
         return this.realms[realmData.id || realmData]
     }

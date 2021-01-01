@@ -4,19 +4,19 @@ export class NetworkPlugin extends PluginBase {
 
     constructor(options = {}) {
         super(options)
-        this._pluginName = 'CORE_NetworkPlugin'
+        this._pluginName = 'NetworkPlugin'
         this._transportPlugin = options.transportPlugin
 
         this._networks = {}
-        
+
         this._networkEvents = options.networkEvents || {
-            onPeerJoin: (networkID, peerID) => { 
+            onPeerJoin: (networkID, peerID) => {
                 this._networks[networkID].emit('onPeerJoin', peerID)
             },
-            onPeerLeave: (networkID, peerID) => { 
+            onPeerLeave: (networkID, peerID) => {
                 this._networks[networkID].emit('onPeerLeave', peerID)
             },
-            onMessage: (networkID, data, from) => { 
+            onMessage: (networkID, data, from) => {
                 this._networks[networkID].emit('onMessage', data, from)
             }
         }
@@ -57,8 +57,7 @@ export class NetworkPlugin extends PluginBase {
 
     async joinNetwork(networkID) {
 
-        if (typeof networkID !== 'string')
-        {
+        if (typeof networkID !== 'string') {
             this.log('ERROR you must supply a network id, got ', networkID)
             return false
         }
@@ -69,7 +68,7 @@ export class NetworkPlugin extends PluginBase {
         // todo: make this a plugin
         this._networks[networkID] = this._transportPlugin.joinNetwork(networkID)
 
-        this._networks[networkID].on('peer joined', (peerID) => { 
+        this._networks[networkID].on('peer joined', (peerID) => {
             this._networkEvents.onPeerJoin(networkID, peerID)
         })
 

@@ -5,22 +5,22 @@ import RealmHandler from './backend/RealmHandler.js'
 import ClientDatastore from './backend/ClientDatastore.js'
 
 export default async function (args) {
-    return new App(args)
+    const app = new App(args)
+    await app.start()
+    return app
 }
 
 class App extends EventDispatcher {
     constructor({ assetSync } ) {
-
         super()
         this.assetSync = assetSync
-        this.start()
     }
 
     async start() {
 
         this.assets = new Assets(this.assetSync)
         this.realms = new RealmHandler(this.assetSync)
-        this.realms.initialise()
+        await this.realms.initialise()
 
         this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')
 

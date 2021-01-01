@@ -107,6 +107,13 @@ export default class RealmDatabase extends EventEmitter {
     // CRUDT
 
     // create
+    /**
+     * 
+     * @param {object} object
+     * @param {string} object.uuid
+     * @param {object} object.data
+     * @returns {Promise<boolean>}
+     */
     async createObject({ uuid, data }) {
         // console.log('createObject', uuid, data)
         try {

@@ -92,6 +92,7 @@ export default async (realmDatabase) => {
         try {
             const entries = []
             for await (const entry of datastoreObjects.query({})) {
+                if(!entry.value || !entry.value.length) continue
                 const record = utils.decodeRecord(entry.value)
                 entries.push({
                     key: uint8ArrayToString(record.key),

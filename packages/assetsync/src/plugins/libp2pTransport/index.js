@@ -7,7 +7,7 @@ export class Libp2pPlugin extends PluginBase {
     constructor(options = {}) {
         super(options)
         this._libp2p = options.libp2p
-        this._pluginName = 'CORE_Libp2pPlugin'
+        this._pluginName = 'Libp2pPlugin'
     }
 
     async start(args = {}) {

@@ -1,10 +1,12 @@
 import Libp2p from 'libp2p'
 import WS from 'libp2p-websockets'
+import filters from 'libp2p-websockets/src/filters.js'
 import Multiplex from 'libp2p-mplex'
 import { NOISE } from 'libp2p-noise'
 import GossipSub from 'libp2p-gossipsub'
 import PeerId from 'peer-id'
 import multiaddr from 'multiaddr'
+import KadDHT from 'libp2p-kad-dht'
 
 const RELAY_MULTIADDR = '/ip4/127.0.0.1/tcp/24642/ws'
 const RELAY_PEER_ID_JSON = {
@@ -13,7 +15,7 @@ const RELAY_PEER_ID_JSON = {
   pubKey: 'CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDVCnVIHt/xx3LlS0bHUlS6A1oxuqfwrzCSNrr0T68RM1i/2zc1Pl6dMLdhpzIrMHrt6J4nMA2nzC71vHNvymQeLWvKmAWTEcKbGR8lQGHibBMP/1vwOwFlKxy3JzaqDS8hP6qTnMgGpMJosiroitTNHAJg2PCQM0zX+Q8ehsiwhoJ5IaIoCzutyo7S5X7uubOjUMj+tAVuX34/lz8ynQfnfFeS6GuCddsljg/RZ3c+wS+EPwsNd0VJjm3L5M9b+Ofh8IW5FI/MMmHg2+dpHJnZv9QCtclvCZJj0xUKpxtluM5NHd64h+fBQsmpB75b2eUkB3RUNLy/ngC50NbAIRN1AgMBAAE='
 }
 
-export async function config (isRelay) {
+export async function config(isRelay) {
   return {
     peerId: isRelay ? await PeerId.createFromJSON(RELAY_PEER_ID_JSON) : await PeerId.create(),
     dialer: {
@@ -31,9 +33,15 @@ export async function config (isRelay) {
       connEncryption: [
         NOISE
       ],
+      dht: KadDHT,
       pubsub: GossipSub
     },
     config: {
+      transport: {
+        [WS.prototype[Symbol.toStringTag]]: {
+          filters: filters.all
+        }
+      },
       peerDiscovery: {
         autoDial: false,
         bootstrap: {
@@ -43,6 +51,15 @@ export async function config (isRelay) {
       pubsub: {
         enabled: true,
         emitSelf: true
+      },
+      dht: {
+        kBucketSize: 10,
+        enabled: true,
+        randomWalk: {
+          enabled: false,
+          interval: 300e3,
+          timeout: 10e3
+        }
       }
     }
   }

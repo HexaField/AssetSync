@@ -3,6 +3,13 @@ import app from '../src/app/index.js'
 
 import { server } from '@AssetSync/WorldSync'
 
+import { config } from './util/create-libp2p.js'
+import { relay } from './util/relay.js'
+
+import assetSync from './util/mock-assetsync.js'
+
+await relay(config)
+
 test.serial('can start backend', async (t) => {
 
     const App = await server(app)
@@ -15,3 +22,21 @@ test.serial('can start backend', async (t) => {
         t.not(results.assetSync.dhtPlugin, undefined)
     })
 })
+
+test.serial('can find peers', async (t) => {
+
+    const assetSync1 = await assetSync()
+    const assetSync2 = await assetSync(assetSync1.transportPlugin._libp2p)
+
+    const appInstances = [await app({ assetSync: assetSync1 }), await app({ assetSync: assetSync2 })]
+    
+    return new Promise(async (resolve) => {
+        appInstances[0].globalNetwork.on('onPeerJoin', (peerId) => {
+            resolve(peerId)
+        })
+    }).then((results) => {
+        t.is(results, assetSync2.transportPlugin._libp2p.peerId.toB58String())
+    })
+})
+
+
