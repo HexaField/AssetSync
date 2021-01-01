@@ -30,7 +30,6 @@
     },
     "dependencies": {
         "@AssetSync/common": "^0.0.0",
-        "@forlagshuset/simple-fs": "^0.4.0",
         "datastore-fs": "^2.0.2",
         "datastore-level": "^2.0.0",
         "hyperdiff": "^2.0.7",

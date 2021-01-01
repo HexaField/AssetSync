@@ -1,24 +1,23 @@
-import { TransportBase } from '../transport/index.js'
+import { PluginBase } from '../../PluginBase.js'
 import { number } from '@AssetSync/common'
 import Room from './ipfs-pubsub-room/index.js'
 
-export class Libp2pPlugin extends TransportBase {
+export class Libp2pPlugin extends PluginBase {
 
     constructor(options = {}) {
         super(options)
         this._libp2p = options.libp2p
-        this._pluginName = 'CORE_Libp2pTransportPlugin'
+        this._pluginName = 'CORE_Libp2pPlugin'
     }
 
     async start(args = {}) {
         await super.start(args)
 
-        if(typeof this._libp2p === 'function')
-        {
+        if (typeof this._libp2p === 'function') {
             this.log('Starting libp2p...')
             this._libp2p = await this._libp2p()
-            this.log('Started libp2p with ID', this._libp2p.peerId.toB58String())
         }
+        this.log('Started libp2p with ID', this._libp2p.peerId.toB58String())
 
         this._peerID = this._libp2p.peerId.toB58String()
 
@@ -37,7 +36,7 @@ export class Libp2pPlugin extends TransportBase {
         this.getTransport().on('peer:discovery', (...args) => {
             this.emit('peer:discovery', ...args)
         })
-        
+
         return true
     }
 
