@@ -15,26 +15,57 @@ export default class RealmHandler {
     // key: realmId
     // value: realmData
 
+    _doValidation(realmData) {
+
+        if(realmData === undefined) return false
+        if(realmData.id === undefined) return false
+        if(realmData.name === undefined) return false
+
+        return true
+    }
+
+    validateRealm(realmData) {
+        let dataToValidate = realmData
+        if(typeof realmData === 'string') {
+            try {
+                dataToValidate = JSON.parse(realmData)
+            } catch (err) { 
+                return
+            }
+        }
+        const success = this._doValidation(dataToValidate)
+        if(success) {
+            return realmData
+        }
+        return
+    }
+
     async get(key, saveLocal) {
         try {
             const value = await this.assetSync.dhtPlugin.get({ key: this.dhtProtocol + key })
+            if(!this.validateRealm(value))
+                return
             if(value) {
                 if(saveLocal) {
                     await this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
                 }
                 return JSON.parse(value)
             }
-        } catch (err) { }
-        return undefined 
+        } catch (err) { 
+            console.log(err)
+        }
+        return
     }
 
     async put(key, value) {
-        return await this.assetSync.dhtPlugin.put({ key: this.dhtProtocol + key, value, minPeers: '1' })
+        try {
+            return await this.assetSync.dhtPlugin.put({ key: this.dhtProtocol + key, value, minPeers: '1' })
+        } catch (err) { console.log(err) }
     }
 
     receiveFromDHT(key, value, from) {
         try {
-            if(value) {
+            if(this.validateRealm(value)) {
                 this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
                 this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
             } else {
@@ -82,7 +113,7 @@ export default class RealmHandler {
 
     async createRealm(realmData) {
         if(realmData.type === REALM_TYPES.NONE) {
-            this.put(realmData.id, JSON.stringify(realmData))
+            await this.put(realmData.id, JSON.stringify(realmData))
             await this.addDatabase(realmData)
         }
     }
@@ -96,22 +127,23 @@ export default class RealmHandler {
         return this.realms[realmData.id || realmData]
     }
 
-    async addDatabase(realmData, onProgress) {
-        return this.realms[realmData.id] || await this._createDatabase(realmData, onProgress)
+    async addDatabase(realmData, onProgress, forceSync = false) {
+        return this.realms[realmData.id] || await this._createDatabase(realmData, onProgress, forceSync)
     }
 
-    async _createDatabase(realmData, onProgress) {
+    async _createDatabase(realmData, onProgress, forceSync) {
         const database = new RealmDatabase(new RealmData(realmData), this.assetSync, this.dhtProtocol)
-        await database.start(onProgress)
+        await database.start(onProgress, forceSync)
         this.realms[realmData.id] = database
         return database
     }
 
     async removeDatabase(realmData) {
-        if(this.realms[realmData.id]) {
-            await this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + realmData.id)// + this.dhtVersion)
-            await this.realms[realmData.id].stop()
-            delete this.realms[realmData.id]
+        const id = typeof realmData === 'object' ? realmData.id : realmData
+        if(this.realms[id]) {
+            await this.assetSync.dhtPlugin.removeDHT(this.dhtProtocol + id)// + this.dhtVersion)
+            await this.realms[id].stop()
+            delete this.realms[id]
         }
     }
 }

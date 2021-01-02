@@ -111,9 +111,9 @@ export default class ScreenRealms extends ScreenBase {
     }
 
     async joinRealm(id) {
-        let realmData = await this.screenManager.conjure.getWorld().getRealm(id || this.discordIdTextbox.getValue())
+        let realmData = await this.screenManager.conjure.world.getRealm(id || this.discordIdTextbox.getValue())
         if (realmData) {
-            this.screenManager.conjure.getWorld().joinRealm(new RealmData(realmData)) // for joining a private realm
+            this.screenManager.conjure.world.joinRealm(new RealmData(realmData)) // for joining a private realm
             this.screenManager.hideAllScreens()
         }
         else {

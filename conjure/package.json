@@ -12,7 +12,8 @@
         "clean:node": "rm -rf bin",
         "build:node": "pkg src/index.js --targets node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path bin/",
         "start:node": "nodemon --trace-warnings src/index.js --watch src/app/backend src/packages",
-        "test": "ava"
+        "test": "yarn run clean:test && ava && yarn run clean:test",
+        "clean:test": "rm -rf test/dbs"
     },
     "ava": {
         "files": [

@@ -1,5 +1,5 @@
 // import kad from './kad/index.min.js'
-import Libp2pRepo from './libp2p-repo/dist/index.min.js'
+import Libp2pRepo from '../../../../libp2p-repo/dist/index.min.js'
 window.Libp2pRepo = Libp2pRepo
 import dhtConfig from './dhtConfig.js'
 import Libp2p from './libp2p.min.js'

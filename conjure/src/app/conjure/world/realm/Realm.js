@@ -9,6 +9,7 @@ import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 import EventEmitter from 'events'
 import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
+import { getParams } from '@AssetSync/common'
 
 export default class Realm extends EventEmitter
 {  
@@ -107,9 +108,10 @@ export default class Realm extends EventEmitter
         for(let feature of this.features)
             await feature.load()
 
-        this.database = await this.world.conjure.realms.addDatabase(this.realmData, ({ message }) => {
-            this.conjure.loadingScreen.setText(message, false)
-        })
+        this.database = await this.world.conjure.realms.addDatabase(this.realmData, (...message) => {
+            this.conjure.loadingScreen.setText(...message, false)
+            console.log('Loading Realm:', ...message)
+        }, getParams().network === 'true') // this is a security & coherency problem and will be removed when the network goes live
 
         this.database.network.on('message', (message) => {
             try {

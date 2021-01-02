@@ -5,8 +5,12 @@ import { server } from '@AssetSync/WorldSync'
 
 import { config } from './util/create-libp2p.js'
 import { relay } from './util/relay.js'
+import delay from 'delay'
 
 import assetSync from './util/mock-assetsync.js'
+import RealmData from '../src/app/backend/realm/RealmData.js'
+
+import { randomString } from '@AssetSync/common/src/randomString.js'
 
 await relay(config)
 
@@ -39,4 +43,24 @@ test.serial('can find peers', async (t) => {
     })
 })
 
+const mockRealm = new RealmData({
+    id: randomString(8),
+    name: randomString(8),
+})
 
+test.serial('can find realm', async (t) => {
+
+    const assetSync1 = await assetSync()
+    const appInstance1 = await app({ assetSync: assetSync1 })
+    const assetSync2 = await assetSync(assetSync1.transportPlugin._libp2p)
+    const appInstance2 = await app({ assetSync: assetSync2 })
+    await appInstance1.realms.createRealm(mockRealm)
+    await delay(100)
+    
+    return new Promise(async (resolve) => {
+        const realmData = await appInstance2.realms.getRealmById(mockRealm.id)
+        resolve(realmData)
+    }).then((results) => {
+        t.deepEqual(results, Object.assign({}, mockRealm))
+    })
+})

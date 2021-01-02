@@ -53,20 +53,29 @@ export async function config(isRelay) {
         emitSelf: true
       },
       dht: {
-        kBucketSize: 10,
+        protocolPrefix: '/test',
+        kBucketSize: 20,
         enabled: true,
         randomWalk: {
-          enabled: false,
-          interval: 300e3,
-          timeout: 10e3
+            enabled: true,
+            interval: 300e3,
+            timeout: 10e3
+        },
+        validators: {
+            realm: {
+                func: (key, value) => {}
+            }
+        },
+        selectors: {
+            realm: () => 0
         }
       }
     }
   }
 }
 
-export default async function (otherNode) {
-  const node = new Libp2p(await config())
+export default async function (otherNode, customConfig) {
+  const node = new Libp2p(customConfig || (await config()))
 
   await node.start()
 

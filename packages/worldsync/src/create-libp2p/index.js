@@ -3,7 +3,7 @@ import mergeOptions from 'merge-options'
 
 export default async function (options = {}) {
     if (isNode) {
-        const { startRepo } = await import('./libp2p-repo/src/index.js')
+        const { startRepo } = await import('../../../../libp2p-repo/src/index.js')
         const { default: Libp2p, defaultNodeConfig } = await import('./create-node.js')
 
         if (options.repoPath) {

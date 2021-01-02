@@ -79,11 +79,13 @@ export default class World extends EventEmitter {
         return Object.values(this.knownRealms).sort((a, b) => { return a.timestamp > b.timestamp })
     }
 
-    async getRealm(id) {
+    async getRealm(id, saveLocal) {
         if(this.knownRealms[id])
             return this.knownRealms[id]
 
-        return await this.conjure.realms.getRealmById(id, true)
+        console.log('did not find realm locally, looking in dht')
+
+        return await this.conjure.realms.getRealmById(id, saveLocal)
     }
 
     async preloadRealms() {

@@ -1,1 +1,1 @@
-export function getParams(o){var r={},a=document.createElement("a");a.href=o;for(var s=a.search.substring(1),n=s.split("&"),t=0;t<n.length;t++){var e=n[t].split("=");e[0]&&(r[e[0]]=decodeURIComponent(e[1]))}return r}
+export function getParams(o){var t={},a=document.createElement("a");a.href=o;for(var s=a.search.substring(1),n=s.split("&"),r=0;r<n.length;r++){var e=n[r].split("=");e[0]&&(t[e[0]]=decodeURIComponent(e[1]))}return t}

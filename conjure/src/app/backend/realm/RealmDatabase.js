@@ -14,13 +14,14 @@ export default class RealmDatabase extends EventEmitter {
 
         this.objects = {}
 
+        this._stopDatastores = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _stopDatastores implemented') }
         this._get = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _get implemented') }
         this._put = async (key, value)  => { console.warn('ERROR! Database', realmData.id, 'has no _put implemented') }
         this._getAllLocal = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _getAllLocal implemented') }
         this._removeLocal = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _removeLocal implemented') }
     }
 
-    async start(onProgress = () => {}) {
+    async start(onProgress = () => {}, forceSync) {
 
         console.log('Opening database for realm', this.realmData.id)
 
@@ -58,19 +59,19 @@ export default class RealmDatabase extends EventEmitter {
         })
         
         // resolve at least one peer on network (so we can join the realm)
-        onProgress({ message: 'Connected to network...' })
+        onProgress('Connected to network...')
 
         // if(!this.realmData.global)
         //     await this.joinNetwork()
 
-        onProgress({ message: 'Loading database' })
+        onProgress('Loading database')
 
         // if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
         //     await realmProcedural(this)
         // }
 
         if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.NONE) {
-            await realmBasic(this)
+            await realmBasic(this, onProgress, forceSync)
         }
         
         console.log('Loaded', (await this._getAllLocal()).length, 'objects from ')
@@ -80,6 +81,8 @@ export default class RealmDatabase extends EventEmitter {
 
     async stop() {
         // kill physics
+        await this.network.leave()
+        await this._stopDatastores()
     }
 
     sendToAll(opcode, content) {
@@ -135,9 +138,11 @@ export default class RealmDatabase extends EventEmitter {
             try {
                 return { uuid: obj.key, data: JSON.parse(obj.value) }
             } catch (err) {
-                this._removeLocal(obj.key)
-                return {}
+                // this._removeLocal(obj.key) // instead we will remove old empty entries
+                return
             }
+        }).filter((obj) => {
+            return obj !== undefined
         })
     }
 
@@ -158,7 +163,7 @@ export default class RealmDatabase extends EventEmitter {
     async dereferenceObject({ uuid, data }) {
         // console.log('dereferenceObject', uuid, data)
         try {
-            await this._removeLocal(uuid)
+            await this._put(uuid, '')
             this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid })
             return true
         } catch (error) {

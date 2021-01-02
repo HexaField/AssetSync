@@ -1,4 +1,3 @@
-
 import AssetSync, {
     
     Libp2pPlugin,
@@ -7,13 +6,13 @@ import AssetSync, {
 
 } from '@AssetSync/AssetSync'
 
-import libp2p from './create-libp2p.js'
+import repo from './create-repo.js'
 
 export default async function(otherNode) {
 
     const assetSync = new AssetSync()
 
-    const libp2pInstance = await libp2p(otherNode)
+    const libp2pInstance = await repo(otherNode)
     
     const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: 0 })
     await assetSync.register({ transportPlugin })
