@@ -76,7 +76,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                     timeReceived: record.timeReceived
                 }
             } catch (err) {
-                console.log(err)
+                // console.log(err)
                 return undefined
             }
         }
@@ -87,10 +87,10 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 const valueArray = uint8ArrayFromString(value)
                 const record = await utils.createPutRecord(keyArray, valueArray, time)
                 await datastoreObjects.put(utils.bufferToKey(keyArray), record)
-                await setLastSynced()
+                // await setLastSynced()
                 return true
             } catch (err) {
-                console.log(err)
+                // console.log(err)
                 return false
             }
         }
@@ -109,7 +109,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 }
                 return entries
             } catch (err) {
-                console.log(err)
+                // console.log(err)
                 return []
             }
         }
@@ -119,10 +119,9 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 const keyArray = uint8ArrayFromString(key)
                 await datastoreObjects.delete(utils.bufferToKey(keyArray))
                 await datastoreObjects.put(utils.bufferToKey(keyArray), uint8ArrayFromString(''))
-                await setLastSynced()
                 return true
             } catch (err) {
-                console.log(err)
+                // console.log(err)
                 // if (err.code === 'ERR_NOT_FOUND') {
                 //     return false
                 // }
@@ -130,24 +129,9 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             }
         }
 
-        const getLastSynced = async () => {
-            return number(await getMetadata('lastSynced'))
-        }
-
-        const setLastSynced = async () => {
-            await putMetadata('lastSynced', String(Date.now()))
-        }
-
-        const lastSynced = await getLastSynced()
-        if(lastSynced) {
-            onProgress('Last synced at', new Date(lastSynced).toLocaleString())
-        } else {
-            await putMetadata('lastSynced', String(0))
-        }
-
         const startSync = async (peerID) => {
             onProgress('Syncing from ' + peerID + '. Requesting keys...')
-            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestKeys, await getLastSynced())
+            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestKeys, '')
         }
         let resolved = false
 
@@ -159,7 +143,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
         }
 
         realmDatabase.network.on('onPeerJoin', async (peerID) => {
-            if(shouldSync && !resolved)
+            if(resolved || (shouldSync && !resolved))
                 startSync(peerID)
         })
         
@@ -168,8 +152,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
         // content = lastUpdated
         realmDatabase.on(OPCODES_SYNCED_DATABASE.requestKeys, async (content, peerID) => {
             onProgress('Received request for keys', content)
-            // if(content < await getLastSynced())
-                realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
+            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
         })
 
         // content = { key: timeReceived }
@@ -178,8 +161,6 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             if(Object.keys(content).length) {
                 realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestEntries, await getDifferences(content))
             } else {
-                // nothing to update, so we are synced
-                await setLastSynced()
                 if(shouldSync) {
                     finishSync()
                 }
@@ -202,7 +183,6 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             }
 
             // we are now up to do
-            await setLastSynced()
             if(shouldSync) {
                 finishSync()
             }
