@@ -149,9 +149,17 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             onProgress('Syncing from ' + peerID + '. Requesting keys...')
             realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestKeys, await getLastSynced())
         }
+        let resolved = false
+
+        const finishSync = () => {
+            if(!resolved) {
+                resolved = true
+                resolve()
+            }
+        }
 
         realmDatabase.network.on('onPeerJoin', async (peerID) => {
-            if(shouldSync)
+            if(shouldSync && !resolved)
                 startSync(peerID)
         })
         
@@ -164,16 +172,16 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveKeys, await getAllKeysAndTimes())
         })
 
-        // content = [...{ key, timeReceived }]
+        // content = { key: timeReceived }
         realmDatabase.on(OPCODES_SYNCED_DATABASE.receiveKeys, async (content, peerID) => {
-            if(Array.isArray(content) && content.length) {
-                onProgress('Requesting entries for', ...content)
+            onProgress('Requesting entries for', content)
+            if(Object.keys(content).length) {
                 realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestEntries, await getDifferences(content))
             } else {
                 // nothing to update, so we are synced
                 await setLastSynced()
                 if(shouldSync) {
-                    resolve()
+                    finishSync()
                 }
             }
         })
@@ -181,13 +189,13 @@ export default async (realmDatabase, onProgress, shouldSync) => {
         // content = [...key]
         realmDatabase.on(OPCODES_SYNCED_DATABASE.requestEntries, async (content, peerID) => {
             onProgress('Received request for entries', ...content)
-            if(Array.isArray(content) && content.length)
-                realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveEntries, await getEntriesByKeys(content))
+            // if(Array.isArray(content) && content.length)
+            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveEntries, await getEntriesByKeys(content))
         })
 
         // content = [...{ key, value }]
         realmDatabase.on(OPCODES_SYNCED_DATABASE.receiveEntries, async (content, peerID) => {
-            onProgress('Updating entries for', ...content)
+            onProgress('Updating entries for', content)
             for (let entry of content) {
                 await realmDatabase._put(entry.key, entry.value, entry.timeReceived)
                 realmDatabase.emit(NETWORKING_OPCODES.OBJECT.RECEIVE, { uuid: entry.key, data: entry.value })
@@ -196,21 +204,27 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             // we are now up to do
             await setLastSynced()
             if(shouldSync) {
-                resolve()
+                finishSync()
             }
         })
 
         async function getAllKeysAndTimes() {
-            // we sort because diff in getDifferences requires it to be
-            return (await realmDatabase._getAllLocal()).sort().map(({ key, value, timeReceived }) => {
-                return { key, timeReceived }
-            })
+            const map = {}
+            const local = await realmDatabase._getAllLocal()
+            if(local.length) {
+                local.forEach(({ key, value, timeReceived }) => {
+                    map[key] = timeReceived
+                })
+            }
+            return map
         }
 
-        async function getEntriesByKeys(keys) {
+        async function getEntriesByKeys(keys = []) {
             let entries = []
             for (let key of keys) {
-                entries.push(await realmDatabase._get(key))
+                if(typeof key === 'string' && key !== '') {
+                    entries.push(await realmDatabase._get(key))
+                }
             }
             return entries
         }
@@ -219,23 +233,29 @@ export default async (realmDatabase, onProgress, shouldSync) => {
         // listOfKeys = [{ key, timeReceived }, ...]
         async function getDifferences(entries) {
             let neededKeys = []
-            const differences = diff(await getAllKeysAndTimes(), entries)
-            differences.added.forEach((entry) => {
-                neededKeys.push(entry.key)
+            const myEntries = await getAllKeysAndTimes()
+
+            const differences = diff(
+                Object.keys(myEntries).sort(),
+                Object.keys(entries).sort()
+            )
+            
+            differences.added.forEach((key) => {
+                neededKeys.push(key)
             })
-            differences.removed.forEach(async (entry) => {
-                await realmDatabase._removeLocal(entry.key)
+            differences.removed.forEach(async (key) => {
+                await realmDatabase._put(key, '', entries[key])
             })
-            differences.common.forEach(async (entry) => {
-                if (entry.timeReceived > (await realmDatabase._get(key)).timeReceived) {
-                    neededKeys.push(entry.key)
+            differences.common.forEach(async (key) => {
+                if (myEntries[key] > entries[key]) {
+                    neededKeys.push(key)
                 }
             })
             return neededKeys
         }
 
         if(!shouldSync) {
-            resolve()
+            finishSync()
         }
     })
 }

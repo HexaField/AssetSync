@@ -1,7 +1,9 @@
 import RealmDatabase from "./realm/RealmDatabase.js"
 import RealmData, { GLOBAL_REALMS, REALM_TYPES } from './realm/RealmData.js'
-import { isNode } from "@AssetSync/common"
+import { getParams } from "@AssetSync/common"
 
+const verbose = getParams().verbose !== undefined
+const network = getParams().network === 'true'
 export default class RealmHandler {
     constructor(assetSync) {
         this.assetSync = assetSync
@@ -67,7 +69,7 @@ export default class RealmHandler {
         try {
             if(this.validateRealm(value)) {
                 this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
-                this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+                this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value, undefined, network)
             } else {
                 this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
             }
@@ -79,14 +81,14 @@ export default class RealmHandler {
     async initialise() {
         await this.preloadGlobalRealms()
         for(let realm of await this.getPinnedRealms()) {
-            await this.addDatabase(realm)
+            await this.addDatabase(realm, undefined, network)
         }
     }
 
     async preloadGlobalRealms() {
         for(let realm of Object.values(GLOBAL_REALMS)) {
             realm.global = true
-            await this.addDatabase(realm)
+            await this.addDatabase(realm, undefined, network)
         }
     }
 
@@ -128,7 +130,7 @@ export default class RealmHandler {
     }
 
     async addDatabase(realmData, onProgress, forceSync = false) {
-        return this.realms[realmData.id] || await this._createDatabase(realmData, onProgress, forceSync)
+        return this.realms[realmData.id] || await this._createDatabase(realmData, verbose ? ((...messages) => { console.log('Loading Realm ' + realmData.id + ':', ...messages) }) : onProgress, forceSync)
     }
 
     async _createDatabase(realmData, onProgress, forceSync) {

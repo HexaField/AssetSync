@@ -15,7 +15,7 @@ await relay(config)
 
 const testLogger = (num) => {
     return (...args) => {
-        console.log(num, 'TEST: ', ...args)
+        // console.log(num, 'TEST: ', ...args) // uncomment this for debugging logs
     }
 }
 
@@ -82,7 +82,7 @@ test.serial('can dereference', async (t) => {
 test.serial('can put and get across peers', async (t) => {
     return new Promise(async (resolve) => {
         await database0().createObject({ uuid: objData.uuid, data: objData })
-        await delay(100)
+        await delay(200)
         const [obj] = await database1().getObjects()
         resolve(obj)
     }).then((obj) => {
@@ -95,7 +95,7 @@ test.serial('can put and get across peers', async (t) => {
 test.serial('can dereference across peers', async (t) => {
     return new Promise(async (resolve) => {
         await database0().dereferenceObject({ uuid: objData.uuid })
-        await delay(100)
+        await delay(200)
         const objs = await database1().getObjects()
         resolve(objs)
     }).then((objs) => {
@@ -108,8 +108,8 @@ test.serial('can close datastore', async (t) => {
     return new Promise(async (resolve) => {
         await database0().createObject({ uuid: objData.uuid, data: objData })
         await appInstances[0].realms.removeDatabase('Lobby')
-        resolve(database0(), appInstances[0].realms.getDatabase(GLOBAL_REALMS.LOBBY))
-    }).then((result1, result2) => {
+        resolve([database0(), appInstances[0].realms.getDatabase(GLOBAL_REALMS.LOBBY)])
+    }).then(([result1, result2]) => {
         t.is(result1, undefined)
         t.is(result2, undefined)
     })
@@ -117,8 +117,8 @@ test.serial('can close datastore', async (t) => {
 
 test.serial('can reopen datastore', async (t) => {
     return new Promise(async (resolve) => {
-        await delay(100)
-        await appInstances[0].realms.addDatabase(GLOBAL_REALMS.LOBBY, undefined)
+        await delay(200)
+        await appInstances[0].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(0))
         const [obj] = await database0().getObjects()
         resolve(obj)
     }).then((obj) => {
@@ -132,8 +132,9 @@ test.serial('can sync dereferences', async (t) => {
     return new Promise(async (resolve) => {
         await appInstances[1].realms.removeDatabase('Lobby')
         await database0().dereferenceObject({ uuid: objData.uuid })
-        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, undefined, true)
-        await delay(100)
+        await delay(500)
+        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(1), true)
+        await delay(1000)
         const [obj] = await database1().getObjects()
         resolve(obj)
     }).then((obj) => {
@@ -145,8 +146,9 @@ test.serial('can sync new entries', async (t) => {
     return new Promise(async (resolve) => {
         await appInstances[1].realms.removeDatabase('Lobby')
         await database0().createObject({ uuid: objData.uuid, data: objData })
-        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, undefined, true)
-        await delay(100)
+        await delay(500)
+        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(1), true)
+        await delay(1000)
         const [obj] = await database1().getObjects()
         resolve(obj)
     }).then((obj) => {
@@ -160,7 +162,8 @@ test.serial('can sync outdated entries', async (t) => {
     return new Promise(async (resolve) => {
         await appInstances[1].realms.removeDatabase('Lobby')
         await database0().updateObject({ uuid: objData.uuid, data: newObjData })
-        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, undefined, true)
+        await delay(500)
+        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(1), true)
         await delay(500)
         const [obj] = await database1().getObjects()
         resolve(obj)
@@ -168,6 +171,26 @@ test.serial('can sync outdated entries', async (t) => {
         t.not(obj, undefined)
         t.deepEqual(obj.uuid, objData.uuid)
         t.deepEqual(obj.data, newObjData)
+    })
+})
+
+test.serial('should not update already up to date entries', async (t) => {
+    return new Promise(async (resolve) => {
+        
+        const oldEntries = await database1()._getAllLocal()
+        const oldTimestamp = oldEntries[0].timeReceived
+
+        await appInstances[1].realms.removeDatabase('Lobby')
+        await delay(500)
+        await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(1), true)
+        
+        await delay(500)
+        const newEntries = await database1()._getAllLocal()
+        const newTimestamp = newEntries[0].timeReceived
+        
+        resolve([oldTimestamp, newTimestamp])
+    }).then(([oldTimestamp, newTimestamp]) => {
+        t.deepEqual(oldTimestamp, newTimestamp)
     })
 })
 
