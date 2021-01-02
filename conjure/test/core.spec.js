@@ -14,9 +14,17 @@ import { randomString } from '@AssetSync/common/src/randomString.js'
 
 await relay(config)
 
-test.serial('can start backend', async (t) => {
+async function createInstances(num) {
+    const instances = []
+    for(let i = 0; i < num; i++) {
+        instances.push(await app({ assetSync: await assetSync(i > 0 ? instances[0].assetSync.transportPlugin._libp2p : undefined) }))
+    }
+    return instances
+}
 
-    const App = await server(app)
+test.serial('can start backend with worldsync', async (t) => {
+
+    const App = await server(app, process.cwd() + `/test/dbs/database-${randomString(8)}/`)
 
     return new Promise(async (resolve) => {
         resolve(App)
@@ -29,17 +37,14 @@ test.serial('can start backend', async (t) => {
 
 test.serial('can find peers', async (t) => {
 
-    const assetSync1 = await assetSync()
-    const assetSync2 = await assetSync(assetSync1.transportPlugin._libp2p)
-
-    const appInstances = [await app({ assetSync: assetSync1 }), await app({ assetSync: assetSync2 })]
+    const appInstances = await createInstances(2)
     
     return new Promise(async (resolve) => {
         appInstances[0].globalNetwork.on('onPeerJoin', (peerId) => {
             resolve(peerId)
         })
     }).then((results) => {
-        t.is(results, assetSync2.transportPlugin._libp2p.peerId.toB58String())
+        t.is(results, appInstances[1].assetSync.transportPlugin._libp2p.peerId.toB58String())
     })
 })
 
@@ -50,15 +55,12 @@ const mockRealm = new RealmData({
 
 test.serial('can find realm', async (t) => {
 
-    const assetSync1 = await assetSync()
-    const appInstance1 = await app({ assetSync: assetSync1 })
-    const assetSync2 = await assetSync(assetSync1.transportPlugin._libp2p)
-    const appInstance2 = await app({ assetSync: assetSync2 })
-    await appInstance1.realms.createRealm(mockRealm)
+    const appInstances = await createInstances(2)
+    await appInstances[0].realms.createRealm(mockRealm)
     await delay(100)
     
     return new Promise(async (resolve) => {
-        const realmData = await appInstance2.realms.getRealmById(mockRealm.id)
+        const realmData = await appInstances[1].realms.getRealmById(mockRealm.id)
         resolve(realmData)
     }).then((results) => {
         t.deepEqual(results, Object.assign({}, mockRealm))

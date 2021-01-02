@@ -86,9 +86,9 @@ export class DHTPlugin extends PluginBase {
         return customDHT
     }
 
-    removeDHT(protocol) {
+    async removeDHT(protocol) {
         if (!this.dhts[protocol]) return
-        this.dhts[protocol].stop()
+        await this.dhts[protocol].stop()
         delete this.dhts[protocol]
     }
 

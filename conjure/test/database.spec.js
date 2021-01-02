@@ -181,10 +181,8 @@ test.serial('should not update already up to date entries', async (t) => {
         const oldTimestamp = oldEntries[0].timeReceived
 
         await appInstances[1].realms.removeDatabase('Lobby')
-        await delay(500)
         await appInstances[1].realms.addDatabase(GLOBAL_REALMS.LOBBY, testLogger(1), true)
         
-        await delay(500)
         const newEntries = await database1()._getAllLocal()
         const newTimestamp = newEntries[0].timeReceived
         

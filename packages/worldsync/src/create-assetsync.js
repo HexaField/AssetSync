@@ -15,13 +15,13 @@ import libp2p from './create-libp2p/index.js'
 
 // args = { }
 
-export async function startAssetSync() {
+export async function startAssetSync({ repoPath }) {
 
     let assetSync = new AssetSync()
     let networkPlugin, dhtPlugin
     const minPeers = 1
 
-    const libp2pInstance = await libp2p({ repoPath: homedir() + '.conjure-repo' })
+    const libp2pInstance = await libp2p({ repoPath: repoPath || (homedir() + '.conjure-repo') })
     
     const transportPlugin = new Libp2pPlugin({ libp2p: libp2pInstance, minPeersCount: isNode ? 0 : (getParams().network === 'true' ? minPeers : 0) })
     await assetSync.register({ transportPlugin })

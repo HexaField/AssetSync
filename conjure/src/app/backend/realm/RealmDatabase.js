@@ -23,7 +23,7 @@ export default class RealmDatabase extends EventEmitter {
 
     async start(onProgress = () => {}, forceSync) {
 
-        console.log('Opening database for realm', this.realmData.id)
+        onProgress('Opening database for realm', this.realmData.id)
 
         this.network = await this.assetSync.networkPlugin.joinNetwork(this.realmData.id)
         
@@ -74,7 +74,7 @@ export default class RealmDatabase extends EventEmitter {
             await realmBasic(this, onProgress, forceSync)
         }
         
-        console.log('Loaded', (await this._getAllLocal()).length, 'objects from ')
+        onProgress('Loaded', (await this._getAllLocal()).length, 'objects from ')
         // start physics
 
     }

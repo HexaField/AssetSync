@@ -140,7 +140,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
 
         const lastSynced = await getLastSynced()
         if(lastSynced) {
-            console.log('Last synced at', new Date(lastSynced).toLocaleString())
+            onProgress('Last synced at', new Date(lastSynced).toLocaleString())
         } else {
             await putMetadata('lastSynced', String(0))
         }
