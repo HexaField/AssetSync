@@ -19,8 +19,8 @@ Read about AssetSync & Conjure [here](https://medium.com/@joshfield999)
 ## Conjure Progress Goals 2020 Q4
 
 - [x] Migration to AssetSync
-- [ ] Basic realm object system working on DHTs
-- [ ] Video Conferencing
+- [x] Basic realm and object system
+- [x] Video Conferencing
 
 ## Conjure Progress Goals 2021 Q1
 
