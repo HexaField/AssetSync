@@ -4,7 +4,7 @@ import FeatureArtGallery from '../features/FeatureArtGallery'
 import FeatureLobby from '../features/FeatureLobby'
 import { REALM_TYPES, REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../../backend/realm/RealmData'
 import Platform from '../Platform'
-import ObjectManager from './ObjectManager'
+import ObjectManager from '../object/ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 import EventEmitter from 'events'
@@ -191,10 +191,11 @@ export default class Realm extends EventEmitter
         return this.realmData
     }
 
-    update(args) // { delta, input, mouseRaycaster, worldRaycaster, conjure }
+    update(updateArgs) // { delta, input, mouseRaycaster, worldRaycaster, conjure }
     {
         for(let i of this.features)
-            i.update(args)
+            i.update(updateArgs)
+        this.objectManager.update(updateArgs)
     }
 
     getObjectManager()

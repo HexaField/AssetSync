@@ -22,7 +22,8 @@ export default class ScreenElementBase
         this.group = new THREE.Group();
         this.vec3 = new THREE.Vector3();
         this.group.position.set(this.x, this.y, this.z);
-        this.parent.group.add(this.group);
+        if(this.parent.group)
+            this.parent.group.add(this.group);
         
         this.defaultColour = 0x2685ff
         this.defaultColour2 = 0x1E6ACC

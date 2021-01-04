@@ -2,9 +2,11 @@ import * as THREE from 'three'
 import { JoyStick } from 'enable3d'
 import Keybindings from './Keybindings';
 import Pinput from './util/pinput'
+import EventEmitter from 'events'
 
-export default class Input {
+export default class Input extends EventEmitter {
     constructor(conjure) {
+        super()
         this.conjure = conjure
         this.isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)
         this.input = new Pinput();
@@ -12,7 +14,6 @@ export default class Input {
         this.mouseDelta = new THREE.Vector2();
         this.scroll = 0;
         this.scrollVelocity = 0;
-        this.enabled = true;
         this.keybindings = new Keybindings(conjure);
 
         if (this.isMobile) {
@@ -48,26 +49,19 @@ export default class Input {
         return this.touchBindings[key] || false
     }
 
-    setEnabled(enabled) {
-        this.enabled = enabled;
-    }
-
-    isPressed(key, ignoreBinding, ignoreEnabled) {
-        if (!ignoreEnabled) { if (!this.enabled) { return false; } }
+    isPressed(key, ignoreBinding) {
         if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isPressed(ignoreBinding ? key : this.keybindings.getKey(key));
     }
 
-    isReleased(key, ignoreBinding, ignoreEnabled) {
-        if (!ignoreEnabled) { if (!this.enabled) { return false; } }
+    isReleased(key, ignoreBinding) {
         if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isReleased(ignoreBinding ? key : this.keybindings.getKey(key));
     }
 
-    isDown(key, ignoreBinding, ignoreEnabled) {
-        if (!ignoreEnabled) { if (!this.enabled) { return false; } }
+    isDown(key, ignoreBinding) {
         if (this.isMobile)
             return this.getTouchInput(key)
         return this.input.isDown(ignoreBinding ? key : this.keybindings.getKey(key));

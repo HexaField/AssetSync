@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { number } from '../util/number'
+import { CONJURE_MODE } from '../Conjure.js'
 
 export default class AvatarControls
 {  
@@ -18,7 +19,7 @@ export default class AvatarControls
         this.camera = conjure.camera;
         this.user = user;
         this.domElement = domElement;
-        this.enabled = false;
+        this.controlsEnabled = false;
         
         // settings
         this.moveSensitivity = 50.0;
@@ -63,20 +64,15 @@ export default class AvatarControls
         this.onPointerlockChange = this.onPointerlockChange.bind(this);
         this.onPointerlockError = this.onPointerlockError.bind(this);
 		this.onMouseWheel = this.onMouseWheel.bind(this);
-		document.addEventListener('wheel', this.onMouseWheel, false);
-    }
-
-    input({ input })
-    {
-        this.forward = input.isDown('FORWARD')
-        this.left = input.isDown('LEFT')
-        this.backward = input.isDown('BACKWARD')
-        this.right = input.isDown('RIGHT')
+        document.addEventListener('wheel', this.onMouseWheel, false);
         
-        this.sprint = input.isDown('SHIFT', true)
-        this.crouch = input.isDown('CONTROL', true)
-		if(input.isPressed('JUMP'))
-            this.user.jump();
+        this.conjure.on('conjure:mode', (mode) => {
+            if(mode === CONJURE_MODE.EXPLORE) {
+                this.connect()
+            } else {
+                this.disconnect()
+            }
+        })
     }
 
     onMouseMove( event )
@@ -109,14 +105,29 @@ export default class AvatarControls
 
     update({ input, delta })
     {
+        this.forward = input.isDown('FORWARD')
+        this.left = input.isDown('LEFT')
+        this.backward = input.isDown('BACKWARD')
+        this.right = input.isDown('RIGHT')
+        
+        this.sprint = input.isDown('SHIFT', true)
+        this.crouch = input.isDown('CONTROL', true)
+		if(input.isPressed('JUMP'))
+            this.user.jump();
+        
         // if ( !this.enabled || !this.isLocked ) return
         
         this.raycaster.ray.origin.copy(this.camera.position);
         if(!this.user.group.body) return // havent loaded user yet - should fix this
         this.user.group.body.setAngularVelocityY(0)
 
-        if(this.enabled)
+        if(this.controlsEnabled)
         {
+            if(input.isPressed('MOUSELEFT', true) && this.conjure.conjureMode === CONJURE_MODE.EXPLORE) {
+                console.log('left!')
+                this.lock()
+            }
+            
             this.updateCamera(input.mouseDelta.x, input.mouseDelta.y)
 
             // Third Person Rotation
@@ -159,7 +170,7 @@ export default class AvatarControls
         this.velocity.y -= this.velocity.y * this.moveDamp * delta;
         this.velocity.z -= this.velocity.z * this.moveDamp * delta;
 
-        if(this.enabled)
+        if(this.controlsEnabled)
         {
             if(Math.abs(this.velocity.x) < 0.01)
                 this.velocity.x = 0;
@@ -228,7 +239,7 @@ export default class AvatarControls
     
     onPointerlockChange()
     {
-        if(!this.enabled) return;
+        if(!this.controlsEnabled) return;
         if ( document.pointerLockElement === this.domElement )
         {
 			this.lock();
@@ -251,7 +262,7 @@ export default class AvatarControls
         document.addEventListener( 'mousemove', this.onMouseMove, false );
 		document.addEventListener( 'pointerlockchange', this.onPointerlockChange, false );
         document.addEventListener( 'pointerlockerror', this.onPointerlockError, false );
-        this.enabled = true;
+        this.controlsEnabled = true;
         this.lock();
 	}
     
@@ -261,7 +272,7 @@ export default class AvatarControls
 		document.removeEventListener( 'pointerlockchange', this.onPointerlockChange, false );
         document.removeEventListener( 'pointerlockerror', this.onPointerlockError, false );
         this.unlock();
-        this.enabled = false;
+        this.controlsEnabled = false;
     }
     
     dispose()
@@ -305,7 +316,7 @@ export default class AvatarControls
 
 	onMouseWheel(event)
 	{
-		if(!this.enabled) return;
+		if(!this.controlsEnabled) return;
 
 		var delta = 0;
 

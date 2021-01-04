@@ -132,9 +132,9 @@ var TransformControls = function ( camera, domElement ) {
 
 	var eye = new Vector3();
 
-	var positionStart = new Vector3();
-	var quaternionStart = new Quaternion();
-	var scaleStart = new Vector3();
+	var positionStart = []//new Vector3();
+	var quaternionStart = []//new Quaternion();
+	var scaleStart = []//new Vector3();
 
 	// TODO: remove properties unused in plane and gizmo
 
@@ -357,29 +357,29 @@ var TransformControls = function ( camera, domElement ) {
 
 				}
 
-                for(let object of this.objects)
+                for(let i in this.objects)
                 {
                     if ( space === 'local' && this.mode === 'rotate' ) {
 
                         var snap = this.rotationSnap;
 
-                        if ( this.axis === 'X' && snap ) object.rotation.x = Math.round( object.rotation.x / snap ) * snap;
-                        if ( this.axis === 'Y' && snap ) object.rotation.y = Math.round( object.rotation.y / snap ) * snap;
-                        if ( this.axis === 'Z' && snap ) object.rotation.z = Math.round( object.rotation.z / snap ) * snap;
+                        if ( this.axis === 'X' && snap ) this.objects[i].rotation.x = Math.round( this.objects[i].rotation.x / snap ) * snap;
+                        if ( this.axis === 'Y' && snap ) this.objects[i].rotation.y = Math.round( this.objects[i].rotation.y / snap ) * snap;
+                        if ( this.axis === 'Z' && snap ) this.objects[i].rotation.z = Math.round( this.objects[i].rotation.z / snap ) * snap;
 
                     }
                 
                 // global.ITERATE.iterateChildrenWithFunction(this.object, this.updateObjectMatrixWorld)
                 // global.ITERATE.iterateParentsWithFunction(this.object, this.updateObjectMatrixWorld)
                 
-                    object.updateMatrixWorld();
-                    object.parent.updateMatrixWorld();
+                    this.objects[i].updateMatrixWorld();
+                    this.objects[i].parent.updateMatrixWorld();
 
-                    positionStart.copy( object.position );
-                    quaternionStart.copy( object.quaternion );
-                    scaleStart.copy( object.scale );
+                    positionStart[i] = new Vector3().copy(this.objects[i].position);
+                    quaternionStart[i] =  new Quaternion().copy(this.objects[i].quaternion);
+                    scaleStart[i] = new Vector3().copy( this.objects[i].scale );
 
-                    object.matrixWorld.decompose( worldPositionStart, worldQuaternionStart, worldScaleStart );
+                    this.objects[i].matrixWorld.decompose( worldPositionStart, worldQuaternionStart, worldScaleStart );
 
                     pointStart.copy( planeIntersect.point ).sub( worldPositionStart );
                 }
@@ -403,7 +403,7 @@ var TransformControls = function ( camera, domElement ) {
 	this.pointerMove = function ( pointer ) {
         // if(global.conjure.getScreens().mouseOver) return;
 
-        for(let object of this.objects)
+        for(let i in this.objects)
         {
             var axis = this.axis;
             var mode = this.mode;
@@ -420,7 +420,7 @@ var TransformControls = function ( camera, domElement ) {
 
             }
 
-            if ( object === undefined || axis === null || this.dragging === false || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
+            if ( this.objects[i] === undefined || axis === null || this.dragging === false || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
 
             raycaster.setFromCamera( pointer, this.camera );
 
@@ -448,7 +448,7 @@ var TransformControls = function ( camera, domElement ) {
 
                 if ( space === 'local' && axis !== 'XYZ' ) {
 
-                    offset.applyQuaternion( quaternionStart ).divide( parentScale );
+                    offset.applyQuaternion( quaternionStart[i] ).divide( parentScale );
 
                 } else {
 
@@ -456,7 +456,7 @@ var TransformControls = function ( camera, domElement ) {
 
                 }
 
-                object.position.copy( offset ).add( positionStart );
+                this.objects[i].position.copy( offset ).add( positionStart[i] );
 
                 // Apply translation snap
 
@@ -464,59 +464,59 @@ var TransformControls = function ( camera, domElement ) {
 
                     if ( space === 'local' ) {
 
-                        object.position.applyQuaternion( _tempQuaternion.copy( quaternionStart ).invert() );
+                        this.objects[i].position.applyQuaternion( _tempQuaternion.copy( quaternionStart[i] ).invert() );
 
                         if ( axis.search( 'X' ) !== - 1 ) {
 
-                            object.position.x = Math.round( object.position.x / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.x = Math.round( this.objects[i].position.x / this.translationSnap ) * this.translationSnap;
 
                         }
 
                         if ( axis.search( 'Y' ) !== - 1 ) {
 
-                            object.position.y = Math.round( object.position.y / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.y = Math.round( this.objects[i].position.y / this.translationSnap ) * this.translationSnap;
 
                         }
 
                         if ( axis.search( 'Z' ) !== - 1 ) {
 
-                            object.position.z = Math.round( object.position.z / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.z = Math.round( this.objects[i].position.z / this.translationSnap ) * this.translationSnap;
 
                         }
 
-                        object.position.applyQuaternion( quaternionStart );
+                        this.objects[i].position.applyQuaternion( quaternionStart[i] );
 
                     }
 
                     if ( space === 'world' ) {
 
-                        if ( object.parent ) {
+                        if ( this.objects[i].parent ) {
 
-                            object.position.add( _tempVector.setFromMatrixPosition( object.parent.matrixWorld ) );
+                            this.objects[i].position.add( _tempVector.setFromMatrixPosition( this.objects[i].parent.matrixWorld ) );
 
                         }
 
                         if ( axis.search( 'X' ) !== - 1 ) {
 
-                            object.position.x = Math.round( object.position.x / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.x = Math.round( this.objects[i].position.x / this.translationSnap ) * this.translationSnap;
 
                         }
 
                         if ( axis.search( 'Y' ) !== - 1 ) {
 
-                            object.position.y = Math.round( object.position.y / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.y = Math.round( this.objects[i].position.y / this.translationSnap ) * this.translationSnap;
 
                         }
 
                         if ( axis.search( 'Z' ) !== - 1 ) {
 
-                            object.position.z = Math.round( object.position.z / this.translationSnap ) * this.translationSnap;
+                            this.objects[i].position.z = Math.round( this.objects[i].position.z / this.translationSnap ) * this.translationSnap;
 
                         }
 
-                        if ( object.parent ) {
+                        if ( this.objects[i].parent ) {
 
-                            object.position.sub( _tempVector.setFromMatrixPosition( object.parent.matrixWorld ) );
+                            this.objects[i].position.sub( _tempVector.setFromMatrixPosition( this.objects[i].parent.matrixWorld ) );
 
                         }
 
@@ -566,25 +566,25 @@ var TransformControls = function ( camera, domElement ) {
 
                 // Apply scale
 
-                object.scale.copy( scaleStart ).multiply( _tempVector2 );
+                this.objects[i].scale.copy( scaleStart[i] ).multiply( _tempVector2 );
 
                 if ( this.scaleSnap ) {
 
                     if ( axis.search( 'X' ) !== - 1 ) {
 
-                        object.scale.x = Math.round( object.scale.x / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
+                        this.objects[i].scale.x = Math.round( this.objects[i].scale.x / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
 
                     }
 
                     if ( axis.search( 'Y' ) !== - 1 ) {
 
-                        object.scale.y = Math.round( object.scale.y / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
+                        this.objects[i].scale.y = Math.round( this.objects[i].scale.y / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
 
                     }
 
                     if ( axis.search( 'Z' ) !== - 1 ) {
 
-                        object.scale.z = Math.round( object.scale.z / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
+                        this.objects[i].scale.z = Math.round( this.objects[i].scale.z / this.scaleSnap ) * this.scaleSnap || this.scaleSnap;
 
                     }
 
@@ -636,14 +636,14 @@ var TransformControls = function ( camera, domElement ) {
                 // Apply rotate
                 if ( space === 'local' && axis !== 'E' && axis !== 'XYZE' ) {
 
-                    object.quaternion.copy( quaternionStart );
-                    object.quaternion.multiply( _tempQuaternion.setFromAxisAngle( rotationAxis, rotationAngle ) ).normalize();
+                    this.objects[i].quaternion.copy( quaternionStart[i] );
+                    this.objects[i].quaternion.multiply( _tempQuaternion.setFromAxisAngle( rotationAxis, rotationAngle ) ).normalize();
 
                 } else {
 
                     rotationAxis.applyQuaternion( parentQuaternionInv );
-                    object.quaternion.copy( _tempQuaternion.setFromAxisAngle( rotationAxis, rotationAngle ) );
-                    object.quaternion.multiply( quaternionStart ).normalize();
+                    this.objects[i].quaternion.copy( _tempQuaternion.setFromAxisAngle( rotationAxis, rotationAngle ) );
+                    this.objects[i].quaternion.multiply( quaternionStart[i] ).normalize();
 
                 }
 

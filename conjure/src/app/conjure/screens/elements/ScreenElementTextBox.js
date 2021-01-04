@@ -87,8 +87,7 @@ export default class ScreenElementTextBox extends ScreenElementBase
     edit(flag)
     {
         if(this.focused === flag) return
-        this.focused = flag;
-        this.screen.screenManager.conjure.input.setEnabled(!flag);
+        this.focused = flag
         this.textObj.actionFocus(flag)
     }
 

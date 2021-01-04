@@ -40,10 +40,12 @@ export default class ScreenManager
         // TODO: rename this to explore mode HUD and add conjure mode HUD
         this.hudGlobal = new HUDGlobal(this, { name:'Global', width: 2.75, height:1 });
         this.hudExplore = new HUDExploreMode(this, { name:'Explore', width: 2.75, height:1 });
-        this.hudConjure = new HUDConjureMode(this, { name:'Conjure', width: 2.75, height:1 });
+        this.hudBuild = new HUDConjureMode(this, { name:'Conjure', width: 2.75, height:1 });
         this.hudGlobal.showScreen(false)
         this.hudExplore.showScreen(false)
-        this.hudConjure.showScreen(false)
+        this.hudBuild.showScreen(false)
+
+        this.lastHudOpen = this.hudGlobal
 
         this.screens = [];
         
@@ -72,9 +74,9 @@ export default class ScreenManager
 
         this.conjure.on('conjure:mode', (mode) => {
             switch(mode) { 
-                default: case CONJURE_MODE.WAITING: break;
+                default: break;
                 case CONJURE_MODE.LOADING: this.hideHud(); break;
-                case CONJURE_MODE.EXPLORE: case CONJURE_MODE.CONJURE: this.showHud(); break;
+                case CONJURE_MODE.EXPLORE: case CONJURE_MODE.BUILD: this.showHud(); break;
             }
         })
     }
@@ -108,13 +110,13 @@ export default class ScreenManager
 
     isHudOpen()
     {
-        return this.hudExplore.active || this.hudConjure.active
+        return this.hudExplore.active || this.hudBuild.active
     }
 
     hideHud()
     {
         this.hudExplore.showScreen(false)
-        this.hudConjure.showScreen(false)
+        this.hudBuild.showScreen(false)
     }
 
     showHud()
@@ -122,19 +124,21 @@ export default class ScreenManager
         if(this.conjure.conjureMode === CONJURE_MODE.LOADING)
         {
             this.hudExplore.showScreen(false)
-            this.hudConjure.showScreen(false)
+            this.hudBuild.showScreen(false)
             return
         }
         this.hideAllScreens()
         if(this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
         {
             this.hudExplore.showScreen(true)
-            this.hudConjure.showScreen(false)
+            this.hudBuild.showScreen(false)
+            this.lastHudOpen = this.hudGlobal
         }
-        if(this.conjure.conjureMode === CONJURE_MODE.CONJURE)
+        if(this.conjure.conjureMode === CONJURE_MODE.BUILD)
         {
             this.hudExplore.showScreen(false)
-            this.hudConjure.showScreen(true)
+            this.hudBuild.showScreen(true)
+            this.lastHudOpen = this.hudBuild
         }   
     }
 
@@ -143,15 +147,16 @@ export default class ScreenManager
         if(!screen) return;
         if(typeof screen === 'string')
         {
-            screen = this.getScreenByName(screen);
-            if(!screen) return;
+            screen = this.getScreenByName(screen)
+            if(!screen) return
         }
-        if(this.getScreenOpen(screen)) return;
+        if(this.getScreenOpen(screen)) return
         if(screen.pauses)
         {
-            this.closeAllScreens()
-            this.controlsEnabled = false
-            this.hideHud();
+            for(let screen of this.openScreens)
+                screen.showScreen(false)
+            this.openScreens = []
+            this.hideHud()
         }
         if(screen.showScreen(true, args) === 'cancel') // todo: change this to be return true/false instead of cancel
         {
@@ -160,38 +165,34 @@ export default class ScreenManager
         else
         {
             screen.group.position.z = 0.1 * this.openScreens.length
-            this.openScreens.push(screen);
+            this.conjure.setConjureMode(CONJURE_MODE.SCREEN)
+            this.openScreens.push(screen)   
         }
-    }
-
-    closeAllScreens()
-    {
-        for(let screen of this.openScreens)
-            screen.showScreen(false);
-        this.openScreens = [];
     }
 
     hideAllScreens()
     {
-        this.controlsEnabled = true
-        if(this.openScreens.length === 0) return;
+        // this.controlsEnabled = true
+        if(this.openScreens.length === 0) return
         for(let screen of this.openScreens)
-            screen.showScreen(false);
-        this.openScreens = [];
-        this.mouseOver = false;
-        this.showHud();
+            screen.showScreen(false)
+        this.openScreens = []
+        this.mouseOver = false
+        this.showHud()
+        this.conjure.setConjureMode(this.lastHudOpen === this.hudBuild ? CONJURE_MODE.BUILD : CONJURE_MODE.EXPLORE)
     }
 
     hideLastOpenScreen()
     {
-        if(this.openScreens.length === 0) return;
-        this.openScreens[this.openScreens.length - 1].showScreen(false);
-        this.openScreens.splice(this.openScreens.length - 1, 1);
+        if(this.openScreens.length === 0) return
+        this.openScreens[this.openScreens.length - 1].showScreen(false)
+        this.openScreens.splice(this.openScreens.length - 1, 1)
         if(this.openScreens.length === 0)
         {
             this.mouseOver = false;
-            this.controlsEnabled = true
-            this.showHud();
+            // this.controlsEnabled = true
+            this.showHud()
+            this.conjure.setConjureMode(this.lastHudOpen === this.hudBuild ? CONJURE_MODE.BUILD : CONJURE_MODE.EXPLORE)
         }
     }
     
@@ -246,8 +247,8 @@ export default class ScreenManager
         {
             if(this.conjure.conjureMode === CONJURE_MODE.EXPLORE)
                 this.hudExplore.update(updateArgs);
-            if(this.conjure.conjureMode === CONJURE_MODE.CONJURE)
-                this.hudConjure.update(updateArgs);
+            if(this.conjure.conjureMode === CONJURE_MODE.BUILD)
+                this.hudBuild.update(updateArgs);
         }
         this.hudGlobal.update(updateArgs);
     }
@@ -257,7 +258,7 @@ export default class ScreenManager
         for(let screen of this.screens)
             screen.resizeScreen(ratio)
         this.hudExplore.resizeScreen(ratio)
-        this.hudConjure.resizeScreen(ratio)
+        this.hudBuild.resizeScreen(ratio)
         this.hudGlobal.resizeScreen(ratio)
     }
 }

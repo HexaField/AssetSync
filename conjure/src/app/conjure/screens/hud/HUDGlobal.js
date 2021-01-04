@@ -70,13 +70,5 @@ export default class HUDGlobal extends ScreenBase
         super.update(updateArgs)
         for(let element of this.hudElements)
             element.update(updateArgs)
-        
-        if(this.conjure.getControls().getPointerLockState() !== this.autoHidden)
-        {
-            this.autoHidden = this.conjure.getControls().getPointerLockState()
-            for(let element of this.hudElements)
-                if(element.autoHidden)
-                    element.autoHidden(this.autoHidden)
-        }
     }
 }

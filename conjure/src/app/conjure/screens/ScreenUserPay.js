@@ -99,7 +99,7 @@ export default class ScreenUserPay extends ScreenBase
         // let amount = this.amountBox.getValue()
         // if(isNaN(amount) || this.textMyPayidAddress.getValue() === this.noMyPayid || this.textOtherPayidAddress.getValue() === this.noOtherPayid) return
         // this.payidservice.sendPayment(amount, this.textMyPayidAddress.getValue(), this.textOtherPayidAddress.getValue())
-        this.screenManager.closeAllScreens()
+        this.screenManager.hideAllScreens()
         if(this.onPayCallback)
             this.onPayCallback()
     }

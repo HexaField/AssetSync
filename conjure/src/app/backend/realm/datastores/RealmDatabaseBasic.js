@@ -21,6 +21,28 @@ const OPCODES_SYNCED_DATABASE = {
 
 export default async (realmDatabase, onProgress, shouldSync) => {
     return new Promise(async (resolve) => {
+
+        let resolved = false
+        
+        const startSync = async (peerID) => {
+            onProgress('Syncing from ' + peerID + '. Requesting keys...')
+            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestKeys, '')
+        }
+
+        const finishSync = () => {
+            if(!resolved) {
+                resolved = true
+                resolve()
+            }
+        }
+
+        realmDatabase.network.on('onPeerJoin', async (peerID) => {
+            if(resolved || (shouldSync && !resolved))
+                startSync(peerID)
+        })
+        
+        realmDatabase.network.on('onPeerLeave', (peerID) => { })
+
         let datastoreObjects
         if(realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
             datastoreObjects = await realmDatabase.assetSync.transportPlugin._libp2p.repo.openDatastore(realmDatabase.dhtProtocol + '/objects')
@@ -128,26 +150,6 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 throw false
             }
         }
-
-        const startSync = async (peerID) => {
-            onProgress('Syncing from ' + peerID + '. Requesting keys...')
-            realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.requestKeys, '')
-        }
-        let resolved = false
-
-        const finishSync = () => {
-            if(!resolved) {
-                resolved = true
-                resolve()
-            }
-        }
-
-        realmDatabase.network.on('onPeerJoin', async (peerID) => {
-            if(resolved || (shouldSync && !resolved))
-                startSync(peerID)
-        })
-        
-        realmDatabase.network.on('onPeerLeave', (peerID) => { })
 
         // content = lastUpdated
         realmDatabase.on(OPCODES_SYNCED_DATABASE.requestKeys, async (content, peerID) => {

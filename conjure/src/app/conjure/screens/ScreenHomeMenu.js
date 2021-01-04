@@ -2,6 +2,7 @@ import ScreenBase from './ScreenBase';
 import * as THREE from 'three'
 import ScreenElementText from './elements/ScreenElementText'
 import { number } from '../util/number'
+import { CONJURE_MODE } from '../Conjure';
 
 export default class ScreenHomeMenu extends ScreenBase
 {  
@@ -14,7 +15,7 @@ export default class ScreenHomeMenu extends ScreenBase
         this.labels = []
         this.expandScale = 1.25;
         this.hoverNumber = 0;
-        this.segmentItems = ['Profile', 'Settings', 'Change Mode', 'Realms']
+        this.segmentItems = ['Profile', 'Settings', 'Build', 'Explore', 'Realms']
 
         this.createRing()
     }
@@ -25,8 +26,8 @@ export default class ScreenHomeMenu extends ScreenBase
 
         for(let i = 0; i < this.segmentItems.length; i++)
         {
-            let segMesh = new THREE.Mesh(new THREE.RingBufferGeometry(0.25, 0.5, 8, 1, 0, Math.PI * 2 / this.segmentItems.length), new THREE.MeshBasicMaterial({ color: this.defaultColour3, side: THREE.DoubleSide, transparent: true, opacity: this.defaultOpacity}))
-            let segTarget = new THREE.Mesh(new THREE.RingBufferGeometry(0.25, 0.5 * this.expandScale, 8, 1, 0, Math.PI * 2 / this.segmentItems.length), material)
+            let segMesh = new THREE.Mesh(new THREE.RingBufferGeometry(0.25, 0.5, 8, 1, 0, 0.9 * Math.PI * 2 / this.segmentItems.length), new THREE.MeshBasicMaterial({ color: this.defaultColour3, side: THREE.DoubleSide, transparent: true, opacity: this.defaultOpacity}))
+            let segTarget = new THREE.Mesh(new THREE.RingBufferGeometry(0.25, 0.5 * this.expandScale, 8, 1, 0, 0.9 * Math.PI * 2 / this.segmentItems.length), material)
             segMesh.rotateZ(i * Math.PI * 2 / this.segmentItems.length)
             segTarget.rotateZ(i * Math.PI * 2 / this.segmentItems.length)
             segTarget.visible = false
@@ -52,8 +53,9 @@ export default class ScreenHomeMenu extends ScreenBase
         {
             case 0: this.screenManager.showScreen(this.screenManager.screenProfile); break;
             case 1: this.screenManager.showScreen(this.screenManager.screenSettings); break;
-            case 2: this.screenManager.conjure.toggleConjureMode(); break;
-            case 3: this.screenManager.showScreen(this.screenManager.screenRealms); break;
+            case 2: this.screenManager.conjure.setConjureMode(CONJURE_MODE.BUILD); break;
+            case 3: this.screenManager.conjure.setConjureMode(CONJURE_MODE.EXPLORE); break;
+            case 4: this.screenManager.showScreen(this.screenManager.screenRealms); break;
             default: break;
         }
     }

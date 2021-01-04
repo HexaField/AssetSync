@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 // import Events from './Events'
-import { number } from '../util/number'
+import { number } from '../../util/number'
 
 export default class FlyControls
 {  

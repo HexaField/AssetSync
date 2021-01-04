@@ -40,7 +40,7 @@ export default class ScreenObjectsHierarchy extends ScreenBase
 
     onDestroyObject()
     {
-        this.screenManager.conjure.getControls().objectControls.detachAll({isDeleting: true});
+        this.screenManager.conjure.world.objectControls.detachAll({isDeleting: true});
     }
 
     updateObjects()
@@ -59,9 +59,9 @@ export default class ScreenObjectsHierarchy extends ScreenBase
     itemSelected(selected, item)
     {
         if(selected)
-            this.screenManager.conjure.getControls().objectControls.attach(item, { ignoreScreenUpdate: true, detachOthers: !this.screen.screenManager.conjure.input.isDown('SHIFT', true)})
+            this.screenManager.conjure.world.objectControls.attach(item, { ignoreScreenUpdate: true, detachOthers: !this.screen.screenManager.conjure.input.isDown('SHIFT', true)})
         else
-            this.screenManager.conjure.getControls().objectControls.detach(item, { ignoreScreenUpdate: true })
+            this.screenManager.conjure.world.objectControls.detach(item, { ignoreScreenUpdate: true })
     }
     
     itemHover(hover, item)

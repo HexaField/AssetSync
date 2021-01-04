@@ -1,8 +1,11 @@
 import * as THREE from 'three'
 import { NETWORKING_OPCODES } from '../../backend/Constants.js'
 import Realm from './realm/Realm.js'
-import User from '../user/User.js'
-import UserRemote from '../user/UserRemote.js'
+import User from './User.js'
+import UserRemote from './UserRemote.js'
+import AvatarControls from './AvatarControls'
+import FlyControls from '../world/object/FlyControls'
+import ObjectControls from '../world/object/ObjectControls'
 import { CONJURE_MODE } from '../Conjure.js'
 import { INTERACT_TYPES } from '../screens/hud/HUDInteract.js'
 import RealmData, { REALM_WORLD_GENERATORS, REALM_WHITELIST, GLOBAL_REALMS, REALM_TYPES } from '../../backend/realm/RealmData.js'
@@ -18,22 +21,27 @@ export default class World extends EventEmitter {
         this.group = new THREE.Group()
         this.scene.add(this.group)
 
-        this.user = new User(conjure);
-        this.remoteUsers = {};
+        this.user = new User(conjure)
+        this.avatarControls = new AvatarControls(conjure, this.user, this.conjure.canvas)
+        
+        // this.flyControls = new FlyControls(this.camera, this.domElement);
+        this.objectControls = new ObjectControls(this);
 
-        this.lastUserUpdate = {};
+        this.remoteUsers = {}
 
-        this.savePeriod = 5; // save every 5 seconds
-        this.updatesPerSecond = 60; // update peers every 1/xth of a second 
-        this.updateCount = 0;
-        this.updateCountMax = 60 / this.updatesPerSecond;
+        this.lastUserUpdate = {}
+
+        this.savePeriod = 5 // save every 5 seconds
+        this.updatesPerSecond = 60 // update peers every 1/xth of a second 
+        this.updateCount = 0
+        this.updateCountMax = 60 / this.updatesPerSecond
 
         this.interactMaxDistance = 4
 
-        this.deltaThreshold = 0.1;
+        this.deltaThreshold = 0.1
 
-        this.vec3 = new THREE.Vector3();
-        this.quat = new THREE.Quaternion();
+        this.vec3 = new THREE.Vector3()
+        this.quat = new THREE.Quaternion()
 
         this.globalRealms = []
         this.spawnLocation = new THREE.Vector3(0, 2, 0)
@@ -193,7 +201,9 @@ export default class World extends EventEmitter {
     // { delta, input, mouseRaycaster, worldRaycaster, conjure }
 
     update(updateArgs) {
-        this.user.update(updateArgs);
+        
+        this.avatarControls.update(updateArgs)
+        this.user.update(updateArgs)
         if (this.realm)
             this.realm.update(updateArgs)
 
@@ -213,7 +223,18 @@ export default class World extends EventEmitter {
                     }
                 }
         }
+        if (this.conjure.conjureMode === CONJURE_MODE.BUILD || (this.conjure.conjureMode === CONJURE_MODE.SCREEN)) {
+            this.objectControls.update(updateArgs)
+        }
         if (this.conjure.conjureMode === CONJURE_MODE.EXPLORE) {
+
+            if(updateArgs.input.isPressed('l', true))
+            {
+                if(this.conjure.physics.debugDrawer.enabled)
+                    this.conjure.physics.debug.disable()
+                else
+                    this.conjure.physics.debug.enable()
+            }
             // TODO: this uses the old audio manager to find audio sources, should add a worker-side list of media elements and use that instead
             // let intersections = this.conjure.worldRaycaster.intersectObjects(this.conjure.getAudioManager().getSources(), true);
             // if(intersections.length > 0 && intersections[0].distance < interactDistance)

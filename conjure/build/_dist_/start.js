@@ -1,1 +1,0 @@
-import{isWebWorker as r}from"../web_modules/@AssetSync/common.js";import{server as s}from"../web_modules/@AssetSync/WorldSync.js";r&&t();async function t(){console.log("Starting server...");const{default:o}=await import("./app/index.js");s(o)}export async function runApp(o){console.log("Starting server...");const{default:e}=await import("./app/index.js");s(e,o)}

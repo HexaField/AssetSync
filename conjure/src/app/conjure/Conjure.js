@@ -5,9 +5,9 @@ import { getParams } from '@AssetSync/common'
 
 export const CONJURE_MODE = {
     LOADING: 'Loading',
-    WAITING: 'Waiting', // this is for once the world is loaded but waiting on user input (eg passcode)
     EXPLORE: 'Explore',
-    CONJURE: 'Conjure',
+    BUILD: 'Build',
+    SCREEN: 'Screen'
 }
 
 export async function startConjure(data)
@@ -63,7 +63,6 @@ class Conjure extends EventEmitter
     
     getWorld() { return this.world }
     getScreens() { return this.screenManager }
-    getControls() { return this.controlManager }
     getFonts() { return this.fonts }
     getFont(font) { return this.getFonts().getFont(font) }
     getDefaultFont() { return this.fonts.getDefault() }
@@ -76,7 +75,7 @@ class Conjure extends EventEmitter
     {
         this.clock = new THREE.Clock()
         this.loadTimer =  Date.now()
-        this.conjureMode = CONJURE_MODE.LOADING
+        this.setConjureMode(CONJURE_MODE.LOADING)
 
         const { default: Fonts } = await import('./screens/text/Fonts.js')
         this.fonts = new Fonts(this)
@@ -219,16 +218,25 @@ class Conjure extends EventEmitter
 
         await this.assetManager.createDefaultAssets(); // we want to do this now as some screens may use default assets or grab references in initialisation
         
-        const { default: Profile } = await import('./user/Profile.js')
+        const { default: Profile } = await import('./profile/Profile.js')
         this.profile = new Profile(this)
 
         const { NetworkingSchemas } = await import ('./world/realm/NetworkingSchemas')
         this.networkingSchemas = new NetworkingSchemas()
 
+        this.input.addKey('FOCUS', 'f');
+        this.input.addKey('EDIT_CONTROLS', '1');
+        this.input.addKey('FLY_CONTROLS', '2');
+        this.input.addKey('AVATAR_CONTROLS', '3');
+        this.input.addKey('FORWARD', 'w'); 
+        this.input.addKey('BACKWARD', 's');
+        this.input.addKey('LEFT', 'a');
+        this.input.addKey('RIGHT', 'd');
+        this.input.addKey('JUMP', 'SPACEBAR');
         const { default: World } = await import('./world/World.js')
         this.world = new World(this)
-        const { default: ControlManager } = await import('./controls/ControlManager.js')
-        this.controlManager = new ControlManager(this)
+        // const { default: ControlManager } = await import('./controls/ControlManager.js')
+        // this.controlManager = new ControlManager(this)
         const { default: ScreenManager } = await import('./screens/ScreenManager.js')
         this.screenManager = new ScreenManager(this)
 
@@ -253,9 +261,6 @@ class Conjure extends EventEmitter
         await this.profile.loadFromDatabase()
         await this.profile.getServiceManager().initialiseServices()
         await this.world.preloadRealms()
-        
-        // join last loaded realm or get one from the url
-        this.setConjureMode(CONJURE_MODE.WAITING)
 
         this.world.loadDefault()
         window.CONSOLE.showNotification('Press (R) to reset if your avatar gets stuck\nPress escape to reveal the mouse and access settings.', 3)
@@ -267,17 +272,13 @@ class Conjure extends EventEmitter
         this.getGlobalHUD().addWatchItem('Peers Online', this.assetSync.transportPlugin.peerInfo, 'peersCount')
     }
 
-    toggleConjureMode()
-    {
-        if(this.conjureMode === CONJURE_MODE.LOADING) return
-        
-        this.setConjureMode(this.conjureMode === CONJURE_MODE.EXPLORE ? CONJURE_MODE.CONJURE : CONJURE_MODE.EXPLORE)
-    }
-
     setConjureMode(mode)
     {
-        if(this.conjureMode === mode) 
+        if(this.conjureMode === mode)  {
             return
+        }
+
+        this.lastConjureMode = this.conjureMode
         this.conjureMode = mode
         this.emit('conjure:mode', mode)
     }
@@ -295,11 +296,8 @@ class Conjure extends EventEmitter
         {
             this.updateConjure(parseFloat(time.toFixed(3)), parseInt(delta.toString()))
 
-            if(this.conjureMode !== CONJURE_MODE.WAITING)
-            {
-                this.physics.update(delta)
-                this.physics.updateDebugger()
-            }
+            this.physics.update(delta)
+            this.physics.updateDebugger()
             
             this.animationMixers.update(delta)
             // this.renderer.render(this.scene, this.camera)
@@ -315,14 +313,6 @@ class Conjure extends EventEmitter
         
         this.input.update()
 
-        if(this.input.isPressed('l', true))
-        {
-            if(this.physics.debugDrawer.enabled)
-                this.physics.debug.disable()
-            else
-                this.physics.debug.enable()
-        }
-
         this.mouseRaycaster.setFromCamera(this.input.mouse, this.camera)
         this.worldRaycaster.setFromCamera(this.vec2, this.camera)
     
@@ -333,12 +323,11 @@ class Conjure extends EventEmitter
             worldRaycaster: this.worldRaycaster,
             conjure: this,
         }
-        this.getControls().update(args)
 
+        this.getWorld().update(args)
         this.cameraScreenAttach.position.copy(this.cameraFollow.getWorldPosition(this.vec3))
         this.cameraScreenAttach.quaternion.copy(this.cameraFollow.getWorldQuaternion(this.quat))
 
-        this.getWorld().update(args)
         this.getScreens().update(args)
     }
 

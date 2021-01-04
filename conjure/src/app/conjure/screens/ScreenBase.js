@@ -191,10 +191,10 @@ export default class ScreenBase
         }
         else
         {
-            if(updateArgs.input.isPressed('k', true, true))
-            {
-                this.debugLines.visible = !this.debugLines.visible;
-            }
+            // if(updateArgs.input.isPressed('k', true, true))
+            // {
+            //     this.debugLines.visible = !this.debugLines.visible;
+            // }
             
             for(let i = 0; i < this.elements.length; i++)
                 this.elements[i].update(updateArgs);
