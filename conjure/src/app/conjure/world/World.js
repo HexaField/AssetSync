@@ -265,7 +265,7 @@ export default class World extends EventEmitter {
     }
 
     getWorldUpdates() {
-        let deltaUpdate = true;
+        // let deltaUpdate = true;
         // this.updateCount++;
         // if (this.updateCount > this.savePeriod * 60) {
         //     this.updateCount = 0;
@@ -299,10 +299,10 @@ export default class World extends EventEmitter {
                 rotation,
                 velocity
             }
-            if (deltaUpdate) {// || !_.isEqual(this.lastUserUpdate, payload)) {
+            // if (deltaUpdate) {// || !_.isEqual(this.lastUserUpdate, payload)) {
                 this.sendData(NETWORKING_OPCODES.USER.MOVE, payload);
                 // this.lastUserUpdate = payload;
-            }
+            // }
         // }
     }
 

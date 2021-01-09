@@ -124,6 +124,7 @@ export default class ObjectManager {
         this.scene.add(object);
         this.conjure.world.objectControls.addTransformObject(object, attach);
         this.conjure.getScreens().screenObjectsHierarchy.updateObjects();
+        console.log(object)
     }
     // find a group in this.objects that contains 'obj'
     getTopGroupObject(obj) {
@@ -166,9 +167,9 @@ export default class ObjectManager {
         this.conjure.renderer.renderLists.dispose();
     }
 
-    destroyObjectByHash(hash) {
+    destroyObjectByUUID(uuid) {
         for (let object of this.objects)
-            if (object.userData.hash === hash)
+            if (object.uuid === uuid)
                 this.destroyObject(object)
     }
 

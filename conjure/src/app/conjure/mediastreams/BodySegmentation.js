@@ -3,8 +3,8 @@ export default class BodySegmentation {
 
     async load() {
         this.net = await bodyPix.load({
-            architecture: 'ResNet50',
-            outputStride: 16,
+            architecture: 'MobileNetV1',
+            outputStride: 8,
             // multiplier: 1,
             quantBytes: 4
         })

@@ -8,6 +8,8 @@ import { isNode } from '@AssetSync/common'
 export default class RealmDatabase extends EventEmitter {
     constructor(realmData, assetSync, dhtProtocol) {
         super()
+
+        this.eventHooks = new EventEmitter()
         this.realmData = realmData
         this.assetSync = assetSync
         this.dhtProtocol = dhtProtocol + this.realmData.id
@@ -28,6 +30,7 @@ export default class RealmDatabase extends EventEmitter {
         this.network = await this.assetSync.networkPlugin.joinNetwork(this.realmData.id)
         
         this.network.on('message', (message) => {
+            this.eventHooks.emit('message', message)
             try {
                 // if(typeof message.data !== 'string') return
                 const { opcode, content } = JSON.parse(message.data)
@@ -36,6 +39,8 @@ export default class RealmDatabase extends EventEmitter {
                 console.log('hmm bad message', err, message)
             }
         })
+        this.network.on('onPeerJoin', (peerID) => { this.eventHooks.emit('onPeerJoin', peerID) })
+        this.network.on('onPeerLeave', (peerID) => { this.eventHooks.emit('onPeerLeave', peerID) })
    
         this.on(NETWORKING_OPCODES.OBJECT.CREATE, (content, peerID) => {
             const { uuid, data } = content
@@ -81,6 +86,7 @@ export default class RealmDatabase extends EventEmitter {
 
     async stop() {
         // kill physics
+        this.eventHooks.removeAllListeners()
         await this.network.leave()
         await this._stopDatastores()
     }
@@ -164,7 +170,7 @@ export default class RealmDatabase extends EventEmitter {
         // console.log('dereferenceObject', uuid, data)
         try {
             await this._put(uuid, '')
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY,  { uuid })
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY, { uuid })
             return true
         } catch (error) {
             console.log(error)

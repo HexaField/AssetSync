@@ -1,9 +1,5 @@
 import EventEmitter from "events"
 
-const BASE_OPTIONS = {
-    enableLogging: true
-}
-
 export class PluginBase extends EventEmitter {
 
     constructor(options = {}) {
@@ -11,7 +7,7 @@ export class PluginBase extends EventEmitter {
 
         this._pluginName = 'Unnamed Plugin - ' + Date.now()
         this._running = false
-        this._options = Object.assign({}, BASE_OPTIONS, options)
+        this._options = options
     }
 
     register(assetSync) {
@@ -19,17 +15,18 @@ export class PluginBase extends EventEmitter {
     }
 
     log(...message) {
-        if (this._options.enableLogging)
-            console.log(new Date().toTimeString().substring(0, 8) + ": " + this.getName() + ":", ...message)
+        if (this._assetSync._options.enableLogging)
+            this._assetSync.log(this.getName() + ':', ...message)
     }
 
     warn(...message) {
-        if (this._options.enableLogging)
-            console.warn(new Date().toTimeString().substring(0, 8) + ": " + this.getName() + ":", ...message)
+        if (this._assetSync._options.enableLogging)
+            this._assetSync.warn(this.getName() + ':', ...message)
     }
 
     error(...message) {
-        console.error(new Date().toTimeString().substring(0, 8) + ": " + this.getName() + ":", ...message)
+        if (this._assetSync._options.enableLogging)
+            this._assetSync.error(this.getName() + ':', ...message)
     }
 
     getName() {

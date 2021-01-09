@@ -176,12 +176,14 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveEntries, await getEntriesByKeys(content))
         })
 
-        // content = [...{ key, value }]
+        // content = [...{ key, value, timeReceived }]
         realmDatabase.on(OPCODES_SYNCED_DATABASE.receiveEntries, async (content, peerID) => {
             onProgress('Updating entries for', content)
             for (let entry of content) {
-                await realmDatabase._put(entry.key, entry.value, entry.timeReceived)
-                realmDatabase.emit(NETWORKING_OPCODES.OBJECT.RECEIVE, { uuid: entry.key, data: entry.value })
+                if(entry) { 
+                    await realmDatabase._put(entry.key, entry.value, entry.timeReceived)
+                    realmDatabase.emit(NETWORKING_OPCODES.OBJECT.RECEIVE, { uuid: entry.key, data: entry.value })
+                }
             }
 
             // we are now up to do
@@ -205,7 +207,13 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             let entries = []
             for (let key of keys) {
                 if(typeof key === 'string' && key !== '') {
-                    entries.push(await realmDatabase._get(key))
+                    const entry = await realmDatabase._get(key)
+                    if(entry) {
+                        entries.push(entry)
+                    } else {
+                        console.log('empty entry', key, entry)
+                    }
+
                 }
             }
             return entries

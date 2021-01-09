@@ -2,10 +2,15 @@ export { Libp2pPlugin } from './plugins/libp2pTransport/index.js'
 export { NetworkPlugin } from './plugins/network/index.js'
 export { DHTPlugin } from './plugins/dht/index.js'
 
+const BASE_OPTIONS = {
+    enableLogging: true
+}
+
 export default class AssetSync {
 
-    constructor() {
+    constructor(options = {}) {
         this._plugins = {}
+        this._options = Object.assign({}, BASE_OPTIONS, options)
     }
 
     // PRE-INIT & UTIL
@@ -26,6 +31,21 @@ export default class AssetSync {
         return Object.values(this._plugins)
     }
 
+    log(...message) {
+        if (this._options.enableLogging)
+            console.log(new Date().toTimeString().substring(0, 8) + ":", ...message)
+    }
+
+    warn(...message) {
+        if (this._options.enableLogging)
+            console.warn(new Date().toTimeString().substring(0, 8) + ":", ...message)
+    }
+
+    error(...message) {
+        if (this._options.enableLogging)
+            console.error(new Date().toTimeString().substring(0, 8) + ":", ...message)
+    }
+
     /* Unused for now
 
     async cleanupPlugins() {
@@ -39,16 +59,16 @@ export default class AssetSync {
     async initialise() {
         await this._initialisePlugins()
 
-        console.log('=-=-=\nSuccessfully loaded AssetSync!\n=-=-=')
+        this.log('Successfully loaded AssetSync!')
     }
 
     async _initialisePlugins() {
         for (let plugin of this.getPlugins()) {
             try {
                 await plugin.start()
-                console.log('Successfully loaded plugin ' + plugin.getName())
+                this.log('Successfully loaded plugin ' + plugin.getName())
             } catch(error) {
-                console.error('Failed to load plugin ' + plugin.getName() + ' with error ' + error)
+                this.error('Failed to load plugin ' + plugin.getName() + ' with error ' + error)
             }
         }
     }

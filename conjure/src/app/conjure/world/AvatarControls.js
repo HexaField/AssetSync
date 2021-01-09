@@ -124,7 +124,6 @@ export default class AvatarControls
         if(this.controlsEnabled)
         {
             if(input.isPressed('MOUSELEFT', true) && this.conjure.conjureMode === CONJURE_MODE.EXPLORE) {
-                console.log('left!')
                 this.lock()
             }
             

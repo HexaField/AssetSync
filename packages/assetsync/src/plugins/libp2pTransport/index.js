@@ -20,6 +20,7 @@ export class Libp2pPlugin extends PluginBase {
         this.log('Started libp2p with ID', this._libp2p.peerId.toB58String())
 
         this._peerID = this._libp2p.peerId.toB58String()
+        this._assetSync.peerID = this._peerID
 
         this.peerInfo = {}
         this.peerInfo.peersCount = 0;

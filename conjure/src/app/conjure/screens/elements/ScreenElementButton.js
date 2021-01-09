@@ -17,7 +17,7 @@ export default class ScreenElementButton extends ScreenElementBase
         this.group.add(this.button);
 
         this.textObj = new TextRenderer3D(screen.screenManager.conjure, this.group, {
-            text: args.text || 'button',
+            text: args.text === undefined ? 'button' : args.text,
             scale: 0.75,
             fit: { x: this.width - 0.025, y: this.height - 0.025 },
             ...args.textSettings

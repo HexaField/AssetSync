@@ -2,14 +2,6 @@ import User from './User'
 import TextRenderer3D from '../screens/text/TextRenderer3D'
 import * as THREE from 'three'
 
-const USER_OPCODES = {
-    CONNECT: 0,
-    DISCONNECT: 1,
-    UPDATE: 2,
-    MOVE: 3,
-    ANIMATION: 4,
-}
-
 export default class UserRemote extends User {
     constructor(conjure, data, peerID) {
         super(conjure, true)
@@ -31,8 +23,10 @@ export default class UserRemote extends User {
         this.nameplate.group.add(this.videoScreen)
         this.videoScreen.visible = false
 
-        this.timeoutLimit = 603 * 60 // if don't receive a heartbeat for 3 seconds, die
+        this.timeoutLimit = 5 * 60 // if don't receive a heartbeat for 5 seconds, die
         this.timeoutCount = 0
+        this.addMedia = () => {}
+        this.removeMedia = () => {}
     }
 
     getConnection() {
@@ -64,7 +58,9 @@ export default class UserRemote extends User {
             }
             this.removeMedia = () => {
                 if(this.outgoingStream) {
-                    this.rawConn.removeStream(this.outgoingStream)
+                    try {
+                        this.rawConn.removeStream(this.outgoingStream)
+                    } catch (err) { console.log(err) }
                     this.outgoingStream = undefined
                 }
             }

@@ -31,10 +31,10 @@ class App extends EventDispatcher {
 
         if(isNode) {
             this.globalNetwork.on('onPeerJoin', (peerId) => {
-                console.log('Peer ' + peerId.substring(0, 8) + ' joined')
+                this.assetSync.log('Peer ' + peerId.substring(0, 8) + ' joined')
             })
             this.globalNetwork.on('onPeerLeave', (peerId) => {
-                console.log('Peer ' + peerId.substring(0, 8) + ' left')
+                this.assetSync.log('Peer ' + peerId.substring(0, 8) + ' left')
             })
         }
         

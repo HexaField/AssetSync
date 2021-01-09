@@ -45,6 +45,8 @@ export default class ScreenElementBase
         this.selected = false;
 
         this.userData = {}
+
+        this.onDisabled = (disabled) => {}
     }
     
     addHTML(obj)
@@ -157,6 +159,7 @@ export default class ScreenElementBase
     setDisabled(disable)
     {
         this.disabled = disable;
+        this.onDisabled(disable)
     }
 
     getAllElements()

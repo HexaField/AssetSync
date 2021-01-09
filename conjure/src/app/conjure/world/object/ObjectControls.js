@@ -2,9 +2,12 @@ import * as THREE from 'three'
 import { TransformControls } from "./TransformControls.js"
 import { OrbitControls } from "./OrbitControls.js"
 import { CONJURE_MODE } from '../../Conjure.js'
+import EventEmitter from 'events'
+import { iterateChildrenWithFunction } from '../../util/iterateRecursive.js'
 
-export default class ObjectControls {
+export default class ObjectControls extends EventEmitter{
     constructor(world) {
+        super()
         this.world = world
         this.conjure = world.conjure
         this.enabled = false
@@ -56,6 +59,10 @@ export default class ObjectControls {
         this.translationSnap = 0.5
 
     }
+
+    getSelectedObject() {
+        return this.transformControls.objects.length ? this.transformControls.objects[0] : undefined
+    }
     
     addTransformObject(obj, attach)
     {
@@ -82,12 +89,12 @@ export default class ObjectControls {
         console.log(object)
         if (params.detachOthers)
             this.detachAll();
-        // iterateChildrenWithFunction(object, (o) => {
-        //     if(o.body)
-        //     {
-        //         this.conjure.physics.destroy(o.body);
-        //     }
-        // })
+            iterateChildrenWithFunction(object, (o) => {
+                if(o.body)
+                {
+                    this.conjure.physics.destroy(o.body);
+                }
+            })
 
         this.transformControls.attach(object);
         this.conjure.postProcessing.addSelectedObject(object);
@@ -95,6 +102,7 @@ export default class ObjectControls {
         //     this.conjure.getScreens().screenObjectsHierarchy.selectObject(true, object);
         // this.conjure.getScreens().showScreen(this.conjure.getScreens().screenObjectEdit);
         // this.conjure.getScreens().screenObjectEdit.setObject(object);
+        this.emit('selected', this.getSelectedObject())
     }
 
     detachAll(params = {}) {
@@ -103,16 +111,17 @@ export default class ObjectControls {
                 this.conjure.getWorld().destroyObject(object);
         else
             for (let object of this.transformControls.objects) {
-                if (!params.ignoreScreenUpdate)
-                    this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object);
-                // iterateChildrenWithFunction(object, (o) => {
-                //     this.conjure.getWorld().realm.restorePhysics(o);
-                // });
+                // if (!params.ignoreScreenUpdate)
+                //     this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object);
+                iterateChildrenWithFunction(object, (o) => {
+                    this.conjure.getWorld().realm.restorePhysics(o);
+                });
                 object.userData.needsUpdate = true;
             }
 
         this.transformControls.detachAll();
         this.conjure.postProcessing.clearSelectedObjects();
+        this.emit('selected', this.getSelectedObject())
         // this.conjure.getScreens().hideScreen(this.conjure.getScreens().screenObjectEdit);
     }
 
@@ -125,8 +134,9 @@ export default class ObjectControls {
         object.userData.needsUpdate = true;
         this.conjure.postProcessing.removeSelectedObject(object);
 
-        if (!params.ignoreScreenUpdate)
-            this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object)
+        // if (!params.ignoreScreenUpdate)
+            // this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object)
+        this.emit('selected', this.getSelectedObject())
         // this.conjure.getScreens().hideScreen(this.conjure.getScreens().screenObjectEdit);
     }
 
