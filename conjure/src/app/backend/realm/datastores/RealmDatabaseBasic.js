@@ -31,6 +31,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
 
         const finishSync = () => {
             if(!resolved) {
+                onProgress('Finished Sync!')
                 resolved = true
                 resolve()
             }
@@ -171,7 +172,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
 
         // content = [...key]
         realmDatabase.on(OPCODES_SYNCED_DATABASE.requestEntries, async (content, peerID) => {
-            onProgress('Received request for entries', ...content)
+            onProgress('Received request for entries', content)
             // if(Array.isArray(content) && content.length)
             realmDatabase.sendTo(peerID, OPCODES_SYNCED_DATABASE.receiveEntries, await getEntriesByKeys(content))
         })
@@ -219,7 +220,6 @@ export default async (realmDatabase, onProgress, shouldSync) => {
             return entries
         }
 
-        // TODO: figure out who to get this data from
         // listOfKeys = [{ key, timeReceived }, ...]
         async function getDifferences(entries) {
             let neededKeys = []
@@ -237,7 +237,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 await realmDatabase._put(key, '', entries[key])
             })
             differences.common.forEach(async (key) => {
-                if (myEntries[key] > entries[key]) {
+                if (Date.parse(myEntries[key]) > Date.parse(entries[key])) {
                     neededKeys.push(key)
                 }
             })

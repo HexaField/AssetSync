@@ -4,16 +4,17 @@ import { REALM_WORLD_GENERATORS } from './RealmData.js'
 import realmBasic from './datastores/RealmDatabaseBasic.js'
 import realmProcedural from './datastores/RealmDatabaseProcedural.js'
 import { isNode } from '@AssetSync/common'
+import RealmPhysics from './RealmPhysics.js'
 
 export default class RealmDatabase extends EventEmitter {
-    constructor(realmData, assetSync, dhtProtocol) {
+    constructor(realmHandler, realmData, dhtProtocol) {
         super()
-
         this.eventHooks = new EventEmitter()
+        this.realmHandler = realmHandler
+        this.assetSync = realmHandler.assetSync
         this.realmData = realmData
-        this.assetSync = assetSync
         this.dhtProtocol = dhtProtocol + this.realmData.id
-
+        
         this.objects = {}
 
         this._stopDatastores = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _stopDatastores implemented') }
@@ -21,14 +22,25 @@ export default class RealmDatabase extends EventEmitter {
         this._put = async (key, value)  => { console.warn('ERROR! Database', realmData.id, 'has no _put implemented') }
         this._getAllLocal = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _getAllLocal implemented') }
         this._removeLocal = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _removeLocal implemented') }
+
+        this.onObjectCreate = (uuid, data, peerID) => {}
+        this.onObjectUpdate = (uuid, data, peerID) => {}
+        this.onObjectGroup = (data, peerID) => {}
+        this.onObjectMove = (data, peerID) => {}
+        this.onObjectDestroy = (uuid, peerID) => {}
+
+        this.hasPhysics = typeof PhysX !== 'undefined' && realmData.hasPhysics === true // todo, add this to realmData
     }
 
     async start(onProgress = () => {}, forceSync) {
-
         onProgress('Opening database for realm', this.realmData.id)
-
         this.network = await this.assetSync.networkPlugin.joinNetwork(this.realmData.id)
+
+        // if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
+        //     await realmProcedural(this)
+        // }
         
+        // start physics
         this.network.on('message', (message) => {
             this.eventHooks.emit('message', message)
             try {
@@ -42,46 +54,44 @@ export default class RealmDatabase extends EventEmitter {
         this.network.on('onPeerJoin', (peerID) => { this.eventHooks.emit('onPeerJoin', peerID) })
         this.network.on('onPeerLeave', (peerID) => { this.eventHooks.emit('onPeerLeave', peerID) })
    
-        this.on(NETWORKING_OPCODES.OBJECT.CREATE, (content, peerID) => {
+        this.on(NETWORKING_OPCODES.OBJECT.CREATE, async (content, peerID) => {
             const { uuid, data } = content
-            this._put(uuid, JSON.stringify(data))
+            await this._put(uuid, JSON.stringify(data))
+            const object = this.realmHandler.objectLoader.parse(data)
+            this.physics && this.physics.loadObject(object)
+            this.onObjectCreate(object, peerID)
         })
-        this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, (content, peerID) => {
+        this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, async (content, peerID) => {
             const { uuid, data } = content
-            this._put(uuid, JSON.stringify(data))
+            await this._put(uuid, JSON.stringify(data))
+            // this.physics && this.physics.updateObject(object) // TODO
+            // this.onObjectUpdate(uuid, data, peerID) // TODO
         })
-        this.on(NETWORKING_OPCODES.OBJECT.DESTROY, (content, peerID) => {
+        this.on(NETWORKING_OPCODES.OBJECT.DESTROY, async (content, peerID) => {
             const { uuid, data } = content
-            this._removeLocal(uuid, JSON.stringify(data))
+            // await this._removeLocal(uuid, JSON.stringify(data))
+            await this._put(uuid, '')
+            this.onObjectDestroy(uuid, peerID)
         })
-        this.on(NETWORKING_OPCODES.OBJECT.MOVE, (content, peerID) => {
+        this.on(NETWORKING_OPCODES.OBJECT.MOVE, async (content, peerID) => {
             const { uuid, data } = JSON.parse(content)
-            this._put(uuid, data)
+            await this._put(uuid, data)
+            // this.onObjectMove(uuid, data, peerID)
         })
-        this.on(NETWORKING_OPCODES.OBJECT.GROUP, (content, peerID) => {
+        this.on(NETWORKING_OPCODES.OBJECT.GROUP, async (content, peerID) => {
             // const { uuid, data } = JSON.parse(content)
-            // this._put(uuid, data)
+            // await this._put(uuid, data)
+            // this.onObjectGroup(data, peerID)
         })
-        
-        // resolve at least one peer on network (so we can join the realm)
-        onProgress('Connected to network...')
-
-        // if(!this.realmData.global)
-        //     await this.joinNetwork()
-
-        onProgress('Loading database')
-
-        // if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.INFINITE_WORLD) {
-        //     await realmProcedural(this)
-        // }
 
         if(this.realmData.worldSettings.worldGeneratorType === REALM_WORLD_GENERATORS.NONE) {
             await realmBasic(this, onProgress, forceSync)
         }
-        
-        onProgress('Loaded', (await this._getAllLocal()).length, 'objects from ')
-        // start physics
 
+        if(this.hasPhysics) {   
+            this.physics = new RealmPhysics(this)
+            await this.physics.initialise(onProgress)
+        }
     }
 
     async stop() {
@@ -117,17 +127,17 @@ export default class RealmDatabase extends EventEmitter {
 
     // create
     /**
-     * 
-     * @param {object} object
-     * @param {string} object.uuid
-     * @param {object} object.data
+     * @param {THREE.Object3D} object
      * @returns {Promise<boolean>}
      */
-    async createObject({ uuid, data }) {
+    async createObject(object) {
         // console.log('createObject', uuid, data)
         try {
-            await this._put(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, { uuid, data })
+            const uuid = object.uuid
+            const entry = object.toJSON()
+            await this._put(uuid, JSON.stringify(entry))
+            this.physics && this.physics.loadObject(object)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, { uuid, data: entry })
             return true
         } catch (error) {
             console.log(error)
@@ -136,15 +146,18 @@ export default class RealmDatabase extends EventEmitter {
     }
 
     // read
-    async getObjects(position, distance) {
+    /**
+     * @returns {Promise<[THREE.Object3D]>}
+     */
+    async getObjects() {
         // console.log('getObjects')
         const results = []
         results.push(...await this._getAllLocal())
         return results.map((obj) => {
             try {
-                return { uuid: obj.key, data: JSON.parse(obj.value) }
+                return this.realmHandler.objectLoader.parse(JSON.parse(obj.value))
             } catch (err) {
-                // this._removeLocal(obj.key) // instead we will remove old empty entries
+                // this._removeLocal(obj.key)
                 return
             }
         }).filter((obj) => {
@@ -153,11 +166,18 @@ export default class RealmDatabase extends EventEmitter {
     }
 
     // update
-    async updateObject({ uuid, data }) {
+    /**
+     * @param {THREE.Object3D} object
+     * @returns {Promise<boolean>}
+     */
+    async updateObject(object) {
         // console.log('updateObject', uuid, data)
         try {
-            await this._put(uuid, JSON.stringify(data))
-            this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, { uuid, data })
+            const uuid = object.uuid
+            const entry = object.toJSON()
+            await this._put(uuid, JSON.stringify(entry))
+            this.physics && this.physics.updateObject(object)
+            this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, { uuid, data: entry })
             return true
         } catch (error) {
             console.log(error)
@@ -166,10 +186,17 @@ export default class RealmDatabase extends EventEmitter {
     }
 
     // delete
-    async dereferenceObject({ uuid, data }) {
+    /**
+     * @param {THREE.Object3D} object
+     * @returns {Promise<boolean>}
+     */
+    async removeObject(object) {
         // console.log('dereferenceObject', uuid, data)
         try {
+            const uuid = object.uuid
+            const entry = object.toJSON()
             await this._put(uuid, '')
+            this.physics && this.physics.removeObject(object)
             this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY, { uuid })
             return true
         } catch (error) {

@@ -27,13 +27,14 @@ export default class ScreenObjectCreate extends ScreenBase {
         this.objectTypeButton = new ScreenElementCycleButton(this, this, { x: this.width / 4, width: 0.3, height: 0.1 });
         this.objectTypeButton.setValues(Object.keys(ObjectPrefabs))
         this.registerElement(this.objectTypeButton);
-
     }
 
     async onCreateObject() {
         let prefab = ObjectPrefabs[this.objectTypeButton.getValue(true)]
         if(prefab) {
             const obj = await prefab(this.screenManager.conjure)
+            obj.position.copy(this.world.user.previewMeshPoint.getWorldPosition(new THREE.Vector3()));
+            obj.quaternion.copy(this.world.user.previewMeshPoint.getWorldQuaternion(new THREE.Quaternion()));
             await this.world.realm.createObject(obj)
         }
     }

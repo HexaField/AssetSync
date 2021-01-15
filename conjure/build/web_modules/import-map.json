@@ -12,6 +12,8 @@
     "interface-datastore": "./interface-datastore.js",
     "lodash": "./lodash.js",
     "omggif": "./omggif.js",
+    "physx-js": "./physx-js.js",
+    "physx-js/dist/physx.release.wasm": "./physx-js/dist/physx.release.wasm",
     "three-spritetext": "./three-spritetext.js",
     "three-typeable-text": "./three-typeable-text.js",
     "three/examples/jsm/WebGL.js": "./three/examples/jsm/WebGL.js",

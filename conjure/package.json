@@ -11,7 +11,7 @@
         "start:browser": "NODE_OPTIONS=--max_old_space_size=4096 snowpack dev",
         "clean:node": "rm -rf bin",
         "build:node": "pkg src/index.js --targets node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path bin/",
-        "start:node": "nodemon --trace-warnings src/index.js --watch src/app/backend src/packages",
+        "start:node": "nodemon --trace-warnings --trace-uncaught src/index.js --watch src/app/backend src/packages",
         "test": "yarn run clean:test && ava && yarn run clean:test",
         "clean:test": "rm -rf test/dbs"
     },
@@ -27,6 +27,7 @@
     },
     "dependencies": {},
     "devDependencies": {
+        "@enable3d/ammo-on-nodejs": "^0.21.0",
         "@geckos.io/typed-array-buffer-schema": "^1.0.2",
         "@snowpack/plugin-optimize": "^0.2.5",
         "abi-decoder": "^2.3.0",
@@ -37,12 +38,14 @@
         "nodemon": "^2.0.4",
         "npm-run-all": "^4.1.5",
         "omggif": "^1.0.10",
+        "physx-js": "^0.3.0",
         "pkg": "^4.4.9",
         "simplex-noise": "^2.4.0",
         "snowpack": "2.14.0",
         "snowpack-plugin-import-map": "^1.1.1",
         "three": "0.123.0",
         "three-spritetext": "^1.5.2",
-        "three-typeable-text": "^0.1.6"
+        "three-typeable-text": "^0.1.6",
+        "wasi": "^0.0.6"
     }
 }

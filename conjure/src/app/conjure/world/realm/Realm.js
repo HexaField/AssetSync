@@ -26,12 +26,6 @@ export default class Realm extends EventEmitter {
         this.realmData = realmData
         this.realmID = realmData.getID()
 
-        this.onObjectCreate = this.onObjectCreate.bind(this)
-        this.onObjectUpdate = this.onObjectUpdate.bind(this)
-        this.onObjectGroup = this.onObjectGroup.bind(this)
-        this.onObjectMove = this.onObjectMove.bind(this)
-        this.onObjectDestroy = this.onObjectDestroy.bind(this)
-
         this.vec3 = new THREE.Vector3();
         this.quat = new THREE.Quaternion();
 
@@ -137,15 +131,34 @@ export default class Realm extends EventEmitter {
         this.on(NETWORKING_OPCODES.USER.LEAVE, (data, peerID) => { this.world.onUserLeave(peerID) })
 
 
-        this.on(NETWORKING_OPCODES.OBJECT.RECEIVE, this.onObjectCreate)
-        this.on(NETWORKING_OPCODES.OBJECT.CREATE, this.onObjectCreate)
-        this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, this.onObjectUpdate)
-        this.on(NETWORKING_OPCODES.OBJECT.DESTROY, this.onObjectDestroy)
-        this.on(NETWORKING_OPCODES.OBJECT.MOVE, this.onObjectMove)
-        this.on(NETWORKING_OPCODES.OBJECT.GROUP, this.onObjectGroup)
+        this.database.onObjectCreate = (uuid, data, peerID) => {
+            this.loadObjectFromPeer(uuid, data)
+        }
+    
+        // update to actual object properties
+        this.database.onObjectUpdate = (uuid, data, peerID) => {
+            console.log('onObjectUpdate', uuid, data)
+        }
+    
+        // update to actual object properties
+        this.database.onObjectGroup = (data, peerID) => {
+            this.objectManager.groupObjects(this.objectManager.getObjectByUUID(data.newParentUUID), this.objectManager.getObjectByUUID(data.newChildUUID), true)
+        }
+    
+        // update to object matrix
+        this.database.onObjectMove = (data, peerID) => {
+            // for (let obj of data.objects) {
+            //     // console.log('WORLD: onObjectMove got data', obj.data)
+            //     this.objectManager.updateObjectFromClient(obj.uuid, obj.data);
+            // }
+        }
+    
+        this.database.onObjectDestroy = ({ uuid }, peerID) => {
+            this.objectManager.destroyObjectByUUID(uuid);
+        }
 
         for (let obj of await this.database.getObjects()) {
-            this.loadObjectFromPeer(obj.uuid, obj.data);
+            this.loadObject(obj);
         }
 
         this.network = this.database.network
@@ -195,32 +208,6 @@ export default class Realm extends EventEmitter {
         return this.objectManager
     }
 
-    onObjectCreate({ uuid, data }, peerID) {
-        this.loadObjectFromPeer(uuid, data)
-    }
-
-    // update to actual object properties
-    onObjectUpdate({ uuid, data }, peerID) {
-        console.log('onObjectUpdate', { uuid, data })
-    }
-
-    // update to actual object properties
-    onObjectGroup(data, peerID) {
-        this.objectManager.groupObjects(this.objectManager.getObjectByUUID(data.newParentUUID), this.objectManager.getObjectByUUID(data.newChildUUID), true)
-    }
-
-    // update to object matrix
-    onObjectMove(data, peerID) {
-        for (let obj of data.objects) {
-            // console.log('WORLD: onObjectMove got data', obj.data)
-            this.objectManager.updateObjectFromClient(obj.uuid, obj.data);
-        }
-    }
-
-    async onObjectDestroy({ uuid }, peerID) {
-        this.objectManager.destroyObjectByUUID(uuid);
-    }
-
     // ------- //
     // OBJECTS //
     // ------- //
@@ -235,12 +222,9 @@ export default class Realm extends EventEmitter {
 
     async createObject(object) {
         object.userData.originatorID = this.conjure.assetSync.peerID;
-        object.position.copy(this.world.user.previewMeshPoint.getWorldPosition(this.vec3));
-        object.quaternion.copy(this.world.user.previewMeshPoint.getWorldQuaternion(this.quat));
         object.updateMatrixWorld();
         this.restorePhysics(object);
-        let json = await this.objectToJSON(object);
-        const success = await this.database.createObject({ uuid: object.uuid, data: json })
+        const success = await this.database.createObject(object)
         // if adding to database failed, don't put it into our world
         if (success) {
             this.objectManager.addObject(object, true)
@@ -248,33 +232,33 @@ export default class Realm extends EventEmitter {
         }
     }
 
-    async objectToJSON(obj) {
-        let json = obj.toJSON();
-        return json
-        // temp
-        if (json.images)
-            for (let i = 0; i < json.images.length; i++) {
-                // if we previously failed to get the image, we don't want to save the missing texture data
-                if (json.images[i].url === this.conjure.assetManager.missingTextureData) continue
+    // async objectToJSON(obj) {
+    //     let json = obj.toJSON();
+    //     return json
+    //     // temp
+    //     if (json.images)
+    //         for (let i = 0; i < json.images.length; i++) {
+    //             // if we previously failed to get the image, we don't want to save the missing texture data
+    //             if (json.images[i].url === this.conjure.assetManager.missingTextureData) continue
 
-                json.images[i].hash = await this.conjure.assetManager.createAsset(ASSET_TYPE.TEXTURE, json.images[i].url, json.images[i].uuid);
-                let newUUID = this.conjure.assetManager.getByIPFSHash(ASSET_TYPE.TEXTURE, json.images[i].hash).data.uuid;
-                if (newUUID !== json.images[i].uuid)  // if asset already exists, replace the uuid
-                {
-                    if (json.textures) // replace uuid reference in texture
-                        for (let j = 0; j < json.textures.length; j++)
-                            if (json.textures[j].image === json.images[i].uuid)
-                                json.textures[j].image = newUUID;
-                    json.images[i].uuid = newUUID;
-                }
-                json.images[i].url = '';
-            }
-        return json;
-    }
+    //             json.images[i].hash = await this.conjure.assetManager.createAsset(ASSET_TYPE.TEXTURE, json.images[i].url, json.images[i].uuid);
+    //             let newUUID = this.conjure.assetManager.getByIPFSHash(ASSET_TYPE.TEXTURE, json.images[i].hash).data.uuid;
+    //             if (newUUID !== json.images[i].uuid)  // if asset already exists, replace the uuid
+    //             {
+    //                 if (json.textures) // replace uuid reference in texture
+    //                     for (let j = 0; j < json.textures.length; j++)
+    //                         if (json.textures[j].image === json.images[i].uuid)
+    //                             json.textures[j].image = newUUID;
+    //                 json.images[i].uuid = newUUID;
+    //             }
+    //             json.images[i].url = '';
+    //         }
+    //     return json;
+    // }
 
 
-    async loadObject(data) {
-        if (!data) return
+    async loadObject(object) {
+        if (!object) return
         try {
             // if(data.images)
             //     for(let i = 0; i < data.images.length; i++)
@@ -282,10 +266,10 @@ export default class Realm extends EventEmitter {
             //         if(!data.images[i].hash) continue;
             //         data.images[i].url = await this.conjure.assetManager.loadImageAssetFromHash(data.images[i].hash);
             //     }
-            if (typeof data === 'string') {
-                data = JSON.parse(data)
-            }
-            let object = this.loadObjectAssets(data);
+            // if (typeof data === 'string') {
+            //     data = JSON.parse(data)
+            // }
+            // let object = this.loadObjectAssets(data);
             // await this.conjure.assetManager.saveAssets(object)
             // console.log(object)
             this.restorePhysics(object);
@@ -295,18 +279,17 @@ export default class Realm extends EventEmitter {
             return true
         }
         catch (error) {
-            console.log(error, data)
+            console.log(error, object)
             return false;
         }
     }
 
-    // TODO: this
-    loadObjectAssets(json) {
-        return this.objectLoader.parse(json);
-    }
+    // loadObjectAssets(json) {
+    //     return this.objectLoader.parse(json);
+    // }
 
     restorePhysics(object) {
-        if (object.userData.originatorID !== this.conjure.assetSync.peerID) return
+        // if (object.userData.originatorID !== this.conjure.assetSync.peerID) return
         if (!object.userData.physics || object.body) return
 
         if (this.objectManager.getPhysicsType(object.userData.physics.type) < 0) return
@@ -326,8 +309,8 @@ export default class Realm extends EventEmitter {
         await this.updateObject(object) // temp fix
 
         // args to data handler need to be objectified
-        let json = await this.objectToJSON(object)
-        const success = await this.database.updateObject({ uuid: object.uuid, data: json });
+        // let json = await this.objectToJSON(object)
+        const success = await this.database.updateObject(object);
         // if(!obj.userData.hash) return;
         // let json = await this.objectToJSON(obj)
         // await this.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_OBJECT, obj.userData.hash, json);
@@ -339,15 +322,15 @@ export default class Realm extends EventEmitter {
             console.log('Tried to update object without a hash! Are you sure this object is a top parent?')
             return;
         }
-        let json = await this.objectToJSON(object)
-        await this.database.updateObject({ uuid: object.uuid, data: json });
+        // let json = await this.objectToJSON(object)
+        await this.database.updateObject(object);
     }
 
     async destroyObject(object) {
         if (!object) return
         object.userData.markedDestroyed = true;
         if (this.objectManager.getObject(object)) {
-            let success = await this.database.dereferenceObject({ uuid: object.uuid })
+            let success = await this.database.dereferenceObject(object)
             if (success) {
                 this.world.objectControls.detach(object)
                 this.objectManager.destroyObject(object);

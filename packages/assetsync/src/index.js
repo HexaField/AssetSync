@@ -11,6 +11,9 @@ export default class AssetSync {
     constructor(options = {}) {
         this._plugins = {}
         this._options = Object.assign({}, BASE_OPTIONS, options)
+        this.log = this.log.bind(this)
+        this.warn = this.warn.bind(this)
+        this.error = this.error.bind(this)
     }
 
     // PRE-INIT & UTIL
