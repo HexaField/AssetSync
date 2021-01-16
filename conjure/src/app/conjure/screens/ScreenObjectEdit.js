@@ -1,6 +1,6 @@
 import ScreenBase from './ScreenBase';
 import ScreenElementJSONTree from './elements/ScreenElementJSONTree';
-import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../world/object/ObjectManager';
+import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../../backend/Constants';
 
 
 export default class ScreenObjectEdit extends ScreenBase

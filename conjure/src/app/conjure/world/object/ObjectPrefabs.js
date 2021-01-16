@@ -1,6 +1,6 @@
 
 import * as THREE from 'three'
-import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../../world/object/ObjectManager'
+import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../../../backend/Constants';
 // import { POSTPROCESSING } from '../../PostProcessing'
 // import { createGeometry, createMaterial } from '../../util/wireframe'
 

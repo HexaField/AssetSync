@@ -12,7 +12,7 @@ export default class FeatureLobby extends Feature
         super(realm)
     }
 
-    async preload()
+    async load()
     {
         this.portals = []
         this.realmDatas = (this.realm.world.getKnownRealms()).filter(realmData => realmData.id !== 'Lobby')
@@ -77,10 +77,6 @@ export default class FeatureLobby extends Feature
         )
         groundMesh.layers.enable(POSTPROCESSING.BLOOM_SCENE)
         this.realm.group.add(groundMesh)
-    }
-
-    async load()
-    {
     }
 
     async unload()

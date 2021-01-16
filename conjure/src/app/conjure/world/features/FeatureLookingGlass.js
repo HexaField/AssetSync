@@ -23,7 +23,7 @@ export default class FeatureArtGallery extends Feature
         this.spawnPosition = this.realmData.worldData.spawnPosition
     }
 
-    async preload()
+    async load()
     {
         // await this.getTokens()
         let assetCount = 11
@@ -230,14 +230,10 @@ AND ECONOMIC EPOCHAL SHIFTS.`)
             sphere.userData.velocity = new THREE.Vector3()
             this.flyingLights.push(sphere)
         }
-    }
-
-    async load()
-    {
         this.chiptune.stop()
         this.realm.conjure.getAudioManager().play('jumanji', { loop: true })
     }
-
+    
     async getTokens()
     {
         let address = 'r4sYcbdi4oE18FhVYWEhXa1AEe21XGR39z'

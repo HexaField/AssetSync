@@ -3,7 +3,7 @@ import RealmData, { GLOBAL_REALMS, REALM_TYPES } from './realm/RealmData.js'
 import { getParams, isNode } from "@AssetSync/common"
 import EventEmitter from 'events'
 import * as THREE from 'three'
-import { initialisePhysics } from './initialisePhysics.js'
+import { initialisePhysics } from './functions/initialisePhysics.js'
 
 const verbose = getParams().verbose !== undefined
 const network = getParams().network === 'true'
@@ -20,11 +20,33 @@ export default class RealmHandler extends EventEmitter {
     }
 
     async initialise() {
-        // await initialisePhysics()
+        if(isNode) {
+            const { nodePolyfillThree } = await import('./functions/nodePolyfillThree.js')
+            nodePolyfillThree()
+        }
+        await initialisePhysics()
+        const clock = new THREE.Clock()
+        const animate = () => {
+            const delta = clock.getDelta() * 1000
+            this.update(delta)
+            window.requestAnimationFrame(animate)
+        }
+        window.requestAnimationFrame(animate)
         await this.preloadGlobalRealms()
         for (let realm of await this.getPinnedRealms()) {
             await this.addDatabase(realm, this.assetSync.log, network)
         }
+    }
+
+    cleanup() {
+        if(isNode) {
+            window.close()
+        }
+    }
+
+    update(delta) {
+        this.emit('update', delta)
+        
     }
 
     // DHT data

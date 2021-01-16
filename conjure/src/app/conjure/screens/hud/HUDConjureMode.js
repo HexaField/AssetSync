@@ -12,7 +12,7 @@ export default class HUDExploreMode extends ScreenBase {
         this.tabs = {
             Exit: () => { this.screenManager.conjure.setConjureMode(CONJURE_MODE.EXPLORE) },
             Assets: () => { this.screenManager.showScreen(this.screenManager.screenAssets) },
-            Create: () => { this.screenManager.showScreen(this.screenManager.screenObjectsHierarchy) },
+            Create: () => { this.screenManager.showScreen(this.screenManager.screenObjectCreate) },
             // Fly: this.screenManager.conjure.world.objectControls.toggleConjureControls(),
             Settings: () => { this.screenManager.showScreen(this.screenManager.screenRealmSettings) },
         }

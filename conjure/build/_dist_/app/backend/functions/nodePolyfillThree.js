@@ -1,0 +1,1 @@
+import{JSDOM as e}from"../../../../web_modules/jsdom.js";export async function nodePolyfillThree(){const o=new e("<!DOCTYPE html>",{url:"https://conjure.world/",contentType:"text/html",includeNodeLocations:!0,pretendToBeVisual:!0});globalThis.document=o.window.document,globalThis.window=o.window}

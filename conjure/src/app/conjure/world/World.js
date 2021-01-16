@@ -111,6 +111,7 @@ export default class World extends EventEmitter {
             this.lastRealmID = this.realm.realmID
             this.sendData(NETWORKING_OPCODES.USER.LEAVE)
             await this.realm.leave()
+            this.user.removePhysics(this.realm.database.world.physics)
             this.destroyAllRemoteUsers()
             delete this.realm
         }
@@ -141,9 +142,6 @@ export default class World extends EventEmitter {
 
         this.realm = new Realm(this, realmData)
         await window.clientDatastore.put('conjure-profile-lastJoinedRealm', String(realmData.getID())) // make a thing for this
-
-        this.conjure.loadingScreen.setText('Pre-loading realm...', false)
-        await this.realm.preload()
         this.conjure.loadingScreen.setText('Loading realm...', false)
         await this.realm.load()
     
@@ -152,6 +150,7 @@ export default class World extends EventEmitter {
 
         let spawn = realmData.worldData.spawnPosition || new THREE.Vector3(0, 1, 0)
         this.spawnLocation = spawn
+        await this.user.addPhysics(this.realm.database.world.physics)
         this.user.teleport(spawn.x, spawn.y, spawn.z)
 
         this.conjure.setConjureMode(CONJURE_MODE.EXPLORE)

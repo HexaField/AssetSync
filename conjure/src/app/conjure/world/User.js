@@ -82,27 +82,6 @@ export default class User
         })
 
         this.group.add(this.mesh);
-        if(!this.isRemote)
-        {
-            this.collider = this.conjure.physics.add.existing(this.group, {
-                shape: 'box',
-                width: 0.6,
-                depth: 0.4,
-                height: this.modelHeight,
-                offset: { x : 0, y: -this.modelHeight / 2, z:0},
-                autoCenter: false,
-                mass: 1
-                // shape: 'sphere',
-                // radius: 0.25,
-                // width: 0.5,
-                // offset: { y: -0.25 }
-            })
-            this.group.body.setCollisionFlags(0);
-            this.group.body.setFriction(1.5)
-            this.group.body.setBounciness(0)
-            this.group.body.setAngularFactor(0, 0, 0)
-            this.group.body.setLinearFactor(1, 1, 1)
-        }
             
         // Continuous Collision Detection - https://docs.panda3d.org/1.10/python/programming/physics/bullet/ccd
         // this.group.body.setCcdMotionThreshold(1e-7)
@@ -171,6 +150,39 @@ export default class User
         this.turnedTooMuch = false;
         this.onCreate();
         // this.conjure.controlManager.controlsEnabled = true
+    }
+
+    async addPhysics(physics) {
+        if(this.group.body) throw new Error('USER.JS already has physics!')
+        physics.add.existing(this.group, {
+            shape: 'box',
+            width: 0.6,
+            depth: 0.4,
+            height: this.modelHeight,
+            offset: { x : 0, y: -this.modelHeight / 2, z:0},
+            autoCenter: false,
+            mass: 1
+            // shape: 'sphere',
+            // radius: 0.25,
+            // width: 0.5,
+            // offset: { y: -0.25 }
+        })
+        this.group.body.setCollisionFlags(this.isRemote ? 1 : 2);
+        this.group.body.setFriction(1.5)
+        this.group.body.setBounciness(0)
+        this.group.body.setAngularFactor(0, 0, 0)
+        this.group.body.setLinearFactor(1, 1, 1)
+        // await new Promise((resolve) => {
+        //     this.group.body.onUpdateEvent(() => {
+        //         resolve()
+        //     })
+        // })
+    }
+
+    removePhysics(physics) {
+        if(this.group.body) {
+            physics.destroy(this.group.body)
+        }
     }
 
     attachToBone(object, bone)
@@ -400,4 +412,4 @@ export default class User
 
 // use left and right turn animations
 // if deltaTheta is too big, change running jump to end with hard landing
- 
+ // https://github.com/enable3d/enable3d/blob/master/packages/common/src/extendedObject3D.ts

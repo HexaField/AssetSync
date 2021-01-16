@@ -12,9 +12,8 @@ export default class ObjectControls extends EventEmitter{
         this.conjure = world.conjure
         this.enabled = false
 
-        this.transformObjects = []
         this.lastTransformObject = undefined
-        this.objectGroups = []
+        // this.objectGroups = []
 
         this.orbitControls = new OrbitControls(this.conjure.camera, this.conjure.renderer.domElement);
         this.orbitControls.target.copy(world.user.focusPoint.position);
@@ -64,14 +63,13 @@ export default class ObjectControls extends EventEmitter{
         return this.transformControls.objects.length ? this.transformControls.objects[0] : undefined
     }
     
-    addTransformObject(obj, attach)
-    {
-        this.transformObjects.push(obj);
-        if(this.transformControls.objects.length)
-            this.lastTransformObject = this.transformControls.objects[0];
-        if(attach)
-            this.attach(obj, { detachOthers:true });
-    }
+    // addTransformObject(obj, attach)
+    // {
+    //     if(this.transformControls.objects.length)
+    //         this.lastTransformObject = this.transformControls.objects[0];
+    //     if(attach)
+    //         this.attach(obj, { detachOthers:true });
+    // }
 
     createGroup() {
         if (this.transformControls.objects.length > 1) {
@@ -89,55 +87,21 @@ export default class ObjectControls extends EventEmitter{
         console.log(object)
         if (params.detachOthers)
             this.detachAll();
-            iterateChildrenWithFunction(object, (o) => {
-                if(o.body)
-                {
-                    this.conjure.physics.destroy(o.body);
-                }
-            })
-
         this.transformControls.attach(object);
         this.conjure.postProcessing.addSelectedObject(object);
-        // if (!params.ignoreScreenUpdate)
-        //     this.conjure.getScreens().screenObjectsHierarchy.selectObject(true, object);
-        // this.conjure.getScreens().showScreen(this.conjure.getScreens().screenObjectEdit);
-        // this.conjure.getScreens().screenObjectEdit.setObject(object);
         this.emit('selected', this.getSelectedObject())
     }
 
-    detachAll(params = {}) {
-        if (params.isDeleting)
-            for (let object of this.transformControls.objects)
-                this.conjure.getWorld().destroyObject(object);
-        else
-            for (let object of this.transformControls.objects) {
-                // if (!params.ignoreScreenUpdate)
-                //     this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object);
-                iterateChildrenWithFunction(object, (o) => {
-                    this.conjure.getWorld().realm.restorePhysics(o);
-                });
-                object.userData.needsUpdate = true;
-            }
-
+    detachAll() {
         this.transformControls.detachAll();
         this.conjure.postProcessing.clearSelectedObjects();
         this.emit('selected', this.getSelectedObject())
-        // this.conjure.getScreens().hideScreen(this.conjure.getScreens().screenObjectEdit);
     }
 
-    detach(object, params = {}) {
+    detach(object) {
         this.transformControls.detach(object);
-
-        // iterateChildrenWithFunction(object, (o) => {
-        //     this.conjure.getWorld().realm.restorePhysics(o);
-        // });
-        object.userData.needsUpdate = true;
         this.conjure.postProcessing.removeSelectedObject(object);
-
-        // if (!params.ignoreScreenUpdate)
-            // this.conjure.getScreens().screenObjectsHierarchy.selectObject(false, object)
         this.emit('selected', this.getSelectedObject())
-        // this.conjure.getScreens().hideScreen(this.conjure.getScreens().screenObjectEdit);
     }
 
     // need to sync all cameras - might be a better way than this
@@ -150,22 +114,6 @@ export default class ObjectControls extends EventEmitter{
     }
 
     update(updateArgs) {
-
-        // make this event based
-        
-        // make this event based
-        // if(!this.controlsEnabled) 
-        // {
-        //     if(this.conjure.getScreens().controlsEnabled)
-        //         this.enableControls(true)
-        //     else
-        //         return
-        // }
-        // else if(!this.conjure.getScreens().controlsEnabled)
-        // {
-        //     this.enableControls(false)
-        //     return
-        // }
         if(!this.enabled) return
 
         if (updateArgs.input.isPressed('q', true))
@@ -215,14 +163,14 @@ export default class ObjectControls extends EventEmitter{
 
         if(this.transformControls.enabled)
         {
-            let intersections = updateArgs.mouseRaycaster.intersectObjects(this.transformObjects, true);
+            let intersections = updateArgs.mouseRaycaster.intersectObjects(this.world.realm.database.world.scene.children, true);
             if(intersections.length > 0)
             {
                 if(updateArgs.input.isPressed('MOUSELEFT', true))
                 {
                     if(!this.transformControls.axis)
                     {
-                        let object = this.conjure.world.realm.objectManager.getTopGroupObject(intersections[0].object);
+                        let object = intersections[0].object//this.conjure.world.realm.objectManager.getTopGroupObject(intersections[0].object);
                         if(object)
                         {
                             if(updateArgs.input.isDown('CONTROL', true))
@@ -274,16 +222,6 @@ export default class ObjectControls extends EventEmitter{
         //                 this.lookAt(this.lastTransformObject);
         //         }
         //     }
-        // }
-
-        // TODO: need to make this event based
-
-        // if(this.conjure.getScreens().openScreens.length > 0) {
-        //     this.transformControls.enabled = !this.conjure.getScreens().mouseOver
-        //     this.orbitControls.enabled = !this.conjure.getScreens().mouseOver
-        // } else {
-        //     this.transformControls.enabled = true
-        //     this.orbitControls.enabled = true
         // }
     }
 }

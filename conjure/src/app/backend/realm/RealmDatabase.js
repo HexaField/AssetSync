@@ -4,7 +4,7 @@ import { REALM_WORLD_GENERATORS } from './RealmData.js'
 import realmBasic from './datastores/RealmDatabaseBasic.js'
 import realmProcedural from './datastores/RealmDatabaseProcedural.js'
 import { isNode } from '@AssetSync/common'
-import RealmPhysics from './RealmPhysics.js'
+import RealmWorld from './RealmWorld.js'
 
 export default class RealmDatabase extends EventEmitter {
     constructor(realmHandler, realmData, dhtProtocol) {
@@ -23,13 +23,11 @@ export default class RealmDatabase extends EventEmitter {
         this._getAllLocal = async ()  => { console.warn('ERROR! Database', realmData.id, 'has no _getAllLocal implemented') }
         this._removeLocal = async (key)  => { console.warn('ERROR! Database', realmData.id, 'has no _removeLocal implemented') }
 
-        this.onObjectCreate = (uuid, data, peerID) => {}
-        this.onObjectUpdate = (uuid, data, peerID) => {}
+        this.onObjectCreate = (object, peerID) => {}
+        this.onObjectUpdate = (object, peerID) => {}
         this.onObjectGroup = (data, peerID) => {}
         this.onObjectMove = (data, peerID) => {}
-        this.onObjectDestroy = (uuid, peerID) => {}
-
-        this.hasPhysics = typeof PhysX !== 'undefined' && realmData.hasPhysics === true // todo, add this to realmData
+        this.onObjectDestroy = (object, peerID) => {}
     }
 
     async start(onProgress = () => {}, forceSync) {
@@ -58,7 +56,7 @@ export default class RealmDatabase extends EventEmitter {
             const { uuid, data } = content
             await this._put(uuid, JSON.stringify(data))
             const object = this.realmHandler.objectLoader.parse(data)
-            this.physics && this.physics.loadObject(object)
+            this.world.loadObject(object)
             this.onObjectCreate(object, peerID)
         })
         this.on(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, async (content, peerID) => {
@@ -71,7 +69,7 @@ export default class RealmDatabase extends EventEmitter {
             const { uuid, data } = content
             // await this._removeLocal(uuid, JSON.stringify(data))
             await this._put(uuid, '')
-            this.onObjectDestroy(uuid, peerID)
+            this.onObjectDestroy(this.world.getObject(uuid), peerID)
         })
         this.on(NETWORKING_OPCODES.OBJECT.MOVE, async (content, peerID) => {
             const { uuid, data } = JSON.parse(content)
@@ -88,10 +86,8 @@ export default class RealmDatabase extends EventEmitter {
             await realmBasic(this, onProgress, forceSync)
         }
 
-        if(this.hasPhysics) {   
-            this.physics = new RealmPhysics(this)
-            await this.physics.initialise(onProgress)
-        }
+        this.world = new RealmWorld(this)
+        await this.world.initialise(onProgress)
     }
 
     async stop() {
@@ -136,7 +132,7 @@ export default class RealmDatabase extends EventEmitter {
             const uuid = object.uuid
             const entry = object.toJSON()
             await this._put(uuid, JSON.stringify(entry))
-            this.physics && this.physics.loadObject(object)
+            this.world.loadObject(object)
             this.sendToAll(NETWORKING_OPCODES.OBJECT.CREATE, { uuid, data: entry })
             return true
         } catch (error) {
@@ -176,7 +172,7 @@ export default class RealmDatabase extends EventEmitter {
             const uuid = object.uuid
             const entry = object.toJSON()
             await this._put(uuid, JSON.stringify(entry))
-            this.physics && this.physics.updateObject(object)
+            this.world.updateObject(object)
             this.sendToAll(NETWORKING_OPCODES.OBJECT.UPDATE_PROPERTIES, { uuid, data: entry })
             return true
         } catch (error) {
@@ -196,7 +192,7 @@ export default class RealmDatabase extends EventEmitter {
             const uuid = object.uuid
             const entry = object.toJSON()
             await this._put(uuid, '')
-            this.physics && this.physics.removeObject(object)
+            this.world.removeObject(object)
             this.sendToAll(NETWORKING_OPCODES.OBJECT.DESTROY, { uuid })
             return true
         } catch (error) {

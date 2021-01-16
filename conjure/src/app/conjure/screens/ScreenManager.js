@@ -9,7 +9,7 @@ import ScreenHomeMenu from './ScreenHomeMenu'
 import ScreenRealmSettings from './ScreenRealmSettings'
 import ScreenObjectCreate from './ScreenObjectCreate'
 import ScreenObjectEdit from './ScreenObjectEdit'
-import ScreenObjectsHierarchy from './ScreenObjectsHierarchy'
+// import ScreenObjectsHierarchy from './ScreenObjectsHierarchy'
 import ScreenProfile from './ScreenProfile'
 import ScreenSettings from './ScreenSettings'
 import ScreenRealms from './ScreenRealms'
@@ -53,7 +53,7 @@ export default class ScreenManager
         this.screenRealmSettings = this.createScreen(new ScreenRealmSettings(this, { name:'Realm Settings', width:1.5, height:1, pauses:true }));
         this.screenObjectCreate = this.createScreen(new ScreenObjectCreate(this, { name:'Create Object', width:0.8, height:0.4 }));
         this.screenObjectEdit = this.createScreen(new ScreenObjectEdit(this, { name:'Object Edit', width:0.8, height:1.6, x:0.75, anchor:true }));
-        this.screenObjectsHierarchy = this.createScreen(new ScreenObjectsHierarchy(this, { name:'Objects Hierarchy', width:0.8, height:1.6, x:-0.6, anchor:true }));
+        // this.screenObjectsHierarchy = this.createScreen(new ScreenObjectsHierarchy(this, { name:'Objects Hierarchy', width:0.8, height:1.6, x:-0.6, anchor:true }));
         this.screenSettings = this.createScreen(new ScreenSettings(this, { name:'Settings', width:1.6, height:0.8, pauses:true }));
         this.screenProfile = this.createScreen(new ScreenProfile(this, { name:'Profile', width:1.6, height:0.8, pauses:true }));
         this.screenServices = this.createScreen(new ScreenServices(this, { name:'Services', width:1.6, height:0.8, pauses:true }));

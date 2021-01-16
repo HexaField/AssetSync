@@ -12,9 +12,6 @@ export const CONJURE_MODE = {
 
 export async function startConjure(data)
 {
-    const { default: Ammo } = await import('./util/ammo.worker.js')   
-    Ammo();
-    
     new Conjure(data)
 }
 
@@ -41,12 +38,16 @@ class Conjure extends EventEmitter
         await this.preload()
         await this.create()
 
-        const animate = () => {
+        this.realms.on('update', (delta) => {
             this.resizeRendererToDisplaySize(this.renderer)
-            this.update()
-            requestAnimationFrame(animate)
-        };
-        requestAnimationFrame(animate)
+            this.update(delta)
+        })
+        // const animate = () => {
+        //     this.resizeRendererToDisplaySize(this.renderer)
+        //     this.update()
+        //     requestAnimationFrame(animate)
+        // };
+        // requestAnimationFrame(animate)
     }
 
 
@@ -202,8 +203,8 @@ class Conjure extends EventEmitter
     {
         console.log('Took', (Date.now() - this.loadTimer)/1000, ' seconds to preload.')
 
-        const { AmmoPhysics } = await import('@enable3d/ammo-physics')
-        this.physics = new AmmoPhysics(this.scene)
+        // const { AmmoPhysics } = await import('@enable3d/ammo-physics')
+        // this.physics = new AmmoPhysics(this.scene)
         
         const { default: Mixers } = await import('./util/mixers.js')
         this.mixers = new Mixers()
@@ -283,18 +284,18 @@ class Conjure extends EventEmitter
         this.emit('conjure:mode', mode)
     }
     
-    update()
+    update(delta)
     {   
-        const delta = this.clock.getDelta() * 1000
-        const time = this.clock.getElapsedTime()
+        // const delta = this.clock.getDelta() * 1000
+        // const time = this.clock.getElapsedTime()
     
         if(this.conjureMode === CONJURE_MODE.LOADING)
         {
-            this.loadingScreen.update(parseFloat(time.toFixed(3)), parseInt(delta.toString()))
+            this.loadingScreen.update(parseInt(delta.toString()))
         } 
         else
         {
-            this.updateConjure(parseFloat(time.toFixed(3)), parseInt(delta.toString()))
+            this.updateConjure(parseInt(delta.toString()))
 
             this.physics.update(delta)
             this.physics.updateDebugger()
@@ -306,7 +307,7 @@ class Conjure extends EventEmitter
         }
     }
 
-    updateConjure(time, delta)
+    updateConjure(delta)
     {
         let deltaSeconds = delta / 1000
         if(deltaSeconds > 0.1) deltaSeconds = 0.1 // so physics doesnt go insane

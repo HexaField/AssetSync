@@ -5,8 +5,6 @@ export default class Feature
         this.realm = realm
     }
 
-    async preload() {}
-
     async load() {}
 
     async unload() {}

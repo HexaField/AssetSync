@@ -1,27 +1,6 @@
 import * as THREE from 'three'
-import { number } from '../../util/number'
-import { NETWORKING_OPCODES } from '../../../backend/Constants.js'
-
-export const PHYSICS_TYPES = {
-    NONE: 'None',
-    DYNAMIC: 'Dynamic',
-    STATIC: 'Static',
-    KINEMATIC: 'Kinematic',
-    GHOST: 'Ghost',
-}
-
-export const PHYSICS_SHAPES = {
-    AUTO: 'Automatic',
-    CONVEX: 'Convex Mesh',
-    CONCAVE: 'Concave Mesh',
-    EXTRUDE: 'Extrude Mesh',
-    BOX: 'Box',
-    CONE: 'Cone',
-    CYLINDER: 'Cylinder',
-    PLANE: 'Plane',
-    SPHERE: 'Sphere',
-    TORUS: 'Torus',
-}
+import { number } from '../../conjure/util/number'
+import { NETWORKING_OPCODES, PHYSICS_TYPES } from '../Constants.js'
 
 export default class ObjectManager {
     constructor(realm) {
@@ -36,29 +15,6 @@ export default class ObjectManager {
         this.quat = new THREE.Quaternion();
 
         this.physicsTypes = Object.values(PHYSICS_TYPES);
-    }
-
-    getPhysicsType(type) {
-        for (let i in this.physicsTypes)
-            if (this.physicsTypes[i] === type)
-                return i - 1;
-        return -1;
-    }
-
-    getPhysicsShape(type) {
-        switch (type) {
-            case PHYSICS_SHAPES.AUTO: return 'unknown';
-            case PHYSICS_SHAPES.CONVEX: return 'convexMesh';
-            case PHYSICS_SHAPES.CONCAVE: return 'concaveMesh';
-            case PHYSICS_SHAPES.EXTRUDE: return 'hacd';
-            case PHYSICS_SHAPES.BOX: return 'box';
-            case PHYSICS_SHAPES.CONE: return 'cone';
-            case PHYSICS_SHAPES.CYLINDER: return 'cylinder';
-            case PHYSICS_SHAPES.PLANE: return 'plane';
-            case PHYSICS_SHAPES.SPHERE: return 'sphere';
-            case PHYSICS_SHAPES.TORUS: return 'torus';
-            default: return 'unknown';
-        }
     }
 
     async groupObjects(newParent, newChild, ignoreNetwork) {
@@ -119,11 +75,7 @@ export default class ObjectManager {
                 return object;
     }
 
-    addObject(object, attach = false) {
-        this.objects.push(object);
-        this.scene.add(object);
-        this.conjure.world.objectControls.addTransformObject(object, attach);
-        this.conjure.getScreens().screenObjectsHierarchy.updateObjects();
+    addObject(object) {
         console.log(object)
     }
     // find a group in this.objects that contains 'obj'

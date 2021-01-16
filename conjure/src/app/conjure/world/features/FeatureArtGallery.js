@@ -20,7 +20,7 @@ export default class FeatureArtGallery extends Feature
         this.gifLoader = new GifLoader();
     }
 
-    async preload()
+    async load()
     {
         this.sky = new Sky();   
         this.sky.scale.setScalar(450000);
@@ -64,10 +64,6 @@ export default class FeatureArtGallery extends Feature
         this.loadArtwork()
         this.realm.conjure.getLoadingScreen().setText('WARNING!\n\nThis realm displays artwork from an external gallery and may feature adult material.\nIf you not an adult, please close the window or explore another realm.') 
         await this.realm.conjure.getLoadingScreen().awaitInput()
-    }
-
-    async load()
-    {
     }
 
     async unload()

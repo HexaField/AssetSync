@@ -1,1 +1,1 @@
-export default class e{constructor(a){this.realm=a}async preload(){}async load(){}async unload(){}update(a){}}
+export default class t{constructor(a){this.realm=a}async load(){}async unload(){}update(a){}}

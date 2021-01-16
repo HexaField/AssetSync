@@ -21,3 +21,24 @@ export const NETWORKING_OPCODES = {
         }
     }
 }
+
+export const PHYSICS_TYPES = {
+    NONE: 'None',
+    DYNAMIC: 'Dynamic',
+    STATIC: 'Static',
+    KINEMATIC: 'Kinematic',
+    GHOST: 'Ghost',
+}
+
+export const PHYSICS_SHAPES = {
+    AUTO: 'Automatic',
+    CONVEX: 'Convex Mesh',
+    CONCAVE: 'Concave Mesh',
+    EXTRUDE: 'Extrude Mesh',
+    BOX: 'Box',
+    CONE: 'Cone',
+    CYLINDER: 'Cylinder',
+    PLANE: 'Plane',
+    SPHERE: 'Sphere',
+    TORUS: 'Torus',
+}

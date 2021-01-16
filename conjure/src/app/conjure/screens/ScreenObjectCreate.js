@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import ScreenElementButton from './elements/ScreenElementButton';
 import ScreenElementCycleButton from './elements/ScreenElementCycleButton';
 import ScreenBase from './ScreenBase';
-import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../world/object/ObjectManager';
+import { PHYSICS_TYPES, PHYSICS_SHAPES } from '../../backend/Constants';
 import { createGeometry, createMaterial } from '../util/wireframe'
 import { POSTPROCESSING } from '../PostProcessing';
 import { ObjectPrefabs } from '../world/object/ObjectPrefabs';

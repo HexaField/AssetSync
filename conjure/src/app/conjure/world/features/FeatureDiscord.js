@@ -12,7 +12,7 @@ export default class FeatureDiscord extends Feature
         super(realm)
     }
 
-    async preload()
+    async load()
     {
         const request = {
             method: 'POST',
@@ -120,10 +120,6 @@ export default class FeatureDiscord extends Feature
             line.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute([...color.clone().toArray() , ...this.nodeColors[node.type.toString()].clone().toArray() ], 3 ) );
             group.add(line)
         }
-    }
-
-    async load()
-    {
     }
 
     async unload()

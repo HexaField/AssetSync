@@ -4,7 +4,6 @@ import FeatureArtGallery from '../features/FeatureArtGallery'
 import FeatureLobby from '../features/FeatureLobby'
 import { REALM_TYPES, REALM_WORLD_GENERATORS, REALM_WHITELIST } from '../../../backend/realm/RealmData'
 import Platform from '../Platform'
-import ObjectManager from '../object/ObjectManager'
 import FeatureDiscord from '../features/FeatureDiscord'
 // import FeatureParser from './FeatureParser'
 import EventEmitter from 'events'
@@ -21,7 +20,6 @@ export default class Realm extends EventEmitter {
         this.world.group.add(this.group)
 
         this.objectLoader = new THREE.ObjectLoader();
-        this.objectManager = new ObjectManager(this)
 
         this.realmData = realmData
         this.realmID = realmData.getID()
@@ -35,56 +33,6 @@ export default class Realm extends EventEmitter {
         this.networkProtocolCallbacks = {}
     }
 
-    async preload() {
-        if (this.realmData.getData().worldData.playsAudio) {
-            await this.conjure.getAudioManager().create(true)
-        }
-
-        await this.preloadFeatures()
-    }
-
-    async preloadFeatures() {
-        for (let feature of this.realmData.getData().worldSettings.features) {
-            // if(typeof feature === 'object')
-            // {
-            //     let f = new FeatureParser(this, feature)
-            //     await f.parse()
-            //     await f.preload()
-            //     this.features.push(f)
-            //     continue
-            // }
-            switch (feature) {
-                case 'Gallery': {
-                    let f = new FeatureArtGallery(this)
-                    await f.preload()
-                    this.features.push(f)
-                    break
-                }
-
-                case 'Platform': {
-                    this.terrain = new Platform(this.conjure, this.world.group)
-                    break
-                }
-
-                case 'Lobby': {
-                    let f = new FeatureLobby(this)
-                    await f.preload()
-                    this.features.push(f)
-                    break
-                }
-
-                case 'Discord': {
-                    let f = new FeatureDiscord(this)
-                    await f.preload()
-                    this.features.push(f)
-                    break
-                }
-
-                default: break
-            }
-        }
-    }
-
     // intentionally noop
     sendData(opcode, content) { }
 
@@ -92,13 +40,16 @@ export default class Realm extends EventEmitter {
     sendTo(opcode, content, peerID) { }
 
     async load() {
-        for (let feature of this.features)
-            await feature.load()
+        if (this.realmData.getData().worldData.playsAudio) {
+            await this.conjure.getAudioManager().create(true)
+        }
 
         this.database = await this.world.conjure.realms.addDatabase(this.realmData, (...message) => {
             this.conjure.loadingScreen.setText(...message, false)
             console.log('Loading Realm:', ...message)
         }, getParams().network === 'true') // this is a security & coherency problem and will be removed when the network goes live
+        this.conjure.physics = this.database.world.physics
+        this.world.group.add(this.database.world.scene)
 
         this.database.eventHooks.on('message', (message) => {
             // console.log(message)
@@ -131,35 +82,35 @@ export default class Realm extends EventEmitter {
         this.on(NETWORKING_OPCODES.USER.LEAVE, (data, peerID) => { this.world.onUserLeave(peerID) })
 
 
-        this.database.onObjectCreate = (uuid, data, peerID) => {
-            this.loadObjectFromPeer(uuid, data)
+        this.database.onObjectCreate = (object, peerID) => {
+            this.loadObject(object)
         }
     
         // update to actual object properties
-        this.database.onObjectUpdate = (uuid, data, peerID) => {
-            console.log('onObjectUpdate', uuid, data)
+        this.database.onObjectUpdate = (object, peerID) => {
+            console.log('onObjectUpdate', object)
         }
     
         // update to actual object properties
         this.database.onObjectGroup = (data, peerID) => {
-            this.objectManager.groupObjects(this.objectManager.getObjectByUUID(data.newParentUUID), this.objectManager.getObjectByUUID(data.newChildUUID), true)
+            // this.objectManager.groupObjects(this.objectManager.getObjectByUUID(data.newParentUUID), this.objectManager.getObjectByUUID(data.newChildUUID), true)
         }
     
         // update to object matrix
         this.database.onObjectMove = (data, peerID) => {
-            // for (let obj of data.objects) {
-            //     // console.log('WORLD: onObjectMove got data', obj.data)
-            //     this.objectManager.updateObjectFromClient(obj.uuid, obj.data);
-            // }
+            for (let obj of data.objects) {
+                // console.log('WORLD: onObjectMove got data', obj.data)
+                // this.objectManager.updateObjectFromClient(obj.uuid, obj.data);
+            }
         }
     
-        this.database.onObjectDestroy = ({ uuid }, peerID) => {
-            this.objectManager.destroyObjectByUUID(uuid);
+        this.database.onObjectDestroy = async (object, peerID) => {
+            this.world.objectControls.detach(object)
         }
 
-        for (let obj of await this.database.getObjects()) {
-            this.loadObject(obj);
-        }
+        // for (let obj of await this.database.getObjects()) {
+        //     this.loadObject(obj);
+        // }
 
         this.network = this.database.network
 
@@ -171,14 +122,57 @@ export default class Realm extends EventEmitter {
             this.network.sendTo(peerID, JSON.stringify({ opcode, content }))
         }
 
+        await this.loadFeatures()
 
         this.loading = false
     }
 
+    async loadFeatures() {
+        for (let feature of this.realmData.getData().worldSettings.features) {
+            // if(typeof feature === 'object')
+            // {
+            //     let f = new FeatureParser(this, feature)
+            //     await f.parse()
+            //     await f.preload()
+            //     this.features.push(f)
+            //     continue
+            // }
+            switch (feature) {
+                case 'Gallery': {
+                    let f = new FeatureArtGallery(this)
+                    await f.load()
+                    this.features.push(f)
+                    break
+                }
+
+                case 'Platform': {
+                    this.terrain = new Platform(this.conjure, this.world.group)
+                    break
+                }
+
+                case 'Lobby': {
+                    let f = new FeatureLobby(this)
+                    await f.load()
+                    this.features.push(f)
+                    break
+                }
+
+                case 'Discord': {
+                    let f = new FeatureDiscord(this)
+                    await f.load()
+                    this.features.push(f)
+                    break
+                }
+
+                default: break
+            }
+        }
+    }
+
     async leave() {
+        this.world.group.remove(this.database.world.scene)
         this.database.eventHooks.removeAllListeners()
         this.removeAllListeners()
-        this.getObjectManager().destroyAllObjects()
         // add check to see if database should be removed (global realms etc)
         if (this.realmData.type === REALM_TYPES.EPHEMERAL)
             await this.conjure.realms.removeDatabase(this.realmData)
@@ -189,6 +183,7 @@ export default class Realm extends EventEmitter {
         for (let feature of this.features)
             await feature.unload()
 
+        this.conjure.physics = undefined
         this.world.group.remove(this.group)
         console.log('successfully left realm')
     }
@@ -201,150 +196,15 @@ export default class Realm extends EventEmitter {
     {
         for (let i of this.features)
             i.update(updateArgs)
-        this.objectManager.update(updateArgs)
     }
-
-    getObjectManager() {
-        return this.objectManager
-    }
-
-    // ------- //
-    // OBJECTS //
-    // ------- //
-
-    async loadObjectFromPeer(uuid, data) {
-        try {
-            await this.loadObject(data)
-        } catch (error) {
-            console.log('REALM: could not load object', object.uuid, 'with error', error);
-        }
-    }
-
+    
     async createObject(object) {
-        object.userData.originatorID = this.conjure.assetSync.peerID;
-        object.updateMatrixWorld();
-        this.restorePhysics(object);
-        const success = await this.database.createObject(object)
-        // if adding to database failed, don't put it into our world
-        if (success) {
-            this.objectManager.addObject(object, true)
-            // this.conjure.screenManager.hideScreen()
-        }
-    }
-
-    // async objectToJSON(obj) {
-    //     let json = obj.toJSON();
-    //     return json
-    //     // temp
-    //     if (json.images)
-    //         for (let i = 0; i < json.images.length; i++) {
-    //             // if we previously failed to get the image, we don't want to save the missing texture data
-    //             if (json.images[i].url === this.conjure.assetManager.missingTextureData) continue
-
-    //             json.images[i].hash = await this.conjure.assetManager.createAsset(ASSET_TYPE.TEXTURE, json.images[i].url, json.images[i].uuid);
-    //             let newUUID = this.conjure.assetManager.getByIPFSHash(ASSET_TYPE.TEXTURE, json.images[i].hash).data.uuid;
-    //             if (newUUID !== json.images[i].uuid)  // if asset already exists, replace the uuid
-    //             {
-    //                 if (json.textures) // replace uuid reference in texture
-    //                     for (let j = 0; j < json.textures.length; j++)
-    //                         if (json.textures[j].image === json.images[i].uuid)
-    //                             json.textures[j].image = newUUID;
-    //                 json.images[i].uuid = newUUID;
-    //             }
-    //             json.images[i].url = '';
-    //         }
-    //     return json;
-    // }
-
-
-    async loadObject(object) {
-        if (!object) return
-        try {
-            // if(data.images)
-            //     for(let i = 0; i < data.images.length; i++)
-            //     {
-            //         if(!data.images[i].hash) continue;
-            //         data.images[i].url = await this.conjure.assetManager.loadImageAssetFromHash(data.images[i].hash);
-            //     }
-            // if (typeof data === 'string') {
-            //     data = JSON.parse(data)
-            // }
-            // let object = this.loadObjectAssets(data);
-            // await this.conjure.assetManager.saveAssets(object)
-            // console.log(object)
-            this.restorePhysics(object);
-            this.objectManager.addObject(object)
-            // if(data.object.userData.lastUpdate)
-            //     this.objectManager.updateObjectFromClient(object.uuid, data.object.userData.lastUpdate)
-            return true
-        }
-        catch (error) {
-            console.log(error, object)
-            return false;
-        }
-    }
-
-    // loadObjectAssets(json) {
-    //     return this.objectLoader.parse(json);
-    // }
-
-    restorePhysics(object) {
-        // if (object.userData.originatorID !== this.conjure.assetSync.peerID) return
-        if (!object.userData.physics || object.body) return
-
-        if (this.objectManager.getPhysicsType(object.userData.physics.type) < 0) return
-
-        this.conjure.physics.add.existing(object, {
-            shape: this.objectManager.getPhysicsShape(object.userData.physics.shape),
-            collisionFlags: this.objectManager.getPhysicsType(object.userData.physics.type),
-            mass: object.userData.physics.mass,
-            // breakable: object.userData.physics.destructable
-        });
-        object.body.setGravity(0, -object.userData.physics.gravity, 0)
-        object.body.setBounciness(object.userData.physics.bounciness)
-    }
-
-    // TODO: fix this - hashs arent handled properly
-    async updateObjectPosition(object) {
-        await this.updateObject(object) // temp fix
-
-        // args to data handler need to be objectified
-        // let json = await this.objectToJSON(object)
-        const success = await this.database.updateObject(object);
-        // if(!obj.userData.hash) return;
-        // let json = await this.objectToJSON(obj)
-        // await this.conjure.getDataHandler(SERVER_PROTOCOLS.UPDATE_OBJECT, obj.userData.hash, json);
-    }
-
-    async updateObject(object) {
-        if (!object) return;
-        if (!object.uuid) {
-            console.log('Tried to update object without a hash! Are you sure this object is a top parent?')
-            return;
-        }
-        // let json = await this.objectToJSON(object)
-        await this.database.updateObject(object);
+        object.userData.originatorID = this.conjure.assetSync.peerID
+        object.updateMatrixWorld()
+        await this.database.createObject(object)
     }
 
     async destroyObject(object) {
-        if (!object) return
-        object.userData.markedDestroyed = true;
-        if (this.objectManager.getObject(object)) {
-            let success = await this.database.dereferenceObject(object)
-            if (success) {
-                this.world.objectControls.detach(object)
-                this.objectManager.destroyObject(object);
-            }
-            else {
-                object.userData.markedDestroyed = false;
-                console.log('failed to remove object', object.uuid)
-            }
-        }
-        else {
-            // TODO: this is part of grouping
-            // let topParent = this.objectManager.getTopGroupObject(obj)
-            // this.objectManager.destroyObject(obj, { isChild: true });
-            // await this.updateObject(topParent)
-        }
+        this.world.objectControls.detachAll(object)
     }
 }
