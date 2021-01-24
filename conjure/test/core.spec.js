@@ -14,6 +14,8 @@ import { randomString } from '@AssetSync/common/src/randomString.js'
 
 await relay(config)
 
+globalThis.useMemory = true
+
 async function createInstances(num) {
     const instances = []
     for(let i = 0; i < num; i++) {
@@ -24,8 +26,7 @@ async function createInstances(num) {
 
 test.serial('can start backend with worldsync', async (t) => {
 
-    const App = await server(app, process.cwd() + `/test/dbs/database-${randomString(8)}/`)
-
+    const App = await server(app, { repoPath: process.cwd() + `/test/dbs/database-${randomString(8)}/`, minPeersCount: 0, enableLogging: true })
     return new Promise(async (resolve) => {
         resolve(App)
     }).then((results) => {

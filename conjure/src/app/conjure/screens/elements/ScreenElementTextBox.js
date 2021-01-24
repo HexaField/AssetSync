@@ -57,11 +57,6 @@ export default class ScreenElementTextBox extends ScreenElementBase
         this.onExitCallback = callback
     }
 
-    setOnChangeCallback(callback)
-    {
-        this.onChangeCallback = callback
-    }
-
     getValue()
     {
         return this.value

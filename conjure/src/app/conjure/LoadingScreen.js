@@ -80,6 +80,7 @@ export default class LoadingScreen
 
     setText(text, reset = true)
     {
+        text = String(text)
         this.textObj.setText(reset ? text : this.textObj.getText() + '\n' + text)
         if(text.includes('\n'))
             this.textObj.getObject().position.setY((this.textObj._line_height * text.match(/\n/g).length))

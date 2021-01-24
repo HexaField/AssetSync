@@ -124,6 +124,11 @@ export default class ScreenElementBase
         this.onClickCallback = callback;
     }
 
+    setOnChangeCallback(callback)
+    {
+        this.onChangeCallback = callback
+    }
+
     removeBorder()
     {
         if(this.border)

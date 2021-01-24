@@ -291,14 +291,13 @@ class Conjure extends EventEmitter
     
         if(this.conjureMode === CONJURE_MODE.LOADING)
         {
-            this.loadingScreen.update(parseInt(delta.toString()))
+            this.loadingScreen.update(delta)
         } 
         else
         {
-            this.updateConjure(parseInt(delta.toString()))
+            this.updateConjure(delta)
 
-            this.physics.update(delta)
-            this.physics.updateDebugger()
+            // this.physics.update(delta)
             
             this.animationMixers.update(delta)
             // this.renderer.render(this.scene, this.camera)

@@ -11,7 +11,9 @@
         "start:browser": "NODE_OPTIONS=--max_old_space_size=4096 snowpack dev",
         "clean:node": "rm -rf bin",
         "build:node": "pkg src/index.js --targets node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path bin/",
-        "start:node": "nodemon --trace-warnings --trace-uncaught src/index.js --watch src/app/backend src/packages",
+        "start:node": "concurrently \"yarn start:node:disk\" \"yarn start:node:memory\"",
+        "start:node:disk": "MEMORY=FALSE nodemon --trace-warnings --trace-uncaught src/index.js --watch src/app/backend src/packages",
+        "start:node:memory": "MEMORY=TRUE nodemon --trace-warnings --trace-uncaught src/index.js --watch src/app/backend src/packages",
         "test": "yarn run clean:test && ava && yarn run clean:test",
         "clean:test": "rm -rf test/dbs"
     },
@@ -33,6 +35,7 @@
         "abi-decoder": "^2.3.0",
         "ava": "^3.14.0",
         "canvas": "^2.6.1",
+        "concurrently": "^5.3.0",
         "enable3d": "^0.21.0",
         "hyperdiff": "^2.0.7",
         "jsdom": "^16.4.0",

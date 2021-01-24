@@ -58,12 +58,12 @@ export default class User
 
     async loadModel()
     {
-        this.playerModel = await this.conjure.load.gltf('playerModel')
+        this.meshes = []
 
+        this.playerModel = await this.conjure.load.gltf('playerModel')
         this.mesh = this.playerModel.scene;
         this.mesh.isSkinnedMesh = true;
         this.mesh.rotation.y = THREE.MathUtils.DEG2RAD * 180;
-        this.meshes = []
         this.mesh.traverse(o => {
             if (o.isMesh) {
                 o.castShadow = true;

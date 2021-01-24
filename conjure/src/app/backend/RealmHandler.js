@@ -5,12 +5,12 @@ import EventEmitter from 'events'
 import * as THREE from 'three'
 import { initialisePhysics } from './functions/initialisePhysics.js'
 
-const verbose = getParams().verbose !== undefined
-const network = getParams().network === 'true'
 export default class RealmHandler extends EventEmitter {
-    constructor(assetSync) {
+    constructor({ assetSync, verboseOutput, forceNetwork }) {
         super()
         this.assetSync = assetSync
+        this.verboseOutput = verboseOutput
+        this.forceNetwork = forceNetwork
 
         this.dhtProtocol = '/realm/' // id is added between these
         // this.dhtVersion = '/1.0.0' // not currently impelemented
@@ -28,14 +28,16 @@ export default class RealmHandler extends EventEmitter {
         const clock = new THREE.Clock()
         const animate = () => {
             const delta = clock.getDelta() * 1000
-            this.update(delta)
+            this.update(parseInt(delta.toString()))
             window.requestAnimationFrame(animate)
         }
         window.requestAnimationFrame(animate)
-        await this.preloadGlobalRealms()
-        for (let realm of await this.getPinnedRealms()) {
-            await this.addDatabase(realm, this.assetSync.log, network)
-        }
+        // if(isNode) {
+        //     await this.preloadGlobalRealms()
+        //     for (let realm of await this.getPinnedRealms()) {
+        //         await this.addDatabase(realm, this.assetSync.log, this.forceNetwork)
+        //     }
+        // }
     }
 
     cleanup() {
@@ -102,22 +104,24 @@ export default class RealmHandler extends EventEmitter {
     }
 
     receiveFromDHT(key, value, from) {
-        try {
-            if (this.validateRealm(value)) {
-                this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
-                this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value, this.assetSync.log, network)
-            } else {
-                this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+        if(isNode) {
+            try {
+                if (this.validateRealm(value)) {
+                    this.assetSync.dhtPlugin.putLocal({ key: this.dhtProtocol + key, value })
+                    this.addDatabase(typeof value === 'string' ? JSON.parse(value) : value, this.assetSync.log, this.forceNetwork)
+                } else {
+                    this.removeDatabase(typeof value === 'string' ? JSON.parse(value) : value)
+                }
+            } catch (err) {
+                console.log(err, JSON.stringify(value, null, 2))
             }
-        } catch (err) {
-            console.log(err, JSON.stringify(value, null, 2))
         }
     }
 
     async preloadGlobalRealms() {
         for (let realm of Object.values(GLOBAL_REALMS)) {
             realm.global = true
-            await this.addDatabase(realm, this.assetSync.log, network)
+            await this.addDatabase(realm, this.assetSync.log, this.forceNetwork)
         }
     }
 
@@ -159,7 +163,7 @@ export default class RealmHandler extends EventEmitter {
     }
 
     async addDatabase(realmData, onProgress, forceSync = false) {
-        return this.realms[realmData.id] || await this._createDatabase(realmData, verbose ? ((...messages) => { console.log('Loading Realm ' + realmData.id + ':', ...messages) }) : onProgress, forceSync)
+        return this.realms[realmData.id] || await this._createDatabase(realmData, this.verboseOutput ? ((...messages) => { console.log('Loading Realm ' + realmData.id + ':', ...messages) }) : onProgress, forceSync)
     }
 
     async _createDatabase(realmData, onProgress, forceSync) {

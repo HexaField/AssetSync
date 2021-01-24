@@ -10,7 +10,8 @@ export default async function (options = {}) {
             try {
                 const { peerId, keychain, repo, print, isNew } = await startRepo({
                     repo: options.repoPath,
-                    libp2pConfig: defaultNodeConfig()
+                    libp2pConfig: defaultNodeConfig(),
+                    useMemory: globalThis.useMemory
                 })
 
 
@@ -36,7 +37,7 @@ export default async function (options = {}) {
             }
         }
 
-        return await Libp2p(config())
+        return await Libp2p()
 
     } else {
 

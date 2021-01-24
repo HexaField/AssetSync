@@ -15,13 +15,13 @@ const createLibP2P = require('./libp2p')
    */
 const startRepo = async (options) => {
 
-  const { repoAutoMigrate: autoMigrate, repo: inputRepo, silent } = options
+  const { repoAutoMigrate: autoMigrate, repo: inputRepo, silent, useMemory } = options
 
   const print = options.silent ? log : console.log
   options.print = print
 
   const repo = (typeof inputRepo === 'string' || inputRepo == null)
-    ? createRepo({ path: inputRepo, autoMigrate, silent })
+    ? createRepo({ path: inputRepo, autoMigrate, silent, useMemory })
     : inputRepo
   
   const { peerId, keychain, isNew } = await loadRepo(repo, options)

@@ -20,7 +20,6 @@ export default class Platform
         this.floor.rotateX(Math.PI / 2)
         // this.floor.position.copy(this.pos) 
         this.parentGroup.add(this.floor);
-        console.log(conjure.physics)
         conjure.physics.add.existing(this.floor, { shape: 'convexMesh', collider: { margin: 0.01 }, collisionFlags:1, mass:0 })
     }
 

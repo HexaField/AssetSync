@@ -48,11 +48,6 @@ export default class ScreenElementScaler extends ScreenElementBase
             this.onChangeCallback(this.getValue())
     }
 
-    setOnChangeCallback(callback)
-    {
-        this.onChangeCallback = callback;
-    }
-
     updateSlider(difference)
     {
         if(this.disabled) return;

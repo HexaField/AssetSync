@@ -10,7 +10,7 @@ import repo from './create-repo.js'
 
 export default async function(otherNode) {
 
-    const assetSync = new AssetSync()
+    const assetSync = new AssetSync({ enableLogging: true })
 
     const libp2pInstance = await repo(otherNode)
     

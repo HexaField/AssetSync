@@ -27,6 +27,8 @@ export default class ScreenElementVector3 extends ScreenElementBase
         this.value.set(this.xElement.currentValue, this.yElement.currentValue, this.zElement.currentValue);
         if(this.onClickCallback)
             this.onClickCallback(this.onClickCallbackArgs, this.value)
+        if(this.onChangeCallback)
+            this.onChangeCallback(this.value)
     }
     
     setSubject(vector3)

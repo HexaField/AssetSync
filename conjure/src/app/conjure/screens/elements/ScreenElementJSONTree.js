@@ -43,10 +43,10 @@ export default class ScreenElementJSONTree extends ScreenElementBase
         this.schema = schema;
     }
 
-    onUpdate()
+    onUpdate(param)
     {
         if(this.onUpdateCallback)
-            this.onUpdateCallback()
+            this.onUpdateCallback(param)
     }
     
     updateTree(data, onUpdateCallback)
@@ -125,7 +125,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setValue(json[schemaKey])
                     element.setOnChangeCallback((newValue) => {
                         json[schemaKey] = newValue;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                 } break;
 
@@ -134,6 +134,9 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setText(schema[schemaKey].buttonText)
                     element.setOnClickCallback(schema[schemaKey].callback);
                     element.setDisabled(schema[schemaKey].disable);
+                    element.setOnChangeCallback((newValue) => {
+                        this.onUpdate(schemaKey)
+                    });
                 } break;
 
                 case 'bool': {
@@ -141,7 +144,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setValue(json[schemaKey])
                     element.setOnChangeCallback((newValue) => {
                         json[schemaKey] = newValue;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                 } break;
 
@@ -151,7 +154,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setSubject(json[schemaKey]);
                     element.setOnChangeCallback((newValue) => {
                         json[schemaKey] = newValue;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                     element.setActive(true);
                 } break;
@@ -159,6 +162,9 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                 case 'vector3': {
                     element = new ScreenElementVector3(this.screen, this.scrollPanel, { width: width / 2, height: 0.075 });
                     element.setSubject(json[schemaKey]);
+                    element.setOnChangeCallback((newValue) => {
+                        this.onUpdate(schemaKey)
+                    });
                 } break;
 
                 case 'scaler': {
@@ -167,7 +173,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setDefaultValue(schema[schemaKey].default)
                     element.setOnChangeCallback((newValue) => {
                         json[schemaKey] = newValue;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                 } break;
 
@@ -181,7 +187,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setAsset(asset);
                     element.setOnClickCallback((newAsset) => {
                         json[schemaKey] = newAsset.data;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                 } break;
 
@@ -195,7 +201,7 @@ export default class ScreenElementJSONTree extends ScreenElementBase
                     element.setAsset(asset);
                     element.setOnClickCallback((newAsset) => {
                         json[schemaKey] = newAsset.data;
-                        this.onUpdate()
+                        this.onUpdate(schemaKey)
                     });
                 } break;
                 default:break;

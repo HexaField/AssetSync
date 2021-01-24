@@ -19,6 +19,10 @@ const OPCODES_SYNCED_DATABASE = {
     receiveEntries: 'receiveEntries',
 }
 
+if(globalThis.useMemory) {
+    console.log('Ignoring disk...')
+}
+
 export default async (realmDatabase, onProgress, shouldSync) => {
     return new Promise(async (resolve) => {
 
@@ -31,7 +35,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
 
         const finishSync = () => {
             if(!resolved) {
-                onProgress('Finished Sync!')
+                // onProgress('Finished Sync!')
                 resolved = true
                 resolve()
             }
@@ -45,14 +49,15 @@ export default async (realmDatabase, onProgress, shouldSync) => {
         realmDatabase.network.on('onPeerLeave', (peerID) => { })
 
         let datastoreObjects
-        if(realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
+        if(!useMemory && realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
             datastoreObjects = await realmDatabase.assetSync.transportPlugin._libp2p.repo.openDatastore(realmDatabase.dhtProtocol + '/objects')
         } else {
             datastoreObjects = new MemoryDatastore()
         }
+        realmDatabase.datastoreObjects = datastoreObjects
 
         let datastoreMetadata
-        if(realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
+        if(!useMemory && realmDatabase.assetSync.transportPlugin._libp2p.repo && realmDatabase.realmData.type !== REALM_TYPES.EPHEMERAL) {
             datastoreMetadata = await realmDatabase.assetSync.transportPlugin._libp2p.repo.openDatastore(realmDatabase.dhtProtocol + '/metadata')
         } else {
             datastoreMetadata = new MemoryDatastore()
@@ -237,6 +242,7 @@ export default async (realmDatabase, onProgress, shouldSync) => {
                 await realmDatabase._put(key, '', entries[key])
             })
             differences.common.forEach(async (key) => {
+                console.log(Date.parse(myEntries[key]), Date.parse(entries[key]))
                 if (Date.parse(myEntries[key]) > Date.parse(entries[key])) {
                     neededKeys.push(key)
                 }

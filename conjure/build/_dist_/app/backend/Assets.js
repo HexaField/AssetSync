@@ -1,1 +1,1 @@
-export default class e{constructor(t){this.assetSync=t,this.dhtProtocol="/assets/"}async get(t){return await this.assetSync.dhtPlugin.get(this.dhtProtocol+t)}async put(t,s){return await this.assetSync.dhtPlugin.put(this.dhtProtocol+t,s)}receiveFromDHT(t,s,o){}}
+export default class e{constructor(t){this.assetSync=t.assetSync,this.dhtProtocol="/assets/"}async get(t){return await this.assetSync.dhtPlugin.get(this.dhtProtocol+t)}async put(t,s){return await this.assetSync.dhtPlugin.put(this.dhtProtocol+t,s)}receiveFromDHT(t,s,o){}}

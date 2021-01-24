@@ -198,13 +198,28 @@ export default class Realm extends EventEmitter {
             i.update(updateArgs)
     }
     
+    /**
+     * @param {THREE.Object3D} object 
+     */
     async createObject(object) {
         object.userData.originatorID = this.conjure.assetSync.peerID
         object.updateMatrixWorld()
         await this.database.createObject(object)
     }
 
+    /**
+     * @param {THREE.Object3D} object 
+     * @param {string} paramKey the parameters that have changed
+     */
+    async updateObject(object, paramKey) {
+        await this.database.updateObject(object, paramKey)
+    }
+
+    /**
+     * @param {THREE.Object3D} object 
+     */
     async destroyObject(object) {
+        await this.database.removeObject(object)
         this.world.objectControls.detachAll(object)
     }
 }

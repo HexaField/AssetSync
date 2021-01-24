@@ -5,7 +5,7 @@ import { CONJURE_MODE } from '../../Conjure.js'
 import EventEmitter from 'events'
 import { iterateChildrenWithFunction } from '../../util/iterateRecursive.js'
 
-export default class ObjectControls extends EventEmitter{
+export default class ObjectControls extends EventEmitter {
     constructor(world) {
         super()
         this.world = world
@@ -35,7 +35,7 @@ export default class ObjectControls extends EventEmitter{
                 //     this.orbitControls.target.copy(this.flyControls.raycaster.ray.at(10, this.vec3));
                 // if(this.currentControlScheme === CONTROL_SCHEME.AVATAR)
                 //     this.orbitControls.target.copy(this.avatarControls.raycaster.ray.at(10, this.vec3));
-                
+
                 this.transformControls.enabled = true
                 this.orbitControls.enabled = true
                 this.orbitControls.update()
@@ -62,7 +62,7 @@ export default class ObjectControls extends EventEmitter{
     getSelectedObject() {
         return this.transformControls.objects.length ? this.transformControls.objects[0] : undefined
     }
-    
+
     // addTransformObject(obj, attach)
     // {
     //     if(this.transformControls.objects.length)
@@ -106,7 +106,7 @@ export default class ObjectControls extends EventEmitter{
 
     // need to sync all cameras - might be a better way than this
     lookAt(obj) {
-        if(!obj) return;
+        if (!obj) return;
         let pos = obj.position.getWorldPosition(this.vec3);
         this.camera.lookAt(pos.x, pos.y, pos.z);
         this.orbitControls.target.copy(pos);
@@ -114,7 +114,7 @@ export default class ObjectControls extends EventEmitter{
     }
 
     update(updateArgs) {
-        if(!this.enabled) return
+        if (!this.enabled) return
 
         if (updateArgs.input.isPressed('q', true))
             this.transformControls.setSpace(this.transformControls.space === "local" ? "world" : "local");
@@ -161,67 +161,58 @@ export default class ObjectControls extends EventEmitter{
             this.transformControls.enabled = !this.transformControls.enabled;
         }
 
-        if(this.transformControls.enabled)
-        {
+        if (this.transformControls.enabled) {
             let intersections = updateArgs.mouseRaycaster.intersectObjects(this.world.realm.database.world.scene.children, true);
-            if(intersections.length > 0)
-            {
-                if(updateArgs.input.isPressed('MOUSELEFT', true))
-                {
-                    if(!this.transformControls.axis)
-                    {
-                        let object = intersections[0].object//this.conjure.world.realm.objectManager.getTopGroupObject(intersections[0].object);
-                        if(object)
-                        {
-                            if(updateArgs.input.isDown('CONTROL', true))
-                            {
-                                this.attach(object);
-                            }
-                            else
-                            {
-                                if(this.transformControls.hasAnyAttached())
-                                    this.lastTransformObject = this.transformControls.isAttached(object) ? object : this.lastTransformObject;
-                                
-                                if(this.transformControls.isAttached(object))
-                                {
-                                    this.detach(object);
-                                }
-                                else
-                                {
-                                    this.attach(object, {detachOthers:true});
-                                }
+            if (intersections.length > 0) {
+                let object = intersections[0].object//this.conjure.world.realm.objectManager.getTopGroupObject(intersections[0].object);
+                if (object) {
+                    if (updateArgs.input.isDown('MOUSELEFT', true) && this.transformControls.axis) {
+                        const mode = this.transformControls.getMode()
+                        this.conjure.world.realm.updateObject(object, mode === 'translate' ? 'position' : (mode === 'rotate' ? 'rotation' : 'scale'))
+                    }
+                    if (updateArgs.input.isPressed('MOUSELEFT', true) && !this.transformControls.axis) {
+                        if (updateArgs.input.isDown('CONTROL', true)) {
+                            this.attach(object);
+                        } else {
+                            if (this.transformControls.hasAnyAttached())
+                                this.lastTransformObject = this.transformControls.isAttached(object) ? object : this.lastTransformObject;
+
+                            if (this.transformControls.isAttached(object)) {
+                                this.detach(object);
+                            } else {
+                                this.attach(object, { detachOthers: true });
                             }
                         }
                     }
                 }
             }
         }
-
-        // need to fix this to work with multiple objects
-        // if(updateArgs.input.isPressed('FOCUS')) // focus on object
-        // {
-        //     // need to add things necessary to change from other control schemes to orbit/transform
-        //     this.transformControls.enabled = true;
-        //     if(this.transformControls.objects.length > 0)
-        //     {
-        //         if(this.lastTransformObject)
-        //         {
-        //             let obj = this.lastTransformObject;
-        //             this.lastTransformObject = this.transformControls.object;
-        //             this.objectControls.attach(obj);
-        //             if(updateArgs.input.isDown('SHIFT', true))
-        //                 this.lookAt(this.lastTransformObject);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         if(this.lastTransformObject)
-        //         {
-        //             this.objectControls.attach(this.lastTransformObject);
-        //             if(updateArgs.input.isDown('SHIFT', true))
-        //                 this.lookAt(this.lastTransformObject);
-        //         }
-        //     }
-        // }
     }
+
+    // need to fix this to work with multiple objects
+    // if(updateArgs.input.isPressed('FOCUS')) // focus on object
+    // {
+    //     // need to add things necessary to change from other control schemes to orbit/transform
+    //     this.transformControls.enabled = true;
+    //     if(this.transformControls.objects.length > 0)
+    //     {
+    //         if(this.lastTransformObject)
+    //         {
+    //             let obj = this.lastTransformObject;
+    //             this.lastTransformObject = this.transformControls.object;
+    //             this.objectControls.attach(obj);
+    //             if(updateArgs.input.isDown('SHIFT', true))
+    //                 this.lookAt(this.lastTransformObject);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if(this.lastTransformObject)
+    //         {
+    //             this.objectControls.attach(this.lastTransformObject);
+    //             if(updateArgs.input.isDown('SHIFT', true))
+    //                 this.lookAt(this.lastTransformObject);
+    //         }
+    //     }
+    // }
 }

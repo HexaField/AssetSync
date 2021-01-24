@@ -1,6 +1,6 @@
 import { startAssetSync } from './create-assetsync.js'
 
-export async function server(startGame, repoPath) {
-    const assetSync = await startAssetSync({ repoPath })
-    return startGame({ assetSync })
+export async function server(startGame, assetSyncArgs, appArgs) {
+    const assetSync = await startAssetSync({ ...assetSyncArgs })
+    return startGame({ assetSync, appArgs })
 }

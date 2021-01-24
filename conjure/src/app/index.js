@@ -11,15 +11,17 @@ export default async function (args) {
 }
 
 class App extends EventDispatcher {
-    constructor({ assetSync } ) {
+    constructor({ assetSync, verboseOutput = false, forceNetwork = false } ) {
         super()
         this.assetSync = assetSync
+        this.verboseOutput = verboseOutput
+        this.forceNetwork = forceNetwork
     }
 
     async start() {
 
-        this.assets = new Assets(this.assetSync)
-        this.realms = new RealmHandler(this.assetSync)
+        this.assets = new Assets(this)
+        this.realms = new RealmHandler(this)
         await this.realms.initialise()
 
         this.globalNetwork = await this.assetSync.networkPlugin.joinNetwork('/conjure')

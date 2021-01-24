@@ -24,9 +24,14 @@ Read about AssetSync & Conjure [here](https://medium.com/@joshfield999)
 
 ## Conjure Progress Goals 2021 Q1
 
-- [ ] Profile system (DIDs)
+- [ ] Distributed physics
 - [ ] Launch test network
 - [ ] v0.1 for API / Toolkit
+
+## Conjure Progress Goals 2021 Q2
+
+- [ ] Profile system (DIDs)
+- [ ] Realm permission system
 
 ## Deploys
 

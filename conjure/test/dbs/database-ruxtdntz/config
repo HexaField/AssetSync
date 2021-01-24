@@ -1,0 +1,10 @@
+{
+  "Keychain": {
+    "dek": {
+      "keyLength": 64,
+      "iterationCount": 10000,
+      "salt": "IUtCO9DpsewxFWCdIbzmgTOn",
+      "hash": "sha2-512"
+    }
+  }
+}

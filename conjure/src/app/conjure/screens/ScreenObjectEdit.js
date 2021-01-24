@@ -12,7 +12,7 @@ export default class ScreenObjectEdit extends ScreenBase
         this.group.add(this.background);
         this.frameBorder = 0.05;
 
-        this.updateHierarchy = this.updateHierarchy.bind(this);
+        this.updateObject = this.updateObject.bind(this);
 
         this.jsonTree = new ScreenElementJSONTree(this, this, { width: this.width - this.frameBorder, height: this.height - this.frameBorder })
         this.registerElement(this.jsonTree);
@@ -36,13 +36,13 @@ export default class ScreenObjectEdit extends ScreenBase
         if(schema)
         {
             this.jsonTree.setSchema(schema);
-            this.jsonTree.updateTree(object, this.updateHierarchy);
+            this.jsonTree.updateTree(object, (param) => this.updateObject(object, param));
         }
     }
 
-    updateHierarchy()
+    updateObject(object, param)
     {
-        this.screenManager.screenObjectsHierarchy.updateObjects();
+        this.screenManager.conjure.world.realm.updateObject(object, param);
     }
 
     update(updateArgs)

@@ -1,7 +1,7 @@
 export default class Assets {
 
-    constructor(assetSync) {
-        this.assetSync = assetSync
+    constructor(app) {
+        this.assetSync = app.assetSync
         this.dhtProtocol = '/assets/'
     }
 

@@ -9,7 +9,7 @@ export const NETWORKING_OPCODES = {
     },
     OBJECT: {
         CREATE: 20,
-        UPDATE_PROPERTIES: 21,
+        UPDATE: 21,
         DESTROY: 22,
         GROUP: 23,
         MOVE: 24,

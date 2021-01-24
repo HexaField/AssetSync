@@ -27,6 +27,7 @@ export default class UserRemote extends User {
         this.timeoutCount = 0
         this.addMedia = () => {}
         this.removeMedia = () => {}
+        this.addPhysics(this.conjure.physics)
     }
 
     getConnection() {
@@ -172,6 +173,7 @@ export default class UserRemote extends User {
         // this.conjure.getWorld().onUserLeave(this.peerID)
         // this.conjure.physics.destroy(this.group.body)
         this.conjure.scene.remove(this.group)
+        this.removePhysics(this.conjure.physics)
         // this.timedOut = true
 
     }

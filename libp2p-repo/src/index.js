@@ -14,6 +14,7 @@ const apiAddr = require('./api-addr')
 const defaultOptions = require('./default-options')
 const ERRORS = require('./errors')
 const { isNode } = require('ipfs-utils/src/env')
+const { MemoryDatastore } = require('interface-datastore')
 
 const log = debug('libp2p:repo')
 
@@ -40,6 +41,7 @@ class Libp2pRepo {
    * @param {string} repoPath - path where the repo is stored
    * @param {Object} options - Configuration
    * @param {number} options.repoVersion - current repo version - outdated or updated repos will be migrated or reverted if possible
+   * @param {number} options.useMemory - when on node, only use memory
    */
   constructor (repoPath, options = {}) {
     if (typeof repoPath !== 'string') {
@@ -120,6 +122,10 @@ class Libp2pRepo {
    */
   async openDatastore(name, storageBackend = defaultBackend, storageBackendOptions = defaultBackendConfig) {
     try {
+      if(this.options.useMemory) {
+        storageBackend = MemoryDatastore
+        storageBackendOptions = {}
+      }
       const datastore = backends.create(name, pathJoin(this.path, name), { storageBackends: { [name]: storageBackend }, storageBackendOptions: storageBackendOptions || {} } )
       await datastore.open()
       this._datastores[name] = datastore // store the name as a reference to the store, use this[name] to retrieve the store
@@ -200,6 +206,8 @@ class Libp2pRepo {
    * @returns {Locker}
    */
   _getLocker () {
+    if(this.options.useMemory) return lockers.memory
+    
     if (typeof this.options.lock === 'string') {
       if (!lockers[this.options.lock]) {
         throw new Error('Unknown lock type: ' + this.options.lock)

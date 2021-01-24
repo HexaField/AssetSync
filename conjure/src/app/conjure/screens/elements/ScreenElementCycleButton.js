@@ -34,12 +34,7 @@ export default class ScreenElementCycleButton extends ScreenElementButton
         if(this.onChangeCallback)
             this.onChangeCallback(this.getValue(true))
     }
-
-    setOnChangeCallback(callback)
-    {
-        this.onChangeCallback = callback;
-    }
-
+    
     getValue(actual)
     {
         if(actual)

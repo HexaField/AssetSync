@@ -1,6 +1,5 @@
 import { startRepo } from '../../../libp2p-repo/src/index.js'
 import Libp2p, { config } from './create-libp2p.js'
-import os from 'os'
 import mergeOptions from 'merge-options'
 import { randomString } from '@AssetSync/common/src/randomString.js'
 
@@ -8,7 +7,8 @@ export default async function (otherNode) {
 
     const { peerId, keychain, repo, print, isNew } = await startRepo({
         repo: process.cwd() + `/test/dbs/database-${randomString(8)}/`,
-        libp2pConfig: await config()
+        libp2pConfig: await config(),
+        useMemory: globalThis.useMemory
     })
 
     const dhtDatastore = await repo.openDatastore('dht')

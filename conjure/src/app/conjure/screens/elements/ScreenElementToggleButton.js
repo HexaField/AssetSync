@@ -18,11 +18,6 @@ export default class ScreenElementToggleButton extends ScreenElementButton
             this.onChangeCallback(this.getValue())
     }
 
-    setOnChangeCallback(callback)
-    {
-        this.onChangeCallback = callback;
-    }
-
     getValue()
     {
         return this.value;

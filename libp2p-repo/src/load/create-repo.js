@@ -27,7 +27,8 @@ module.exports = (options = {}) => {
 
   return new Libp2pRepo(repoPath, {
     autoMigrate: options.autoMigrate,
-    onMigrationProgress: options.silent ? null : onMigrationProgress
+    onMigrationProgress: options.silent ? null : onMigrationProgress,
+    useMemory: options.useMemory
   })
 }
 
